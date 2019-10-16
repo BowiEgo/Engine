@@ -60,7 +60,6 @@ let player = new Object({
 let obstacle = new Object({
   shape: new Polygon([
     new Point(0, 0),
-    new Point(20, 0),
     new Point(30, 20),
     new Point(10, 20)
   ]),

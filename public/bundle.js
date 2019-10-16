@@ -756,7 +756,7 @@ var player = new Object$1({
   }
 });
 var obstacle = new Object$1({
-  shape: new Polygon([new Vertices(0, 0), new Vertices(20, 0), new Vertices(30, 20), new Vertices(10, 20)]),
+  shape: new Polygon([new Vertices(0, 0), new Vertices(30, 20), new Vertices(10, 20)]),
   transform: {
     position: {
       x: 20,
