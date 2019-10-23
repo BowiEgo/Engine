@@ -1,9 +1,11 @@
+import { isFunction } from '../utils';
+
 class Object {
   constructor (opts) {
     this.shape = opts.shape;
     this.fill = opts.fill !== undefined ? opts.fill : '#83cbff';
-    this.startCb = isFunc(opts.start) ? opts.start : this.start;
-    this.updateCb = isFunc(opts.update) ? opts.update : this.update;
+    this.startCb = isFunction(opts.start) ? opts.start : this.start;
+    this.updateCb = isFunction(opts.update) ? opts.update : this.update;
     this.transform0 = {
       position: {
         x: opts.transform.position.x || 0,
@@ -33,10 +35,6 @@ class Object {
     ctx.fillStyle = this.fill;
     ctx.fillRect(position.x, position.y, rectW, rectH);
   }
-}
-
-function isFunc (fn) {
-  return typeof fn === 'function';
 }
 
 export default Object

@@ -1,10 +1,15 @@
 import SAT from '../collision/SAT';
 
 class Shape {
-  constructor () {
+  constructor (opts) {
+    console.log('shape,', opts);
+    opts = opts || {};
     this.transform = {
       position: {}
     };
+    this.fillStyle = opts.fill || '#83cbff';
+    this.strokeWidth = opts.strokeWidth || 0;
+    this.strokeStyle = opts.stroke || 'grey';
   }
 
   collidesWith (otherShape) {
@@ -15,11 +20,11 @@ class Shape {
     throw 'getAxes() not implemented';
   }
 
-  project (axis) {
+  project () {
     throw 'project(axis) not implemented';
   }
 
-  move (dx, dy) {
+  move () {
     throw 'move(dx, dy) note implemented';
   }
 }

@@ -1,24 +1,23 @@
-import Point from './Vertices';
-import Projection from './Projection';
+import Point from '../geometry/Vertices';
+import Projection from '../geometry/Projection';
 import Shape from './Shape';
-import Vector from './Vector';
+import Vector from '../geometry/Vector';
+import Vertices from '../geometry/Vertices';
 
 class Polygon extends Shape {
-  constructor (vertices) {
-    super(vertices);
+  constructor (points, opts) {
+    super(opts);
     this.type = 'polygon';
-    this.vertices = vertices;
-    this.strokeStyle = 'blue';
-    this.fillStyle = 'white';
+    this.vertices = points.map(point => new Vertices(point[0], point[1]));
   }
 
   getAxes () {
     const { x: posX, y: posY } = this.transform.position;
 
     let v1 = new Vector(),
-        v2 = new Vector(),
-        axes = [],
-        pointNum = this.vertices.length;
+      v2 = new Vector(),
+      axes = [],
+      pointNum = this.vertices.length;
 
   
     for (let i = 0; i < pointNum - 1; i++) {
@@ -46,7 +45,7 @@ class Polygon extends Shape {
     const { x: posX, y: posY } = this.transform.position;
 
     let scalars = [],
-        v = new Vector();
+      v = new Vector();
 
     this.vertices.forEach(point => {
       v.x = point.x + posX;

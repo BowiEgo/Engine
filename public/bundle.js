@@ -41,8 +41,6 @@ Scene.create = function (game) {
 
   scene.addObject = function (object) {
     scene.objectArray.push(object);
-    scene.game.render.clear();
-    scene.game.render.render();
   };
 
   scene.reset = function () {
@@ -61,76 +59,6 @@ Scene.create = function (game) {
 
   return scene;
 };
-//   constructor (opts, Engine) {
-//     this.Engine = Engine;
-//     this.canvasEl = null;
-//     this.ctx = null;
-//     this.el = opts.el;
-//     this.scale = opts.scale !== undefined ? opts.scale : 1;
-//     this.bgColor = opts.scale !== undefined ? opts.bgColor : '#dedede';
-//     this.objectArray = [];
-//     _init.call(this, opts);
-//   }
-//   create (game) {
-//     this.game = game;
-//   }
-//   reset () {
-//     this.objectArray.forEach((object) => {
-//       object.reset();
-//     })
-//     this.clearCtx();
-//     this.update();
-//   }
-//   run () {
-//     this.clearCtx();
-//     this.objectArray.forEach((object) => {
-//       object.startCb.call(object);
-//     })
-//   }
-//   update () {
-//     const { Engine } = this;
-//     const { Time } = Engine;
-//     this.objectArray.forEach((object) => {
-//       if (Engine.status === 'playing') {
-//         object.updateCb.call(object);
-//       }
-//       // object.render();
-//     })
-//     // if (Engine.showFPS && Engine.fps) {
-//     //   this.showFPS(Time.fps);
-//     // }
-//   }
-//   clearCtx () {
-//     this.ctx.clearRect(0, 0, this.ctxW, this.ctxH);
-//   }
-//   showFPS (fps) {
-//     this.ctx.font = '25px Arial';
-//     this.ctx.fillStyle = 'black';
-//     this.ctx.fillText('FPS: ' + fps, 10, 30);
-//   }
-//   addObject (object) {
-//     object.Scene = this;
-//     object.Engine = this.Engine;
-//     this.objectArray.push(object);
-//     object.render();
-//   }
-// }
-// function _init (opts) {
-//   const { scale, bgColor } = this;
-//   const elRect = opts.el.getBoundingClientRect();
-//   this.ctxW = elRect.width;
-//   this.ctxH = elRect.height || 300;
-//   this.canvasEl = document.createElement('canvas');
-//   this.canvasEl.width = elRect.width * scale;
-//   this.canvasEl.height = 300 * scale;
-//   this.canvasEl.style.width = elRect.width + 'px';
-//   this.canvasEl.style.height = 300 + 'px';
-//   this.canvasEl.style.backgroundColor = bgColor;
-//   this.el.append(this.canvasEl);
-//   this.ctx = this.canvasEl.getContext('2d');
-//   this.ctx.scale(scale, scale);
-// }
-// export default Scene
 
 var Render = {};
 
@@ -145,7 +73,7 @@ Render.create = function (game, el, opts) {
       _opts$height = opts.height,
       height = _opts$height === void 0 ? 300 : _opts$height,
       _opts$scale = opts.scale,
-      scale = _opts$scale === void 0 ? 1 : _opts$scale,
+      scale = _opts$scale === void 0 ? 2 : _opts$scale,
       _opts$bgColor = opts.bgColor,
       bgColor = _opts$bgColor === void 0 ? 'aliceblue' : _opts$bgColor;
   var elRect = el.getBoundingClientRect();
@@ -167,9 +95,25 @@ Render.create = function (game, el, opts) {
 
   render.render = function () {
     var objectArray = render.game.scene.objectArray;
+    console.log('render', objectArray);
     objectArray.forEach(function (object) {
-      if (object.shape.type === 'polygon') {
-        renderPolygon(render.ctx, object.shape);
+      var shapeType = object.shape.type;
+
+      switch (shapeType) {
+        case 'polygon':
+          renderPolygon(render.ctx, object.shape);
+          break;
+
+        case 'rectangle':
+          renderRectangle(render.ctx, object.shape);
+          break;
+
+        case 'circle':
+          renderCircle(render.ctx, object.shape);
+          break;
+
+        default:
+          break;
       }
     });
   };
@@ -177,22 +121,46 @@ Render.create = function (game, el, opts) {
   return render;
 };
 
-function renderPolygon(ctx, polygon) {
+function renderPolygon(ctx, shape) {
+  var _shape$transform$posi = shape.transform.position,
+      posX = _shape$transform$posi.x,
+      posY = _shape$transform$posi.y;
   ctx.beginPath();
-  var _polygon$transform$po = polygon.transform.position,
-      posX = _polygon$transform$po.x,
-      posY = _polygon$transform$po.y;
-  ctx.moveTo(polygon.vertices[0].x + posX, polygon.vertices[0].y + posY);
+  ctx.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
 
-  for (var i = 1; i < polygon.vertices.length; i++) {
-    ctx.lineTo(polygon.vertices[i].x + posX, polygon.vertices[i].y + posY);
+  for (var i = 1; i < shape.vertices.length; i++) {
+    ctx.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
   }
 
   ctx.closePath();
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = '#bbb';
-  ctx.fillStyle = '#a23';
-  ctx.stroke();
+  draw(ctx, shape);
+}
+
+function renderRectangle(ctx, shape) {
+  var _shape$transform$posi2 = shape.transform.position,
+      posX = _shape$transform$posi2.x,
+      posY = _shape$transform$posi2.y;
+  ctx.beginPath();
+  ctx.rect(posX, posY, shape.width, shape.height);
+  ctx.closePath();
+  draw(ctx, shape);
+}
+
+function renderCircle(ctx, shape) {
+  var _shape$transform$posi3 = shape.transform.position,
+      posX = _shape$transform$posi3.x,
+      posY = _shape$transform$posi3.y;
+  ctx.beginPath();
+  ctx.arc(posX, posY, shape.radius, 0, Math.PI * 2, false);
+  ctx.closePath();
+  draw(ctx, shape);
+}
+
+function draw(ctx, shape) {
+  ctx.lineWidth = shape.strokeWidth;
+  ctx.strokeStyle = shape.strokeStyle;
+  ctx.fillStyle = shape.fillStyle;
+  shape.strokeWidth > 0 && ctx.stroke();
   ctx.fill();
 }
 
@@ -361,6 +329,16 @@ function _possibleConstructorReturn(self, call) {
   return _assertThisInitialized(self);
 }
 
+/**
+ * Returns true if the object is a function.
+ * @method isFunction
+ * @param {object} obj
+ * @return {boolean} True if the object is a function, otherwise false
+ */
+function isFunction(obj) {
+  return typeof obj === 'function';
+}
+
 var Object$1 =
 /*#__PURE__*/
 function () {
@@ -369,8 +347,8 @@ function () {
 
     this.shape = opts.shape;
     this.fill = opts.fill !== undefined ? opts.fill : '#83cbff';
-    this.startCb = isFunc(opts.start) ? opts.start : this.start;
-    this.updateCb = isFunc(opts.update) ? opts.update : this.update;
+    this.startCb = isFunction(opts.start) ? opts.start : this.start;
+    this.updateCb = isFunction(opts.update) ? opts.update : this.update;
     this.transform0 = {
       position: {
         x: opts.transform.position.x || 0,
@@ -405,10 +383,6 @@ function () {
 
   return Object;
 }();
-
-function isFunc(fn) {
-  return typeof fn === 'function';
-}
 
 var Input = {
   keyCodeArray: []
@@ -518,12 +492,17 @@ SAT.separationOnAxes = function (shapeA, shapeB) {
 var Shape =
 /*#__PURE__*/
 function () {
-  function Shape() {
+  function Shape(opts) {
     _classCallCheck(this, Shape);
 
+    console.log('shape,', opts);
+    opts = opts || {};
     this.transform = {
       position: {}
     };
+    this.fillStyle = opts.fill || '#83cbff';
+    this.strokeWidth = opts.strokeWidth || 0;
+    this.strokeStyle = opts.stroke || 'grey';
   }
 
   _createClass(Shape, [{
@@ -538,12 +517,12 @@ function () {
     }
   }, {
     key: "project",
-    value: function project(axis) {
+    value: function project() {
       throw 'project(axis) not implemented';
     }
   }, {
     key: "move",
-    value: function move(dx, dy) {
+    value: function move() {
       throw 'move(dx, dy) note implemented';
     }
   }]);
@@ -645,16 +624,16 @@ var Polygon =
 function (_Shape) {
   _inherits(Polygon, _Shape);
 
-  function Polygon(vertices) {
+  function Polygon(points, opts) {
     var _this;
 
     _classCallCheck(this, Polygon);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Polygon).call(this, vertices));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Polygon).call(this, opts));
     _this.type = 'polygon';
-    _this.vertices = vertices;
-    _this.strokeStyle = 'blue';
-    _this.fillStyle = 'white';
+    _this.vertices = points.map(function (point) {
+      return new Vertices(point[0], point[1]);
+    });
     return _this;
   }
 
@@ -718,6 +697,73 @@ function (_Shape) {
   return Polygon;
 }(Shape);
 
+var Cirlce =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Cirlce, _Shape);
+
+  function Cirlce(radius, opts) {
+    var _this;
+
+    _classCallCheck(this, Cirlce);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Cirlce).call(this, opts));
+    _this.type = 'circle';
+    _this.radius = radius;
+    return _this;
+  }
+
+  _createClass(Cirlce, [{
+    key: "getAxes",
+    value: function getAxes() {}
+  }, {
+    key: "project",
+    value: function project(axis) {}
+  }, {
+    key: "addPoint",
+    value: function addPoint(x, y) {}
+  }, {
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Cirlce;
+}(Shape);
+
+var Rectangle =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Rectangle, _Shape);
+
+  function Rectangle(width, height, opts) {
+    var _this;
+
+    _classCallCheck(this, Rectangle);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Rectangle).call(this, opts));
+    _this.type = 'rectangle';
+    _this.width = width;
+    _this.height = height;
+    return _this;
+  }
+
+  _createClass(Rectangle, [{
+    key: "getAxes",
+    value: function getAxes() {}
+  }, {
+    key: "project",
+    value: function project(axis) {}
+  }, {
+    key: "addPoint",
+    value: function addPoint(x, y) {}
+  }, {
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Rectangle;
+}(Shape);
+
 /*global "development"*/
 
 {
@@ -733,8 +779,9 @@ var stopBtn = document.getElementById('stop');
 var pauseBtn = document.getElementById('pause');
 var fastBtn = document.getElementById('fastward');
 var player = new Object$1({
-  shape: new Polygon([new Vertices(0, 0), new Vertices(20, 0), new Vertices(30, 20), new Vertices(10, 20)]),
-  fill: '#ff8080',
+  shape: new Polygon([[0, 0], [60, 0], [60, 20], [30, 40], [10, 40]], {
+    fill: '#009688'
+  }),
   transform: {
     position: {
       x: 230,
@@ -750,16 +797,29 @@ var player = new Object$1({
     transform.position.x += speed * Time.deltaTime * horizontalInput;
     transform.position.y += speed * Time.deltaTime * verticalInput;
 
-    if (this.shape.collidesWith(obstacle.shape)) {
+    if (this.shape.collidesWith(obstacle1.shape)) {
       console.log('collide!!');
     }
   }
 });
-var obstacle = new Object$1({
-  shape: new Polygon([new Vertices(0, 0), new Vertices(30, 20), new Vertices(10, 20)]),
+var obstacle1 = new Object$1({
+  shape: new Rectangle(600, 20),
   transform: {
     position: {
-      x: 20,
+      x: 0,
+      y: 270
+    }
+  },
+  start: function start() {},
+  update: function update() {}
+});
+var obstacle2 = new Object$1({
+  shape: new Cirlce(20, {
+    fill: '#ffc107'
+  }),
+  transform: {
+    position: {
+      x: 100,
       y: 50
     }
   },
@@ -770,7 +830,9 @@ var obstacle = new Object$1({
   }
 });
 myGame.scene.addObject(player);
-myGame.scene.addObject(obstacle);
+myGame.scene.addObject(obstacle1);
+myGame.scene.addObject(obstacle2);
+myGame.render.render();
 startBtn.addEventListener('click', function () {
   myGame.restart();
 });

@@ -7,7 +7,7 @@ Render.create = (game, el, opts) => {
     game: game
   };
 
-  const { width = 300, height = 300, scale = 1, bgColor = 'aliceblue' } = opts;
+  const { width = 300, height = 300, scale = 2, bgColor = 'aliceblue' } = opts;
   const elRect = el.getBoundingClientRect();
 
   render.ctxW = width || elRect.width;
@@ -30,9 +30,23 @@ Render.create = (game, el, opts) => {
 
   render.render = () => {
     const { objectArray } = render.game.scene;
+    console.log('render', objectArray);
+
     objectArray.forEach(object => {
-      if (object.shape.type === 'polygon') {
-        renderPolygon(render.ctx, object.shape);
+      const shapeType = object.shape.type;
+
+      switch (shapeType) {
+        case 'polygon':
+          renderPolygon(render.ctx, object.shape);
+          break;
+        case 'rectangle':
+          renderRectangle(render.ctx, object.shape);
+          break;
+        case 'circle':
+          renderCircle(render.ctx, object.shape);
+          break;
+        default:
+          break;
       }
     })
   }
@@ -40,22 +54,44 @@ Render.create = (game, el, opts) => {
   return render
 }
 
-function renderPolygon (ctx, polygon) {
+function renderPolygon (ctx, shape) {
+  const { x: posX, y: posY } = shape.transform.position;
+
   ctx.beginPath();
-  const { x: posX, y: posY } = polygon.transform.position;
-
-  ctx.moveTo(polygon.vertices[0].x + posX, polygon.vertices[0].y + posY);
-
-  for (let i = 1; i < polygon.vertices.length; i++) {
-    ctx.lineTo(polygon.vertices[i].x + posX, polygon.vertices[i].y + posY);
+  ctx.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
+  for (let i = 1; i < shape.vertices.length; i++) {
+    ctx.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
   }
-
   ctx.closePath();
 
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = '#bbb';
-  ctx.fillStyle = '#a23';
-  ctx.stroke();
+  draw(ctx, shape);
+}
+
+function renderRectangle (ctx, shape) {
+  const { x: posX, y: posY } = shape.transform.position;
+
+  ctx.beginPath();
+  ctx.rect(posX, posY, shape.width, shape.height);
+  ctx.closePath();
+
+  draw(ctx, shape);
+}
+
+function renderCircle (ctx, shape) {
+  const { x: posX, y: posY } = shape.transform.position;
+
+  ctx.beginPath();
+  ctx.arc(posX, posY, shape.radius, 0, Math.PI * 2, false);
+  ctx.closePath();
+
+  draw(ctx, shape);
+}
+
+function draw (ctx, shape) {
+  ctx.lineWidth = shape.strokeWidth;
+  ctx.strokeStyle = shape.strokeStyle;
+  ctx.fillStyle = shape.fillStyle;
+  shape.strokeWidth > 0 && ctx.stroke();
   ctx.fill();
 }
 
