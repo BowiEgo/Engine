@@ -2,7 +2,6 @@ import SAT from '../collision/SAT';
 
 class Shape {
   constructor (opts) {
-    console.log('shape,', opts);
     opts = opts || {};
     this.transform = {
       position: {}

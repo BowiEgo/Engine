@@ -3,6 +3,77 @@
  * (c) 2018-2019 bowiego
  * Released under the MIT License.
  */
+var Camera = {};
+
+Camera.create = function (game) {
+  var camera = {};
+  camera.position = {
+    x: 0,
+    y: 0
+  };
+  camera.offset = {
+    x: 0,
+    y: 0
+  };
+  camera.scale = 1;
+  camera.lookAt = null;
+  var isDragging = false;
+  var lastMousePosition = {
+    x: 0,
+    y: 0
+  };
+  game.mouse.on('mousemove', function (mouse) {
+    if (isDragging) {
+      camera.offset = subPos(mouse.position, lastMousePosition);
+      camera.position = addPos(camera.position, camera.offset);
+      lastMousePosition.x = mouse.position.x;
+      lastMousePosition.y = mouse.position.y;
+      game.render.clear(camera.scale);
+      game.render.context.translate(camera.offset.x, camera.offset.y);
+    }
+  });
+  game.mouse.on('mouseout', function (mouse) {
+    isDragging = false;
+  });
+  game.mouse.on('mousedown', function (mouse) {
+    isDragging = true;
+    lastMousePosition.x = mouse.mousedownPosition.x;
+    lastMousePosition.y = mouse.mousedownPosition.y;
+  });
+  game.mouse.on('mouseup', function (mouse) {
+    camera.offset = {
+      x: 0,
+      y: 0
+    };
+    isDragging = false;
+  });
+  game.mouse.on('mousewheel', function (mouse) {
+    var deltaScale = 1 + mouse.wheelDelta * 0.008;
+    camera.scale *= deltaScale;
+    game.render.clear(camera.scale);
+    game.render.context.scale(deltaScale, deltaScale);
+  });
+  return camera;
+};
+
+Camera.lookAt = function () {};
+
+Camera.follow = function () {};
+
+function addPos(posA, posB) {
+  return {
+    x: posA.x + posB.x,
+    y: posA.y + posB.y
+  };
+}
+
+function subPos(posA, posB) {
+  return {
+    x: posA.x - posB.x,
+    y: posA.y - posB.y
+  };
+}
+
 var STARTING_FPS = 60;
 var Time = {
   timeScale: 0,
@@ -31,6 +102,205 @@ Time.update = function (timeStamp) {
 };
 
 Time.reset();
+
+var Mouse = {};
+
+Mouse.create = function (element) {
+  var mouse = {};
+  mouse.element = element;
+  mouse.absolute = {
+    x: 0,
+    y: 0
+  };
+  mouse.position = {
+    x: 0,
+    y: 0
+  };
+  mouse.mousedownPosition = {
+    x: 0,
+    y: 0
+  };
+  mouse.mouseupPosition = {
+    x: 0,
+    y: 0
+  };
+  mouse.offset = {
+    x: 0,
+    y: 0
+  };
+  mouse.scale = {
+    x: 1,
+    y: 1
+  };
+  mouse.wheelDelta = 0;
+  mouse.button = -1;
+  mouse.pixelRatio = parseInt(mouse.element.getAttribute('data-pixel-ratio'), 10) || 1;
+  mouse.sourceEvents = {
+    mousemove: null,
+    mouseout: null,
+    mousedown: null,
+    mouseup: null,
+    mousewheel: null
+  };
+  mouse.eventHooks = {
+    mousemove: null,
+    mouseout: null,
+    mousedown: null,
+    mouseup: null,
+    mousewheel: null
+  };
+
+  mouse.on = function (eventName, callback) {
+    mouse.eventHooks[eventName] = callback;
+  };
+
+  mouse.triggerHook = function (eventName) {
+    mouse.eventHooks[eventName].call(null, mouse);
+  };
+
+  mouse.mousemove = function (event) {
+    var position = Mouse._getRelativeMousePosition(event, mouse.element, mouse.pixelRatio),
+        touches = event.changedTouches;
+
+    if (touches) {
+      mouse.button = 0;
+      event.preventDefault();
+    }
+
+    mouse.absolute.x = position.x;
+    mouse.absolute.y = position.y;
+    mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
+    mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
+    mouse.sourceEvents.mousemove = event;
+    mouse.triggerHook('mousemove');
+  };
+
+  mouse.mouseout = function () {
+    mouse.triggerHook('mouseout');
+  };
+
+  mouse.mousedown = function (event) {
+    var position = Mouse._getRelativeMousePosition(event, mouse.element, mouse.pixelRatio),
+        touches = event.changedTouches;
+
+    if (touches) {
+      mouse.button = 0;
+      event.preventDefault();
+    } else {
+      mouse.button = event.button;
+    }
+
+    mouse.absolute.x = position.x;
+    mouse.absolute.y = position.y;
+    mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
+    mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
+    mouse.mousedownPosition.x = mouse.position.x;
+    mouse.mousedownPosition.y = mouse.position.y;
+    mouse.sourceEvents.mousedown = event;
+    mouse.triggerHook('mousedown');
+  };
+
+  mouse.mouseup = function (event) {
+    var position = Mouse._getRelativeMousePosition(event, mouse.element, mouse.pixelRatio),
+        touches = event.changedTouches;
+
+    if (touches) {
+      event.preventDefault();
+    }
+
+    mouse.button = -1;
+    mouse.absolute.x = position.x;
+    mouse.absolute.y = position.y;
+    mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
+    mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
+    mouse.mouseupPosition.x = mouse.position.x;
+    mouse.mouseupPosition.y = mouse.position.y;
+    mouse.sourceEvents.mouseup = event;
+    mouse.triggerHook('mouseup');
+  };
+
+  mouse.mousewheel = function (event) {
+    mouse.wheelDelta = Math.max(-1, Math.min(1, event.wheelDelta || -event.detail));
+    event.preventDefault();
+    mouse.triggerHook('mousewheel');
+  };
+
+  Mouse.setElement(mouse, element);
+  return mouse;
+};
+
+Mouse.setElement = function (mouse, element) {
+  element.addEventListener('mousemove', mouse.mousemove);
+  element.addEventListener('mouseout', mouse.mouseout);
+  element.addEventListener('mousedown', mouse.mousedown);
+  element.addEventListener('mouseup', mouse.mouseup);
+  element.addEventListener('mousewheel', mouse.mousewheel);
+  element.addEventListener('DOMMouseScroll', mouse.mousewheel);
+  element.addEventListener('touchmove', mouse.mousemove);
+  element.addEventListener('touchstart', mouse.mousedown);
+  element.addEventListener('touchend', mouse.mouseup);
+};
+/**
+ * Sets the mouse position offset.
+ * @method setOffset
+ * @param {mouse} mouse
+ * @param {vector} offset
+ */
+
+
+Mouse.setOffset = function (mouse, offset) {
+  mouse.offset.x = offset.x;
+  mouse.offset.y = offset.y;
+  mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
+  mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
+};
+/**
+ * Sets the mouse position scale.
+ * @method setScale
+ * @param {mouse} mouse
+ * @param {vector} scale
+ */
+
+
+Mouse.setScale = function (mouse, scale) {
+  mouse.scale.x = scale.x;
+  mouse.scale.y = scale.y;
+  mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
+  mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
+};
+/**
+ * Gets the mouse position relative to an element given a screen pixel ratio.
+ * @method _getRelativeMousePosition
+ * @private
+ * @param {} event
+ * @param {} element
+ * @param {number} pixelRatio
+ * @return {}
+ */
+
+
+Mouse._getRelativeMousePosition = function (event, element, pixelRatio) {
+  var elementBounds = element.getBoundingClientRect(),
+      rootNode = document.documentElement || document.body.parentNode || document.body,
+      scrollX = window.pageXOffset !== undefined ? window.pageXOffset : rootNode.scrollLeft,
+      scrollY = window.pageYOffset !== undefined ? window.pageYOffset : rootNode.scrollTop,
+      touches = event.changedTouches,
+      x,
+      y;
+
+  if (touches) {
+    x = touches[0].pageX - elementBounds.left - scrollX;
+    y = touches[0].pageY - elementBounds.top - scrollY;
+  } else {
+    x = event.pageX - elementBounds.left - scrollX;
+    y = event.pageY - elementBounds.top - scrollY;
+  }
+
+  return {
+    x: x / (element.clientWidth / (element.width || element.clientWidth) * pixelRatio),
+    y: y / (element.clientHeight / (element.height || element.clientHeight) * pixelRatio)
+  };
+};
 
 var Scene = {};
 
@@ -72,96 +342,120 @@ Render.create = function (game, el, opts) {
       width = _opts$width === void 0 ? 300 : _opts$width,
       _opts$height = opts.height,
       height = _opts$height === void 0 ? 300 : _opts$height,
-      _opts$scale = opts.scale,
-      scale = _opts$scale === void 0 ? 2 : _opts$scale,
       _opts$bgColor = opts.bgColor,
       bgColor = _opts$bgColor === void 0 ? 'aliceblue' : _opts$bgColor;
-  var elRect = el.getBoundingClientRect();
-  render.ctxW = width || elRect.width;
-  render.ctxH = height || elRect.height;
-  render.canvasEl = document.createElement('canvas');
-  render.canvasEl.width = render.ctxW * scale;
-  render.canvasEl.height = render.ctxH * scale;
-  render.canvasEl.style.width = render.ctxW + 'px';
-  render.canvasEl.style.height = render.ctxH + 'px';
-  render.canvasEl.style.backgroundColor = bgColor;
-  render.el.append(render.canvasEl);
-  render.ctx = render.canvasEl.getContext('2d');
-  render.ctx.scale(scale, scale);
+  render.width = width;
+  render.height = height;
+  render.canvas = document.createElement('canvas');
+
+  var pixelRatio = opts.pixelRatio || _getPixelRatio(render.canvas);
+
+  render.canvas.setAttribute('data-pixel-ratio', pixelRatio);
+  render.canvas.width = width * pixelRatio;
+  render.canvas.height = height * pixelRatio;
+  render.canvas.style.width = width + 'px';
+  render.canvas.style.height = height + 'px';
+  render.canvas.style.backgroundColor = bgColor;
+  render.el.append(render.canvas);
+  render.context = render.canvas.getContext('2d');
+  render.context.scale(pixelRatio, pixelRatio);
 
   render.clear = function () {
-    render.ctx.clearRect(0, 0, render.ctxW, render.ctxH);
+    var camera = render.game.camera;
+    render.context.clearRect(-camera.position.x, -camera.position.y, render.canvas.width, render.canvas.height);
   };
 
   render.render = function () {
     var objectArray = render.game.scene.objectArray;
-    console.log('render', objectArray);
     objectArray.forEach(function (object) {
       var shapeType = object.shape.type;
 
       switch (shapeType) {
         case 'polygon':
-          renderPolygon(render.ctx, object.shape);
+          renderPolygon(render.context, object.shape);
           break;
 
         case 'rectangle':
-          renderRectangle(render.ctx, object.shape);
+          renderRectangle(render.context, object.shape);
           break;
 
         case 'circle':
-          renderCircle(render.ctx, object.shape);
+          renderCircle(render.context, object.shape);
           break;
 
         default:
           break;
       }
     });
+    renderFPS(render);
   };
 
   return render;
 };
+/**
+ * Gets the pixel ratio of the canvas.
+ * @method _getPixelRatio
+ * @private
+ * @param {HTMLElement} canvas
+ * @return {Number} pixel ratio
+ */
 
-function renderPolygon(ctx, shape) {
+
+function _getPixelRatio(canvas) {
+  var context = canvas.getContext('2d'),
+      devicePixelRatio = window.devicePixelRatio || 1,
+      backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio || context.msBackingStorePixelRatio || context.oBackingStorePixelRatio || context.backingStorePixelRatio || 1;
+  return devicePixelRatio / backingStorePixelRatio;
+}
+
+function renderFPS(render) {
+  var context = render.context;
+  context.font = '18px Arial';
+  context.fillStyle = 'green';
+  context.fillText(Time.fps.toFixed(2), 10, 30);
+}
+
+function renderPolygon(context, shape) {
   var _shape$transform$posi = shape.transform.position,
       posX = _shape$transform$posi.x,
       posY = _shape$transform$posi.y;
-  ctx.beginPath();
-  ctx.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
+  context.beginPath();
+  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
 
   for (var i = 1; i < shape.vertices.length; i++) {
-    ctx.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
+    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
   }
 
-  ctx.closePath();
-  draw(ctx, shape);
+  context.closePath();
+  draw(context, shape);
 }
 
-function renderRectangle(ctx, shape) {
+function renderRectangle(context, shape) {
   var _shape$transform$posi2 = shape.transform.position,
       posX = _shape$transform$posi2.x,
       posY = _shape$transform$posi2.y;
-  ctx.beginPath();
-  ctx.rect(posX, posY, shape.width, shape.height);
-  ctx.closePath();
-  draw(ctx, shape);
+  context.beginPath();
+  context.rect(posX, posY, shape.width, shape.height);
+  context.closePath();
+  draw(context, shape);
 }
 
-function renderCircle(ctx, shape) {
+function renderCircle(context, shape) {
   var _shape$transform$posi3 = shape.transform.position,
       posX = _shape$transform$posi3.x,
       posY = _shape$transform$posi3.y;
-  ctx.beginPath();
-  ctx.arc(posX, posY, shape.radius, 0, Math.PI * 2, false);
-  ctx.closePath();
-  draw(ctx, shape);
+  context.beginPath();
+  context.arc(posX, posY, shape.radius, 0, Math.PI * 2, false);
+  context.closePath();
+  draw(context, shape);
 }
 
-function draw(ctx, shape) {
-  ctx.lineWidth = shape.strokeWidth;
-  ctx.strokeStyle = shape.strokeStyle;
-  ctx.fillStyle = shape.fillStyle;
-  shape.strokeWidth > 0 && ctx.stroke();
-  ctx.fill();
+function draw(context, shape) {
+  context.lineWidth = shape.strokeWidth;
+  context.strokeStyle = shape.strokeStyle;
+  context.fillStyle = shape.fillStyle;
+  shape.strokeWidth > 0 && context.stroke();
+  context.fill();
 }
 
 var _reqFrame, _cancelFrame, _frameTimeout;
@@ -193,6 +487,8 @@ Engine.create = function (el, opts) {
   game.showFPS = opts.showFPS !== undefined ? opts.showFPS : true;
   game.PAUSE_TIMEOUT = 100;
   game.render = Render.create(game, el, opts);
+  game.mouse = Mouse.create(game.render.canvas);
+  game.camera = Camera.create(game);
   game.scene = Scene.create(game);
 
   game.start = function () {
@@ -372,12 +668,12 @@ function () {
   }, {
     key: "render",
     value: function render() {
-      var ctx = this.Scene.ctx;
+      var context = this.Scene.context;
       var position = this.transform.position;
       var rectW = 40;
       var rectH = 40;
-      ctx.fillStyle = this.fill;
-      ctx.fillRect(position.x, position.y, rectW, rectH);
+      context.fillStyle = this.fill;
+      context.fillRect(position.x, position.y, rectW, rectH);
     }
   }]);
 
@@ -459,8 +755,7 @@ function () {
 
   _createClass(Projection, [{
     key: "overlaps",
-    value: function overlaps(projection) {
-      return this.max > projection.min && projection.max > this.min;
+    value: function overlaps(projection) {// return this.max > projection.min && projection.max > this.min;
     }
   }]);
 
@@ -495,7 +790,6 @@ function () {
   function Shape(opts) {
     _classCallCheck(this, Shape);
 
-    console.log('shape,', opts);
     opts = opts || {};
     this.transform = {
       position: {}
@@ -772,7 +1066,8 @@ function (_Shape) {
 
 var myGame = Engine.create(document.getElementById('stage'), {
   width: 600,
-  height: 300
+  height: 300,
+  showFPS: true
 });
 var startBtn = document.getElementById('start');
 var stopBtn = document.getElementById('stop');
@@ -833,6 +1128,7 @@ myGame.scene.addObject(player);
 myGame.scene.addObject(obstacle1);
 myGame.scene.addObject(obstacle2);
 myGame.render.render();
+myGame.start();
 startBtn.addEventListener('click', function () {
   myGame.restart();
 });

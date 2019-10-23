@@ -8,7 +8,7 @@ class Projection {
   }
 
   overlaps (projection) {
-    return this.max > projection.min && projection.max > this.min;
+    // return this.max > projection.min && projection.max > this.min;
   }
 }
 

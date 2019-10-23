@@ -27,13 +27,13 @@ class Object {
   }
 
   render () {
-    const { ctx } = this.Scene;
+    const { context } = this.Scene;
     const { position } = this.transform;
     const rectW = 40;
     const rectH = 40;
 
-    ctx.fillStyle = this.fill;
-    ctx.fillRect(position.x, position.y, rectW, rectH);
+    context.fillStyle = this.fill;
+    context.fillRect(position.x, position.y, rectW, rectH);
   }
 }
 

@@ -17,7 +17,8 @@ if (ENV !== 'production') {
 
 const myGame = Engine.create(document.getElementById('stage'), {
   width: 600,
-  height: 300
+  height: 300,
+  showFPS: true
 });
 const startBtn = document.getElementById('start');
 const stopBtn = document.getElementById('stop');
@@ -97,6 +98,7 @@ myGame.scene.addObject(obstacle1);
 myGame.scene.addObject(obstacle2);
 
 myGame.render.render();
+myGame.start();
 
 startBtn.addEventListener('click', () => {
   myGame.restart();

@@ -1,4 +1,6 @@
+import Camera from './Camera';
 import Time from './Time';
+import Mouse from './Mouse';
 import Scene from './Scene';
 import Render from './Render';
 
@@ -34,6 +36,10 @@ Engine.create = (el, opts) => {
     el,
     opts
   );
+
+  game.mouse = Mouse.create(game.render.canvas);
+
+  game.camera = Camera.create(game);
 
   game.scene = Scene.create(game);
 
