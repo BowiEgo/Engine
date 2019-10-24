@@ -6,7 +6,8 @@ class Shape {
     this.transform = {
       position: {}
     };
-    this.fillStyle = opts.fill || '#83cbff';
+    this.fill = opts.fill === undefined ? true : !!opts.fill;
+    this.fillStyle = opts.fillStyle || '#83cbff';
     this.strokeWidth = opts.strokeWidth || 0;
     this.strokeStyle = opts.stroke || 'grey';
   }

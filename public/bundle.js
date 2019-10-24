@@ -53,6 +53,22 @@ Camera.create = function (game) {
     game.render.clear(camera.scale);
     game.render.context.scale(deltaScale, deltaScale);
   });
+
+  camera.recover = function () {
+    game.render.clear(camera.scale);
+    game.render.context.translate(-camera.position.x, -camera.position.y);
+    game.render.context.scale(1 / camera.scale, 1 / camera.scale);
+    camera.scale = 1;
+    camera.offset = {
+      x: 0,
+      y: 0
+    };
+    camera.position = {
+      x: 0,
+      y: 0
+    };
+  };
+
   return camera;
 };
 
@@ -330,10 +346,128 @@ Scene.create = function (game) {
   return scene;
 };
 
+function extend(obj, deep) {
+  var argsStart, deepClone;
+
+  if (typeof deep === 'boolean') {
+    argsStart = 2;
+    deepClone = deep;
+  } else {
+    argsStart = 1;
+    deepClone = true;
+  }
+
+  for (var i = argsStart; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    if (source) {
+      for (var prop in source) {
+        if (deepClone && source[prop] && source[prop].constructor === Object) {
+          if (!obj[prop] || obj[prop].constructor === Object) {
+            obj[prop] = obj[prop] || {};
+            extend(obj[prop], deepClone, source[prop]);
+          } else {
+            obj[prop] = source[prop];
+          }
+        } else {
+          obj[prop] = source[prop];
+        }
+      }
+    }
+  }
+
+  return obj;
+}
+function clone(obj, deep) {
+  return extend({}, deep, obj);
+}
+function keys(obj) {
+  if (Object.keys) return Object.keys(obj); // avoid hasOwnProperty for performance
+
+  var keys = [];
+
+  for (var key in obj) {
+    keys.push(key);
+  }
+
+  return keys;
+}
+function isFunction(obj) {
+  return typeof obj === 'function';
+}
+
+var Events = {};
+
+Events.on = function (object, eventNames, callback) {
+  var names = eventNames.split(' '),
+      name;
+
+  for (var i = 0; i < names.length; i++) {
+    name = names[i];
+    object.events = object.events || {};
+    object.events[name] = object.events[name] || [];
+    object.events[name].push(callback);
+  }
+
+  return callback;
+};
+
+Events.off = function (object, eventNames, callback) {
+  if (!eventNames) {
+    object.events = {};
+    return;
+  } // handle Events.off(object, callback)
+
+
+  if (typeof eventNames === 'function') {
+    callback = eventNames;
+    eventNames = keys(object.events).join(' ');
+  }
+
+  var names = eventNames.split(' ');
+
+  for (var i = 0; i < names.length; i++) {
+    var callbacks = object.events[names[i]],
+        newCallbacks = [];
+
+    if (callback && callbacks) {
+      for (var j = 0; j < callbacks.length; j++) {
+        if (callbacks[j] !== callback) newCallbacks.push(callbacks[j]);
+      }
+    }
+
+    object.events[names[i]] = newCallbacks;
+  }
+};
+
+Events.trigger = function (object, eventNames, event) {
+  var names, name, callbacks, eventClone;
+  var events = object.events;
+
+  if (events && keys(events).length > 0) {
+    if (!event) event = {};
+    names = eventNames.split(' ');
+
+    for (var i = 0; i < names.length; i++) {
+      name = names[i];
+      callbacks = events[name];
+
+      if (callbacks) {
+        eventClone = clone(event, false);
+        eventClone.name = name;
+        eventClone.source = object;
+
+        for (var j = 0; j < callbacks.length; j++) {
+          callbacks[j].apply(object, [eventClone]);
+        }
+      }
+    }
+  }
+};
+
 var Render = {};
 
 Render.create = function (game, el, opts) {
-  console.log('render-create', el, opts);
   var render = {
     el: el,
     game: game
@@ -383,11 +517,18 @@ Render.create = function (game, el, opts) {
           renderCircle(render.context, object.shape);
           break;
 
+        case 'text':
+          renderText(render.context, object.shape);
+          break;
+
+        case 'polyline':
+          renderPolyline(render.context, object.shape);
+
         default:
           break;
       }
     });
-    renderFPS(render);
+    Events.trigger(render.game, 'tick');
   };
 
   return render;
@@ -406,13 +547,6 @@ function _getPixelRatio(canvas) {
       devicePixelRatio = window.devicePixelRatio || 1,
       backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio || context.msBackingStorePixelRatio || context.oBackingStorePixelRatio || context.backingStorePixelRatio || 1;
   return devicePixelRatio / backingStorePixelRatio;
-}
-
-function renderFPS(render) {
-  var context = render.context;
-  context.font = '18px Arial';
-  context.fillStyle = 'green';
-  context.fillText(Time.fps.toFixed(2), 10, 30);
 }
 
 function renderPolygon(context, shape) {
@@ -450,12 +584,44 @@ function renderCircle(context, shape) {
   draw(context, shape);
 }
 
+function renderText(context, shape) {
+  var _shape$transform$posi4 = shape.transform.position,
+      posX = _shape$transform$posi4.x,
+      posY = _shape$transform$posi4.y;
+  context.font = shape.font;
+  context.fillStyle = shape.fillStyle;
+  context.strokeStyle = shape.strokeStyle;
+  shape.fill && context.fillText(shape.text, posX, posY);
+  shape.strokeWidth > 0 && context.strokeText(shape.text, posX, posY);
+}
+
+function renderPolyline(context, shape) {
+  var _shape$transform$posi5 = shape.transform.position,
+      posX = _shape$transform$posi5.x,
+      posY = _shape$transform$posi5.y;
+  context.beginPath();
+  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
+
+  for (var i = 1; i < shape.vertices.length; i++) {
+    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
+  }
+
+  shape.close && context.closePath();
+  drawLine(context, shape);
+}
+
 function draw(context, shape) {
   context.lineWidth = shape.strokeWidth;
   context.strokeStyle = shape.strokeStyle;
   context.fillStyle = shape.fillStyle;
   shape.strokeWidth > 0 && context.stroke();
-  context.fill();
+  shape.fill && context.fill();
+}
+
+function drawLine(context, shape) {
+  context.lineWidth = shape.strokeWidth;
+  context.strokeStyle = shape.strokeStyle;
+  context.stroke();
 }
 
 var _reqFrame, _cancelFrame, _frameTimeout;
@@ -484,7 +650,6 @@ Engine.create = function (el, opts) {
   var game = {};
   game.el = el;
   game.status = 'stop';
-  game.showFPS = opts.showFPS !== undefined ? opts.showFPS : true;
   game.PAUSE_TIMEOUT = 100;
   game.render = Render.create(game, el, opts);
   game.mouse = Mouse.create(game.render.canvas);
@@ -623,16 +788,6 @@ function _possibleConstructorReturn(self, call) {
   }
 
   return _assertThisInitialized(self);
-}
-
-/**
- * Returns true if the object is a function.
- * @method isFunction
- * @param {object} obj
- * @return {boolean} True if the object is a function, otherwise false
- */
-function isFunction(obj) {
-  return typeof obj === 'function';
 }
 
 var Object$1 =
@@ -794,7 +949,8 @@ function () {
     this.transform = {
       position: {}
     };
-    this.fillStyle = opts.fill || '#83cbff';
+    this.fill = opts.fill === undefined ? true : !!opts.fill;
+    this.fillStyle = opts.fillStyle || '#83cbff';
     this.strokeWidth = opts.strokeWidth || 0;
     this.strokeStyle = opts.stroke || 'grey';
   }
@@ -1058,6 +1214,137 @@ function (_Shape) {
   return Rectangle;
 }(Shape);
 
+var Text =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Text, _Shape);
+
+  function Text(text, opts) {
+    var _this;
+
+    _classCallCheck(this, Text);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Text).call(this, opts));
+    _this.type = 'text';
+    _this.text = text;
+    _this.font = '18px verdana';
+    _this.fillStyle = '#333';
+    return _this;
+  }
+
+  _createClass(Text, [{
+    key: "getAxes",
+    value: function getAxes() {}
+  }, {
+    key: "project",
+    value: function project(axis) {}
+  }, {
+    key: "addPoint",
+    value: function addPoint(x, y) {}
+  }, {
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Text;
+}(Shape);
+
+var Line =
+/*#__PURE__*/
+function () {
+  function Line(opts) {
+    _classCallCheck(this, Line);
+
+    opts = opts || {};
+    this.transform = {
+      position: {}
+    };
+    this.close = !!opts.close;
+    this.style = this.style || 'solid';
+    this.fill = opts.fill === undefined ? true : !!opts.fill;
+    this.fillStyle = opts.fillStyle || '#83cbff';
+    this.strokeWidth = opts.strokeWidth || 0;
+    this.strokeStyle = opts.stroke || 'grey';
+  }
+
+  _createClass(Line, [{
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Line;
+}();
+
+var Polyline =
+/*#__PURE__*/
+function (_Line) {
+  _inherits(Polyline, _Line);
+
+  function Polyline(points, opts) {
+    var _this;
+
+    _classCallCheck(this, Polyline);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Polyline).call(this, opts));
+    _this.type = 'polyline';
+    _this.vertices = points.map(function (point) {
+      return new Vertices(point[0], point[1]);
+    });
+    return _this;
+  }
+
+  _createClass(Polyline, [{
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Polyline;
+}(Line);
+
+function insertAfter(el, targetEl) {
+  var parent = targetEl.parentNode;
+
+  if (parent.lastChild === targetEl) {
+    parent.appendChild(el);
+  } else {
+    parent.insertBefore(el, targetEl.nextSibling);
+  }
+}
+
+var Performance = {};
+
+Performance.create = function (game, opts) {
+  var performance = {};
+  var canvasRect = game.render.canvas.getBoundingClientRect();
+  opts = opts || {};
+  performance.el = document.createElement('div');
+  performance.el.className = 'performance-widget';
+  performance.el.style.position = 'absolute';
+  performance.el.style.top = canvasRect.top + 'px';
+  performance.el.style.left = canvasRect.left + 'px';
+  performance.el.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+  performance.el.style.padding = '4px 10px';
+
+  _addFPS(performance);
+
+  insertAfter(performance.el, game.render.canvas);
+  Events.on(game, 'tick', function () {
+    Performance.update(game, performance);
+  });
+  game.widget = game.widget || {};
+  game.widget['performance'] = Performance;
+};
+
+Performance.update = function (game, performance) {
+  performance.fpsEl.innerText = Time.fps.toFixed(2);
+};
+
+function _addFPS(performance) {
+  performance.fpsEl = document.createElement('div');
+  performance.el.append(performance.fpsEl);
+  performance.fpsEl.style.color = 'white';
+}
+
 /*global "development"*/
 
 {
@@ -1066,16 +1353,17 @@ function (_Shape) {
 
 var myGame = Engine.create(document.getElementById('stage'), {
   width: 600,
-  height: 300,
-  showFPS: true
+  height: 300
 });
+Performance.create(myGame);
 var startBtn = document.getElementById('start');
 var stopBtn = document.getElementById('stop');
 var pauseBtn = document.getElementById('pause');
 var fastBtn = document.getElementById('fastward');
+var recoverBtn = document.getElementById('recover');
 var player = new Object$1({
   shape: new Polygon([[0, 0], [60, 0], [60, 20], [30, 40], [10, 40]], {
-    fill: '#009688'
+    fillStyle: '#009688'
   }),
   transform: {
     position: {
@@ -1110,7 +1398,7 @@ var obstacle1 = new Object$1({
 });
 var obstacle2 = new Object$1({
   shape: new Cirlce(20, {
-    fill: '#ffc107'
+    fillStyle: '#ffc107'
   }),
   transform: {
     position: {
@@ -1124,9 +1412,35 @@ var obstacle2 = new Object$1({
     // transform.position.x += speed * Time.deltaTime;
   }
 });
-myGame.scene.addObject(player);
+var title = new Object$1({
+  shape: new Text('Engine Test'),
+  transform: {
+    position: {
+      x: 200,
+      y: 50
+    }
+  },
+  start: function start() {},
+  update: function update() {}
+});
+var polyline = new Object$1({
+  shape: new Polyline([[0, 0], [60, 0], [60, 20], [30, 40], [10, 40]], {
+    style: 'dashed'
+  }),
+  transform: {
+    position: {
+      x: 320,
+      y: 150
+    }
+  },
+  start: function start() {},
+  update: function update() {}
+});
 myGame.scene.addObject(obstacle1);
 myGame.scene.addObject(obstacle2);
+myGame.scene.addObject(title);
+myGame.scene.addObject(polyline);
+myGame.scene.addObject(player);
 myGame.render.render();
 myGame.start();
 startBtn.addEventListener('click', function () {
@@ -1145,5 +1459,8 @@ pauseBtn.addEventListener('click', function () {
 fastBtn.addEventListener('click', function () {
   myGame.Time.timeScale = 1.5;
 });
-console.log(myGame);
+recoverBtn.addEventListener('click', function () {
+  myGame.camera.recover();
+});
+console.log('myGame', myGame);
 //# sourceMappingURL=bundle.js.map

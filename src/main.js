@@ -6,6 +6,9 @@ import Time from './core/Time';
 import Polygon from './shape/Polygon';
 import Circle from './shape/Circle';
 import Rectangle from './shape/Rectangle';
+import Text from './shape/Text';
+import Polyline from './line/Polyline';
+import Performance from './widget/Performance';
 
 // Enable LiveReload
 if (ENV !== 'production') {
@@ -17,13 +20,14 @@ if (ENV !== 'production') {
 
 const myGame = Engine.create(document.getElementById('stage'), {
   width: 600,
-  height: 300,
-  showFPS: true
+  height: 300
 });
+Performance.create(myGame);
 const startBtn = document.getElementById('start');
 const stopBtn = document.getElementById('stop');
 const pauseBtn = document.getElementById('pause');
 const fastBtn = document.getElementById('fastward');
+const recoverBtn = document.getElementById('recover');
 
 let player = new Object({
   shape: new Polygon([
@@ -33,7 +37,7 @@ let player = new Object({
     [30, 40],
     [10, 40]
   ], {
-    fill: '#009688'
+    fillStyle: '#009688'
   }),
   transform: {
     position: {
@@ -75,7 +79,7 @@ let obstacle1 = new Object({
 
 let obstacle2 = new Object({
   shape: new Circle(20, {
-    fill: '#ffc107'
+    fillStyle: '#ffc107'
   }),
   transform: {
     position: {
@@ -93,9 +97,47 @@ let obstacle2 = new Object({
   }
 });
 
-myGame.scene.addObject(player);
+let title = new Object({
+  shape: new Text('Engine Test'),
+  transform: {
+    position: {
+      x: 200,
+      y: 50
+    }
+  },
+  start: function () {
+  },
+  update: function () {
+  }
+});
+
+let polyline = new Object({
+  shape: new Polyline([
+    [0, 0],
+    [60, 0],
+    [60, 20],
+    [30, 40],
+    [10, 40]
+  ], {
+    style: 'dashed'
+  }),
+  transform: {
+    position: {
+      x: 320,
+      y: 150
+    }
+  },
+  start: function () {
+  },
+  update: function () {
+  }
+});
+
 myGame.scene.addObject(obstacle1);
 myGame.scene.addObject(obstacle2);
+myGame.scene.addObject(title);
+myGame.scene.addObject(polyline);
+myGame.scene.addObject(player);
 
 myGame.render.render();
 myGame.start();
@@ -120,4 +162,8 @@ fastBtn.addEventListener('click', () => {
   myGame.Time.timeScale = 1.5;
 })
 
-console.log(myGame)
+recoverBtn.addEventListener('click', () => {
+  myGame.camera.recover();
+})
+
+console.log('myGame', myGame);

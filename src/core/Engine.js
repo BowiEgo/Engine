@@ -28,7 +28,6 @@ Engine.create = (el, opts) => {
   let game = {};
   game.el = el;
   game.status = 'stop';
-  game.showFPS = opts.showFPS !== undefined ? opts.showFPS : true;
   game.PAUSE_TIMEOUT = 100;
 
   game.render = Render.create(

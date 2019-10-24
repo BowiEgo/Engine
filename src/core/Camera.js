@@ -1,6 +1,6 @@
 let Camera = {};
 
-Camera.create = (game) => {
+Camera.create = function (game) {
   let camera = {};
   camera.position = { x: 0, y: 0 };
   camera.offset = { x: 0, y: 0 };
@@ -43,13 +43,21 @@ Camera.create = (game) => {
     game.render.context.scale(deltaScale, deltaScale);
   });
 
+  camera.recover = function () {
+    game.render.clear(camera.scale);
+    game.render.context.translate(-camera.position.x, -camera.position.y);
+    game.render.context.scale(1 / camera.scale, 1 / camera.scale);
+    camera.scale = 1;
+    camera.offset = { x: 0, y: 0 };
+    camera.position = { x: 0, y: 0 };
+  };
   return camera;
 }
 
-Camera.lookAt = () => {
+Camera.lookAt = function ()  {
 }
 
-Camera.follow = () => {
+Camera.follow = function ()  {
 }
 
 function addPos (posA, posB) {

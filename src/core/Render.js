@@ -1,10 +1,8 @@
-import Time from './Time';
+import Events from './Events';
 
 let Render = {};
-let delta = 0;
 
 Render.create = (game, el, opts) => {
-  console.log('render-create', el, opts);
   let render = {
     el: el,
     game: game
@@ -51,12 +49,17 @@ Render.create = (game, el, opts) => {
         case 'circle':
           renderCircle(render.context, object.shape);
           break;
+        case 'text':
+          renderText(render.context, object.shape);
+          break;
+        case 'polyline':
+          renderPolyline(render.context, object.shape);
         default:
           break;
       }
     })
 
-    renderFPS(render);
+    Events.trigger(render.game, 'tick');
   }
 
   return render
@@ -78,14 +81,6 @@ function _getPixelRatio (canvas) {
     context.backingStorePixelRatio || 1;
 
   return devicePixelRatio / backingStorePixelRatio;
-}
-
-function renderFPS (render) {
-  const { context } = render;
-  context.font = '18px Arial';
-
-  context.fillStyle = 'green';
-  context.fillText(Time.fps.toFixed(2), 10, 30);
 }
 
 function renderPolygon (context, shape) {
@@ -121,12 +116,41 @@ function renderCircle (context, shape) {
   draw(context, shape);
 }
 
+function renderText (context, shape) {
+  const { x: posX, y: posY } = shape.transform.position;
+
+  context.font = shape.font;
+  context.fillStyle = shape.fillStyle;
+  context.strokeStyle = shape.strokeStyle;
+  shape.fill && context.fillText(shape.text, posX, posY);
+  shape.strokeWidth > 0 && context.strokeText(shape.text, posX, posY);
+}
+
+function renderPolyline (context, shape) {
+  const { x: posX, y: posY } = shape.transform.position;
+
+  context.beginPath();
+  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
+  for (let i = 1; i < shape.vertices.length; i++) {
+    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
+  }
+  shape.close && context.closePath();
+
+  drawLine(context, shape);
+}
+
 function draw (context, shape) {
   context.lineWidth = shape.strokeWidth;
   context.strokeStyle = shape.strokeStyle;
   context.fillStyle = shape.fillStyle;
   shape.strokeWidth > 0 && context.stroke();
-  context.fill();
+  shape.fill && context.fill();
+}
+
+function drawLine (context, shape) {
+  context.lineWidth = shape.strokeWidth;
+  context.strokeStyle = shape.strokeStyle;
+  context.stroke();
 }
 
 export default Render;

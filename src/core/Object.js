@@ -1,4 +1,4 @@
-import { isFunction } from '../utils';
+import { isFunction } from '../utils/Common';
 
 class Object {
   constructor (opts) {
