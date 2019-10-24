@@ -10,6 +10,8 @@ Camera.create = function (game) {
   let isDragging = false;
   let lastMousePosition = { x: 0, y: 0 };
 
+  trackTransforms(game.render.context);
+
   game.mouse.on('mousemove', mouse => {
     if (isDragging) {
       camera.offset = subPos(mouse.position, lastMousePosition);
@@ -17,7 +19,7 @@ Camera.create = function (game) {
       lastMousePosition.x = mouse.position.x;
       lastMousePosition.y = mouse.position.y;
       game.render.clear(camera.scale);
-      game.render.context.translate(camera.offset.x, camera.offset.y);
+      game.render.context.translate(camera.offset.x / camera.scale, camera.offset.y / camera.scale);
     }
   });
 
@@ -37,10 +39,13 @@ Camera.create = function (game) {
   });
 
   game.mouse.on('mousewheel', mouse => {
-    let deltaScale = 1 + mouse.wheelDelta * 0.008;
+    var pt = game.render.context.transformedPoint(mouse.position.x, mouse.position.y);
+    let deltaScale = 1 + mouse.wheelDelta * 0.02;
     camera.scale *= deltaScale;
     game.render.clear(camera.scale);
+    game.render.context.translate(pt.x, pt.y);
     game.render.context.scale(deltaScale, deltaScale);
+    game.render.context.translate(-pt.x, -pt.y);
   });
 
   camera.recover = function () {
@@ -71,6 +76,17 @@ function subPos (posA, posB) {
   return {
     x: posA.x - posB.x,
     y: posA.y - posB.y 
+  }
+}
+
+function trackTransforms(context){
+  let svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
+  let xform = svg.createSVGMatrix();
+
+  let pt  = svg.createSVGPoint();
+  context.transformedPoint = function(x,y){
+    pt.x=x; pt.y=y;
+    return pt.matrixTransform(xform.inverse());
   }
 }
 
