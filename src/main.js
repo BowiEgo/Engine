@@ -139,7 +139,7 @@ myGame.scene.addObject(title);
 myGame.scene.addObject(polyline);
 myGame.scene.addObject(player);
 
-myGame.render.render();
+myGame.renderer.render();
 myGame.start();
 
 startBtn.addEventListener('click', () => {

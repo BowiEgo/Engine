@@ -1,6 +1,6 @@
 import { isFunction } from '../utils/Common';
 
-class Object {
+export default class Object {
   constructor (opts) {
     this.shape = opts.shape;
     this.fill = opts.fill !== undefined ? opts.fill : '#83cbff';
@@ -36,5 +36,3 @@ class Object {
     context.fillRect(position.x, position.y, rectW, rectH);
   }
 }
-
-export default Object

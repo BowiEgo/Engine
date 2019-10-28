@@ -1,12 +1,13 @@
 import Time from '../core/Time';
 import Events from '../core/Events';
+import CanvasRenderer from '../core/CanvasRenderer';
 import { insertAfter } from '../utils/Dom';
 
 let Performance = {};
 
 Performance.create = function (game, opts) {
   let performance = {};
-  let canvasRect = game.render.canvas.getBoundingClientRect();
+  let canvasRect = CanvasRenderer.canvas.getBoundingClientRect();
 
   opts = opts || {};
   performance.el = document.createElement('div');
@@ -18,7 +19,7 @@ Performance.create = function (game, opts) {
   performance.el.style.padding = '4px 10px';
 
   _addFPS(performance);
-  insertAfter(performance.el, game.render.canvas);
+  insertAfter(performance.el, CanvasRenderer.canvas);
 
   Events.on(game, 'tick', function () {
     Performance.update(game, performance);

@@ -3,6 +3,7 @@ import Time from './Time';
 import Mouse from './Mouse';
 import Scene from './Scene';
 import Render from './Render';
+import CanvasRenderer from './CanvasRenderer';
 
 let _reqFrame, _cancelFrame, _frameTimeout;
 if (typeof window !== 'undefined') {
@@ -30,13 +31,13 @@ Engine.create = (el, opts) => {
   game.status = 'stop';
   game.PAUSE_TIMEOUT = 100;
 
-  game.render = Render.create(
+  game.renderer = Render.create(
     game,
     el,
     opts
   );
 
-  game.mouse = Mouse.create(game.render.canvas);
+  game.mouse = Mouse.create(CanvasRenderer.canvas);
 
   game.camera = Camera.create(game);
 
@@ -82,8 +83,8 @@ Engine.reset = (game) => {
   Time.reset();
   game.frameReq = null;
   game.scene.reset();
-  game.render.clear();
-  game.render.render();
+  game.renderer.clear();
+  game.renderer.render();
 }
 
 Engine.run = (game) => {
@@ -96,8 +97,8 @@ Engine.run = (game) => {
   function tick (timeStamp) {
     Time.update(timeStamp); // update Time
     game.scene.update();
-    game.render.clear();
-    game.render.render();
+    game.renderer.clear();
+    game.renderer.render();
     game.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
   }
 }
