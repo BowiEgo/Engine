@@ -1,14 +1,13 @@
-import Point from '../geometry/Vertices';
 import Projection from '../geometry/Projection';
 import Shape from './Shape';
 import Vector from '../geometry/Vector';
-import Vertices from '../geometry/Vertices';
+import Vertice from '../geometry/Vertice';
 
 class Polygon extends Shape {
   constructor (points, opts) {
     super(opts);
     this.type = 'polygon';
-    this.vertices = points.map(point => new Vertices(point[0], point[1]));
+    this.vertices = points.map(point => new Vertice(point[0], point[1]));
   }
 
   getAxes () {
@@ -57,7 +56,7 @@ class Polygon extends Shape {
   }
 
   addPoint (x, y) {
-    this.vertices.push(new Point(x, y));
+    this.vertices.push(new Vertice(x, y));
   }
 
   move (dx, dy) {

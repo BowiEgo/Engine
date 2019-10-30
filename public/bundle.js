@@ -3,138 +3,6 @@
  * (c) 2018-2019 bowiego
  * Released under the MIT License.
  */
-var CanvasRenderer = {
-  canvas: _createCanvas()
-};
-CanvasRenderer.context = CanvasRenderer.canvas.getContext('2d');
-
-CanvasRenderer.init = function (opts) {
-  var _opts$width = opts.width,
-      width = _opts$width === void 0 ? 300 : _opts$width,
-      _opts$height = opts.height,
-      height = _opts$height === void 0 ? 300 : _opts$height,
-      _opts$bgColor = opts.bgColor,
-      bgColor = _opts$bgColor === void 0 ? 'aliceblue' : _opts$bgColor;
-  var canvas = CanvasRenderer.canvas,
-      context = CanvasRenderer.context;
-  var pixelRatio = canvas.getPixelRatio();
-  context.scale(pixelRatio, pixelRatio);
-  canvas.width = width * pixelRatio;
-  canvas.height = height * pixelRatio;
-  canvas.style.width = width + 'px';
-  canvas.style.height = height + 'px';
-  canvas.style.backgroundColor = bgColor;
-};
-
-CanvasRenderer.clear = function () {
-  CanvasRenderer.context.clearRect(0, 0, CanvasRenderer.canvas.width, CanvasRenderer.canvas.height);
-};
-
-function _createCanvas() {
-  var canvas = document.createElement('canvas');
-  canvas.getPixelRatio = _getPixelRatio.bind(null, canvas);
-  canvas.renderPolygon = _renderPolygon;
-  canvas.renderRectangle = _renderRectangle;
-  canvas.renderPolyline = _renderPolyline;
-  canvas.renderCircle = _renderCircle;
-  canvas.renderText = _renderText;
-  return canvas;
-}
-/**
- * Gets the pixel ratio of the canvas.
- * @method _getPixelRatio
- * @private
- * @param {HTMLElement} canvas
- * @return {Number} pixel ratio
- */
-
-
-function _getPixelRatio(canvas) {
-  var context = canvas.getContext('2d'),
-      devicePixelRatio = window.devicePixelRatio || 1,
-      backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio || context.msBackingStorePixelRatio || context.oBackingStorePixelRatio || context.backingStorePixelRatio || 1;
-  return devicePixelRatio / backingStorePixelRatio;
-}
-
-function _renderPolygon(context, shape) {
-  var _shape$transform$posi = shape.transform.position,
-      posX = _shape$transform$posi.x,
-      posY = _shape$transform$posi.y;
-  context.beginPath();
-  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
-
-  for (var i = 1; i < shape.vertices.length; i++) {
-    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
-  }
-
-  context.closePath();
-
-  _draw(context, shape);
-}
-
-function _renderRectangle(context, shape) {
-  var _shape$transform$posi2 = shape.transform.position,
-      posX = _shape$transform$posi2.x,
-      posY = _shape$transform$posi2.y;
-  context.beginPath();
-  context.rect(posX, posY, shape.width, shape.height);
-  context.closePath();
-
-  _draw(context, shape);
-}
-
-function _renderCircle(context, shape) {
-  var _shape$transform$posi3 = shape.transform.position,
-      posX = _shape$transform$posi3.x,
-      posY = _shape$transform$posi3.y;
-  context.beginPath();
-  context.arc(posX, posY, shape.radius, 0, Math.PI * 2, false);
-  context.closePath();
-
-  _draw(context, shape);
-}
-
-function _renderText(context, shape) {
-  var _shape$transform$posi4 = shape.transform.position,
-      posX = _shape$transform$posi4.x,
-      posY = _shape$transform$posi4.y;
-  context.font = shape.font;
-  context.fillStyle = shape.fillStyle;
-  context.strokeStyle = shape.strokeStyle;
-  shape.fill && context.fillText(shape.text, posX, posY);
-  shape.strokeWidth > 0 && context.strokeText(shape.text, posX, posY);
-}
-
-function _renderPolyline(context, shape) {
-  var _shape$transform$posi5 = shape.transform.position,
-      posX = _shape$transform$posi5.x,
-      posY = _shape$transform$posi5.y;
-  context.beginPath();
-  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
-
-  for (var i = 1; i < shape.vertices.length; i++) {
-    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
-  }
-
-  shape.close && context.closePath();
-
-  _drawLine(context, shape);
-}
-
-function _draw(context, shape) {
-  context.lineWidth = shape.strokeWidth;
-  context.strokeStyle = shape.strokeStyle;
-  context.fillStyle = shape.fillStyle;
-  shape.strokeWidth > 0 && context.stroke();
-  shape.fill && context.fill();
-}
-
-function _drawLine(context, shape) {
-  context.lineWidth = shape.strokeWidth;
-  context.strokeStyle = shape.strokeStyle;
-  context.stroke();
-}
-
 var Camera = {};
 
 Camera.create = function (game) {
@@ -161,8 +29,7 @@ Camera.create = function (game) {
       camera.position = addPos(camera.position, camera.offset);
       lastMousePosition.x = mouse.position.x;
       lastMousePosition.y = mouse.position.y;
-      game.renderer.clear(camera.scale);
-      CanvasRenderer.context.translate(camera.offset.x / camera.scale, camera.offset.y / camera.scale);
+      game.renderer.translate(camera.offset);
     }
   });
   game.mouse.on('mouseout', function (mouse) {
@@ -181,18 +48,14 @@ Camera.create = function (game) {
     isDragging = false;
   });
   game.mouse.on('mousewheel', function (mouse) {
-    // let pt = CanvasRenderer.context.transformedPoint(mouse.position.x, mouse.position.y);
-    var deltaScale = 1 + mouse.wheelDelta * 0.02;
-    camera.scale *= deltaScale;
-    game.renderer.clear(camera.scale); // CanvasRenderer.context.translate(pt.x, pt.y);
-
-    CanvasRenderer.context.scale(deltaScale, deltaScale); // CanvasRenderer.context.translate(-pt.x, -pt.y);
+    camera.scale *= 1 + mouse.wheelDelta * 0.03;
+    game.renderer.zoomToPoint(mouse.position, camera.scale);
   });
 
   camera.recover = function () {
     game.renderer.clear(camera.scale);
-    CanvasRenderer.context.translate(-camera.position.x, -camera.position.y);
-    CanvasRenderer.context.scale(1 / camera.scale, 1 / camera.scale);
+    game.renderer.context.translate(-camera.position.x, -camera.position.y);
+    game.renderer.context.scale(1 / camera.scale, 1 / camera.scale);
     camera.scale = 1;
     camera.offset = {
       x: 0,
@@ -453,34 +316,6 @@ Mouse._getRelativeMousePosition = function (event, element, pixelRatio) {
   };
 };
 
-var Scene = {};
-
-Scene.create = function (game) {
-  var scene = {};
-  scene.game = game;
-  scene.objectArray = [];
-
-  scene.addObject = function (object) {
-    scene.objectArray.push(object);
-  };
-
-  scene.reset = function () {
-    scene.objectArray.forEach(function (object) {
-      object.reset();
-    });
-  };
-
-  scene.update = function () {
-    scene.objectArray.forEach(function (object) {
-      if (game.status === 'playing') {
-        object.updateCb.call(object);
-      }
-    });
-  };
-
-  return scene;
-};
-
 function extend(obj, deep) {
   var argsStart, deepClone;
 
@@ -533,36 +368,40 @@ function isFunction(obj) {
 
 var Events = {};
 
-Events.on = function (object, eventNames, callback) {
+Events.create = function (game) {
+  this.game = game;
+  game.events = {};
+};
+
+Events.on = function (eventNames, callback) {
   var names = eventNames.split(' '),
       name;
 
   for (var i = 0; i < names.length; i++) {
     name = names[i];
-    object.events = object.events || {};
-    object.events[name] = object.events[name] || [];
-    object.events[name].push(callback);
+    this.game.events[name] = this.game.events[name] || [];
+    this.game.events[name].push(callback);
   }
 
   return callback;
 };
 
-Events.off = function (object, eventNames, callback) {
+Events.off = function (eventNames, callback) {
   if (!eventNames) {
     object.events = {};
     return;
-  } // handle Events.off(object, callback)
+  } // handle Events.off(callback)
 
 
   if (typeof eventNames === 'function') {
     callback = eventNames;
-    eventNames = keys(object.events).join(' ');
+    eventNames = keys(this.game.events).join(' ');
   }
 
   var names = eventNames.split(' ');
 
   for (var i = 0; i < names.length; i++) {
-    var callbacks = object.events[names[i]],
+    var callbacks = this.game.events[names[i]],
         newCallbacks = [];
 
     if (callback && callbacks) {
@@ -571,13 +410,13 @@ Events.off = function (object, eventNames, callback) {
       }
     }
 
-    object.events[names[i]] = newCallbacks;
+    this.game.events[names[i]] = newCallbacks;
   }
 };
 
-Events.trigger = function (object, eventNames, event) {
+Events.trigger = function (eventNames, event) {
   var names, name, callbacks, eventClone;
-  var events = object.events;
+  var events = this.game.events;
 
   if (events && keys(events).length > 0) {
     if (!event) event = {};
@@ -590,164 +429,42 @@ Events.trigger = function (object, eventNames, event) {
       if (callbacks) {
         eventClone = clone(event, false);
         eventClone.name = name;
-        eventClone.source = object;
+        eventClone.source = this.game;
 
         for (var j = 0; j < callbacks.length; j++) {
-          callbacks[j].apply(object, [eventClone]);
+          callbacks[j].apply(this.game, [eventClone]);
         }
       }
     }
   }
 };
 
-var Render = {};
+var Scene = {};
 
-Render.create = function (game, el, opts) {
-  var renderer = {
-    el: el,
-    game: game
-  };
-  CanvasRenderer.init(opts);
-  renderer.el.append(CanvasRenderer.canvas);
-  renderer.clear = _clear.bind(null);
-  renderer.render = _render.bind(null, renderer);
-  return renderer;
-};
+Scene.create = function (game) {
+  var scene = {};
+  scene.objects = [];
 
-function _clear() {
-  CanvasRenderer.clear();
-}
-
-function _render(renderer) {
-  var objectArray = renderer.game.scene.objectArray;
-  var canvas = CanvasRenderer.canvas,
-      context = CanvasRenderer.context;
-  objectArray.forEach(function (object) {
-    var shapeType = object.shape.type;
-
-    switch (shapeType) {
-      case 'polygon':
-        canvas.renderPolygon(context, object.shape);
-        break;
-
-      case 'rectangle':
-        canvas.renderRectangle(context, object.shape);
-        break;
-
-      case 'circle':
-        canvas.renderCircle(context, object.shape);
-        break;
-
-      case 'text':
-        canvas.renderText(context, object.shape);
-        break;
-
-      case 'polyline':
-        canvas.renderPolyline(context, object.shape);
-        break;
-
-      default:
-        break;
-    }
-  });
-  Events.trigger(renderer.game, 'tick');
-}
-
-var _reqFrame, _cancelFrame, _frameTimeout;
-
-if (typeof window !== 'undefined') {
-  _reqFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame || function (callback) {
-    var self = this,
-        start,
-        finish;
-    _frameTimeout = window.setTimeout(function () {
-      start = +new Date();
-      callback(start);
-      finish = +new Date();
-      self.timeout = 1000 / 60 - (finish - start);
-    }, self.timeout);
+  scene.addObject = function (object) {
+    scene.objects.push(object);
+    Events.trigger('addObject', object);
   };
 
-  _cancelFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || function () {
-    window.clearTimeout(_frameTimeout);
-  };
-}
-
-var Engine = {};
-
-Engine.create = function (el, opts) {
-  var game = {};
-  game.el = el;
-  game.status = 'stop';
-  game.PAUSE_TIMEOUT = 100;
-  game.renderer = Render.create(game, el, opts);
-  game.mouse = Mouse.create(CanvasRenderer.canvas);
-  game.camera = Camera.create(game);
-  game.scene = Scene.create(game);
-
-  game.start = function () {
-    Time.timeScale = 1;
-    Engine.run(game);
-    game.status = 'playing';
-  };
-
-  game.restart = function () {
-    Engine.reset(game);
-    game.start();
-  };
-
-  game.pause = function () {
-    if (game.status === 'playing') {
-      Time.timeScale = 0;
-      game.status = 'paused';
-    }
-  };
-
-  game.resume = function () {
-    if (game.status === 'paused') {
-      Time.timeScale = 1;
-      game.status = 'playing';
-    }
-  };
-
-  game.stop = function () {
-    Engine.reset(game);
-    game.status = 'stop';
-  };
-
-  Engine.reset(game);
-  return game;
-};
-
-Engine.reset = function (game) {
-  _cancelFrame(game.frameReq);
-
-  Time.reset();
-  game.frameReq = null;
-  game.scene.reset();
-  game.renderer.clear();
-  game.renderer.render();
-};
-
-Engine.run = function (game) {
-  if (game.frameReq) {
-    game.stop();
-  }
-
-  game.frameReq = _reqFrame(function (timeStamp) {
-    return tick.call(null, timeStamp);
-  });
-
-  function tick(timeStamp) {
-    Time.update(timeStamp); // update Time
-
-    game.scene.update();
-    game.renderer.clear();
-    game.renderer.render();
-    game.frameReq = _reqFrame(function (timeStamp) {
-      return tick.call(null, timeStamp);
+  scene.reset = function () {
+    scene.objects.forEach(function (object) {
+      object.reset();
     });
-  }
+  };
+
+  scene.update = function () {
+    scene.objects.forEach(function (object) {
+      if (game.status === 'playing') {
+        object.updateCb.call(object);
+      }
+    });
+  };
+
+  return scene;
 };
 
 function _classCallCheck(instance, Constructor) {
@@ -818,6 +535,390 @@ function _possibleConstructorReturn(self, call) {
 
   return _assertThisInitialized(self);
 }
+
+var Vertice = function Vertice(x, y) {
+  _classCallCheck(this, Vertice);
+
+  this.x = x;
+  this.y = y;
+};
+
+var iMatrix = [1, 0, 0, 1, 0, 0];
+
+var CanvasRenderer =
+/*#__PURE__*/
+function () {
+  function CanvasRenderer(opts) {
+    _classCallCheck(this, CanvasRenderer);
+
+    var _opts$width = opts.width,
+        width = _opts$width === void 0 ? 300 : _opts$width,
+        _opts$height = opts.height,
+        height = _opts$height === void 0 ? 300 : _opts$height,
+        _opts$bgColor = opts.bgColor,
+        bgColor = _opts$bgColor === void 0 ? 'aliceblue' : _opts$bgColor;
+    this.canvas = _createCanvas();
+    this.context = this.canvas.getContext('2d');
+    this.viewportTransform = iMatrix;
+    this.pixelRatio = _getPixelRatio(this.canvas);
+    this.canvas.setAttribute('data-pixel-ratio', this.pixelRatios);
+    this.context.scale(this.pixelRatio, this.pixelRatio);
+    this.canvas.width = width * this.pixelRatio;
+    this.canvas.height = height * this.pixelRatio;
+    this.canvas.style.width = width + 'px';
+    this.canvas.style.height = height + 'px';
+    this.canvas.style.backgroundColor = bgColor;
+  }
+
+  _createClass(CanvasRenderer, [{
+    key: "getZoom",
+    value: function getZoom() {
+      return this.viewportTransform[0];
+    }
+  }, {
+    key: "setViewportTransform",
+    value: function setViewportTransform(vpt) {
+      this.viewportTransform = vpt;
+    }
+  }, {
+    key: "resetTransform",
+    value: function resetTransform() {
+      this.setViewportTransform(iMatrix);
+    }
+  }, {
+    key: "zoomToPoint",
+    value: function zoomToPoint(point, value) {
+      var before = point,
+          vpt = this.viewportTransform.slice(0);
+      point = transformPoint(point, invertTransform(this.viewportTransform));
+      vpt[0] = value;
+      vpt[3] = value;
+      var after = transformPoint(point, vpt);
+      vpt[4] += before.x - after.x;
+      vpt[5] += before.y - after.y;
+      this.setViewportTransform(vpt);
+    }
+  }, {
+    key: "translate",
+    value: function translate(offset) {
+      this.clear();
+      this.context.translate(offset.x, offset.y);
+    }
+  }, {
+    key: "render",
+    value: function render(objects) {
+      var context = this.context,
+          pixelRatio = this.pixelRatio;
+      var vpt = this.viewportTransform;
+      context.save();
+      context.transform(vpt[0] * pixelRatio, vpt[1], vpt[2], vpt[3] * pixelRatio, vpt[4], vpt[5]);
+
+      _renderObjects(this.context, objects);
+
+      context.restore();
+      Events.trigger('rendered', this.context);
+    }
+  }, {
+    key: "clear",
+    value: function clear() {
+      this.context.clearRect(0, 0, this.width, this.height);
+    }
+  }, {
+    key: "width",
+    get: function get() {
+      return this.canvas.width;
+    }
+  }, {
+    key: "height",
+    get: function get() {
+      return this.canvas.height;
+    }
+  }]);
+
+  return CanvasRenderer;
+}();
+
+function _createCanvas() {
+  var canvas = document.createElement('canvas');
+  canvas.getPixelRatio = _getPixelRatio.bind(null, canvas);
+  return canvas;
+}
+/**
+ * Gets the pixel ratio of the canvas.
+ */
+
+
+function _getPixelRatio(canvas) {
+  var context = canvas.getContext('2d'),
+      devicePixelRatio = window.devicePixelRatio || 1,
+      backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio || context.msBackingStorePixelRatio || context.oBackingStorePixelRatio || context.backingStorePixelRatio || 1;
+  return devicePixelRatio / backingStorePixelRatio;
+}
+/**
+ * Render several types of graphics in canvas
+ */
+
+
+function _renderObjects(context, objects) {
+  objects = objects || [];
+  objects.forEach(function (object) {
+    var shapeType = object.shape.type;
+
+    switch (shapeType) {
+      case 'polygon':
+        _renderPolygon(context, object.shape);
+
+        break;
+
+      case 'rectangle':
+        _renderRectangle(context, object.shape);
+
+        break;
+
+      case 'circle':
+        _renderCircle(context, object.shape);
+
+        break;
+
+      case 'text':
+        _renderText(context, object.shape);
+
+        break;
+
+      case 'polyline':
+        _renderPolyline(context, object.shape);
+
+        break;
+
+      default:
+        break;
+    }
+  });
+}
+
+function _renderPolygon(context, shape) {
+  var _shape$transform$posi = shape.transform.position,
+      posX = _shape$transform$posi.x,
+      posY = _shape$transform$posi.y;
+  context.beginPath();
+  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
+
+  for (var i = 1; i < shape.vertices.length; i++) {
+    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
+  }
+
+  context.closePath();
+
+  _draw(context, shape);
+}
+
+function _renderRectangle(context, shape) {
+  var _shape$transform$posi2 = shape.transform.position,
+      posX = _shape$transform$posi2.x,
+      posY = _shape$transform$posi2.y;
+  context.beginPath();
+  context.rect(posX, posY, shape.width, shape.height);
+  context.closePath();
+
+  _draw(context, shape);
+}
+
+function _renderCircle(context, shape) {
+  var _shape$transform$posi3 = shape.transform.position,
+      posX = _shape$transform$posi3.x,
+      posY = _shape$transform$posi3.y;
+  context.beginPath();
+  context.arc(posX, posY, shape.radius, 0, Math.PI * 2, false);
+  context.closePath();
+
+  _draw(context, shape);
+}
+
+function _renderText(context, shape) {
+  var _shape$transform$posi4 = shape.transform.position,
+      posX = _shape$transform$posi4.x,
+      posY = _shape$transform$posi4.y;
+  context.font = shape.font;
+  context.fillStyle = shape.fillStyle;
+  context.strokeStyle = shape.strokeStyle;
+  shape.fill && context.fillText(shape.text, posX, posY);
+  shape.strokeWidth > 0 && context.strokeText(shape.text, posX, posY);
+}
+
+function _renderPolyline(context, shape) {
+  var _shape$transform$posi5 = shape.transform.position,
+      posX = _shape$transform$posi5.x,
+      posY = _shape$transform$posi5.y;
+  context.beginPath();
+  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
+
+  for (var i = 1; i < shape.vertices.length; i++) {
+    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
+  }
+
+  shape.close && context.closePath();
+
+  _drawLine(context, shape);
+} // function _renderFill (context) {
+//   context.save();
+//   context.fill();
+//   context.restore();
+// }
+// function _renderStroke (context) {
+//   context.save();
+//   context.stroke();
+//   context.restore();
+// }
+
+
+function _draw(context, shape) {
+  context.save();
+  context.lineWidth = shape.strokeWidth;
+  context.strokeStyle = shape.strokeStyle;
+  context.fillStyle = shape.fillStyle;
+  shape.strokeWidth > 0 && context.stroke();
+  shape.fill && context.fill();
+  context.restore();
+}
+
+function _drawLine(context, shape) {
+  context.save();
+  context.lineWidth = shape.strokeWidth;
+  context.strokeStyle = shape.strokeStyle;
+  context.stroke();
+  context.restore();
+}
+
+function transformPoint(p, t, ignoreOffset) {
+  if (ignoreOffset) {
+    return new Vertice(t[0] * p.x + t[2] * p.y, t[1] * p.x + t[3] * p.y);
+  }
+
+  return new Vertice(t[0] * p.x + t[2] * p.y + t[4], t[1] * p.x + t[3] * p.y + t[5]);
+}
+
+function invertTransform(t) {
+  var a = 1 / (t[0] * t[3] - t[1] * t[2]),
+      r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
+      o = transformPoint({
+    x: t[4],
+    y: t[5]
+  }, r, true);
+  r[4] = -o.x;
+  r[5] = -o.y;
+  return r;
+}
+
+var Renderer = {};
+
+Renderer.create = function (el, opts) {
+  var renderer = new CanvasRenderer(opts);
+  el.append(renderer.canvas);
+  return renderer;
+};
+
+var _reqFrame, _cancelFrame, _frameTimeout;
+
+if (typeof window !== 'undefined') {
+  _reqFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame || function (callback) {
+    var self = this,
+        start,
+        finish;
+    _frameTimeout = window.setTimeout(function () {
+      start = +new Date();
+      callback(start);
+      finish = +new Date();
+      self.timeout = 1000 / 60 - (finish - start);
+    }, self.timeout);
+  };
+
+  _cancelFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || function () {
+    window.clearTimeout(_frameTimeout);
+  };
+}
+
+var Engine = {};
+
+Engine.create = function (el, opts) {
+  var game = {};
+  game.el = el;
+  game.status = 'stop';
+  game.PAUSE_TIMEOUT = 100;
+  Events.create(game);
+  game.renderer = Renderer.create(el, opts);
+  game.view = game.renderer.canvas;
+  game.mouse = Mouse.create(game.view);
+  game.camera = Camera.create(game);
+  game.scene = Scene.create(game);
+
+  game.start = function () {
+    Time.timeScale = 1;
+    Engine.run(game);
+    game.status = 'playing';
+  };
+
+  game.restart = function () {
+    Engine.reset(game);
+    game.start();
+  };
+
+  game.pause = function () {
+    if (game.status === 'playing') {
+      Time.timeScale = 0;
+      game.status = 'paused';
+    }
+  };
+
+  game.resume = function () {
+    if (game.status === 'paused') {
+      Time.timeScale = 1;
+      game.status = 'playing';
+    }
+  };
+
+  game.stop = function () {
+    Engine.reset(game);
+    game.status = 'stop';
+  };
+
+  Engine.reset(game);
+  Events.on('addObject', function (object) {
+    game.renderer.render([object]);
+  });
+  return game;
+};
+
+Engine.reset = function (game) {
+  _cancelFrame(game.frameReq);
+
+  Time.reset();
+  game.frameReq = null;
+  game.scene.reset();
+  game.renderer.clear();
+  game.renderer.render(game.scene.objects);
+};
+
+Engine.run = function (game) {
+  if (game.frameReq) {
+    game.stop();
+  }
+
+  game.frameReq = _reqFrame(function (timeStamp) {
+    return tick.call(null, timeStamp);
+  });
+
+  function tick(timeStamp) {
+    Events.trigger('tick', timeStamp);
+    Time.update(timeStamp); // update Time
+
+    game.scene.update();
+    game.renderer.clear();
+    game.renderer.render(game.scene.objects);
+    game.frameReq = _reqFrame(function (timeStamp) {
+      return tick.call(null, timeStamp);
+    });
+  }
+};
 
 var Object$1 =
 /*#__PURE__*/
@@ -915,13 +1016,6 @@ Input.getAxis = function (direction) {
 };
 
 Input.create(); // class Input {
-
-var Vertices = function Vertices(x, y) {
-  _classCallCheck(this, Vertices);
-
-  this.x = x;
-  this.y = y;
-};
 
 var Projection =
 /*#__PURE__*/
@@ -1111,7 +1205,7 @@ function (_Shape) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Polygon).call(this, opts));
     _this.type = 'polygon';
     _this.vertices = points.map(function (point) {
-      return new Vertices(point[0], point[1]);
+      return new Vertice(point[0], point[1]);
     });
     return _this;
   }
@@ -1160,7 +1254,7 @@ function (_Shape) {
   }, {
     key: "addPoint",
     value: function addPoint(x, y) {
-      this.vertices.push(new Vertices(x, y));
+      this.vertices.push(new Vertice(x, y));
     }
   }, {
     key: "move",
@@ -1317,7 +1411,7 @@ function (_Line) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Polyline).call(this, opts));
     _this.type = 'polyline';
     _this.vertices = points.map(function (point) {
-      return new Vertices(point[0], point[1]);
+      return new Vertice(point[0], point[1]);
     });
     return _this;
   }
@@ -1344,27 +1438,27 @@ var Performance = {};
 
 Performance.create = function (game, opts) {
   var performance = {};
-  var canvasRect = CanvasRenderer.canvas.getBoundingClientRect();
+  var view = game.view.getBoundingClientRect();
   opts = opts || {};
   performance.el = document.createElement('div');
   performance.el.className = 'performance-widget';
   performance.el.style.position = 'absolute';
-  performance.el.style.top = canvasRect.top + 'px';
-  performance.el.style.left = canvasRect.left + 'px';
+  performance.el.style.top = view.top + 'px';
+  performance.el.style.left = view.left + 'px';
   performance.el.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
   performance.el.style.padding = '4px 10px';
 
   _addFPS(performance);
 
-  insertAfter(performance.el, CanvasRenderer.canvas);
-  Events.on(game, 'tick', function () {
-    Performance.update(game, performance);
+  insertAfter(performance.el, game.view);
+  Events.on('tick', function () {
+    Performance.update(performance);
   });
   game.widget = game.widget || {};
   game.widget['performance'] = Performance;
 };
 
-Performance.update = function (game, performance) {
+Performance.update = function (performance) {
   performance.fpsEl.innerText = Time.fps.toFixed(2);
 };
 
@@ -1470,7 +1564,6 @@ myGame.scene.addObject(obstacle2);
 myGame.scene.addObject(title);
 myGame.scene.addObject(polyline);
 myGame.scene.addObject(player);
-myGame.renderer.render();
 myGame.start();
 startBtn.addEventListener('click', function () {
   myGame.restart();

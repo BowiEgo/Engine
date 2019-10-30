@@ -2,8 +2,8 @@ import Camera from './Camera';
 import Time from './Time';
 import Mouse from './Mouse';
 import Scene from './Scene';
-import Render from './Render';
-import CanvasRenderer from './CanvasRenderer';
+import Events from './Events';
+import { Renderer, CanvasRenderer } from '../renderer';
 
 let _reqFrame, _cancelFrame, _frameTimeout;
 if (typeof window !== 'undefined') {
@@ -31,13 +31,16 @@ Engine.create = (el, opts) => {
   game.status = 'stop';
   game.PAUSE_TIMEOUT = 100;
 
-  game.renderer = Render.create(
-    game,
+  Events.create(game);
+
+  game.renderer = Renderer.create(
     el,
     opts
   );
 
-  game.mouse = Mouse.create(CanvasRenderer.canvas);
+  game.view = game.renderer.canvas;
+
+  game.mouse = Mouse.create(game.view);
 
   game.camera = Camera.create(game);
 
@@ -75,6 +78,10 @@ Engine.create = (el, opts) => {
 
   Engine.reset(game);
 
+  Events.on('addObject', (object) => {
+    game.renderer.render([object]);
+  })
+
   return game;
 }
 
@@ -84,7 +91,7 @@ Engine.reset = (game) => {
   game.frameReq = null;
   game.scene.reset();
   game.renderer.clear();
-  game.renderer.render();
+  game.renderer.render(game.scene.objects);
 }
 
 Engine.run = (game) => {
@@ -95,10 +102,11 @@ Engine.run = (game) => {
   game.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
 
   function tick (timeStamp) {
+    Events.trigger('tick', timeStamp);
     Time.update(timeStamp); // update Time
     game.scene.update();
     game.renderer.clear();
-    game.renderer.render();
+    game.renderer.render(game.scene.objects);
     game.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
   }
 }

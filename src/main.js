@@ -3,11 +3,11 @@ import Engine from './core/Engine';
 import Object from './core/Object';
 import Input from './core/Input';
 import Time from './core/Time';
-import Polygon from './shape/Polygon';
-import Circle from './shape/Circle';
-import Rectangle from './shape/Rectangle';
-import Text from './shape/Text';
-import Polyline from './line/Polyline';
+import Polygon from './shapes/Polygon';
+import Circle from './shapes/Circle';
+import Rectangle from './shapes/Rectangle';
+import Text from './shapes/Text';
+import Polyline from './shapes/Polyline';
 import Performance from './widget/Performance';
 
 // Enable LiveReload
@@ -139,7 +139,6 @@ myGame.scene.addObject(title);
 myGame.scene.addObject(polyline);
 myGame.scene.addObject(player);
 
-myGame.renderer.render();
 myGame.start();
 
 startBtn.addEventListener('click', () => {

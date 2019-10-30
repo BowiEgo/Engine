@@ -1,35 +1,35 @@
 import Time from '../core/Time';
 import Events from '../core/Events';
-import CanvasRenderer from '../core/CanvasRenderer';
+import CanvasRenderer from '../renderer/CanvasRenderer';
 import { insertAfter } from '../utils/Dom';
 
 let Performance = {};
 
 Performance.create = function (game, opts) {
   let performance = {};
-  let canvasRect = CanvasRenderer.canvas.getBoundingClientRect();
+  let view = game.view.getBoundingClientRect();
 
   opts = opts || {};
   performance.el = document.createElement('div');
   performance.el.className = 'performance-widget';
   performance.el.style.position = 'absolute';
-  performance.el.style.top = canvasRect.top + 'px';
-  performance.el.style.left = canvasRect.left + 'px';
+  performance.el.style.top = view.top + 'px';
+  performance.el.style.left = view.left + 'px';
   performance.el.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
   performance.el.style.padding = '4px 10px';
 
   _addFPS(performance);
-  insertAfter(performance.el, CanvasRenderer.canvas);
+  insertAfter(performance.el, game.view);
 
-  Events.on(game, 'tick', function () {
-    Performance.update(game, performance);
+  Events.on('tick', function () {
+    Performance.update(performance);
   })
 
   game.widget = game.widget || {};
   game.widget['performance'] = Performance;
 }
 
-Performance.update = function (game, performance) {
+Performance.update = function (performance) {
   performance.fpsEl.innerText = Time.fps.toFixed(2);
 }
 

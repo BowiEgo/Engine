@@ -1,23 +1,26 @@
+import Events from '../core/Events';
+
 let Scene = {};
 
 Scene.create = (game) => {
   let scene = {};
 
-  scene.game = game;
-  scene.objectArray = [];
+  scene.objects = [];
 
   scene.addObject = (object) => {
-    scene.objectArray.push(object);
+    scene.objects.push(object);
+
+    Events.trigger('addObject', object);
   }
 
   scene.reset = () => {
-    scene.objectArray.forEach((object) => {
+    scene.objects.forEach((object) => {
       object.reset();
     })
   }
 
   scene.update = () => {
-    scene.objectArray.forEach((object) => {
+    scene.objects.forEach((object) => {
       if (game.status === 'playing') {
         object.updateCb.call(object);
       }

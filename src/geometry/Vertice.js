@@ -1,8 +1,8 @@
-class Vertices {
+class Vertice {
   constructor (x, y) {
     this.x = x;
     this.y = y;
   }
 }
 
-export default Vertices
+export default Vertice
