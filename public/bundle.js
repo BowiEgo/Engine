@@ -362,6 +362,9 @@ function keys(obj) {
 
   return keys;
 }
+function isArray(obj) {
+  return Object.prototype.toString.call(obj) === '[object Array]';
+}
 function isFunction(obj) {
   return typeof obj === 'function';
 }
@@ -536,12 +539,852 @@ function _possibleConstructorReturn(self, call) {
   return _assertThisInitialized(self);
 }
 
+var Line =
+/*#__PURE__*/
+function () {
+  function Line(opts) {
+    _classCallCheck(this, Line);
+
+    opts = opts || {};
+    this.transform = {
+      position: {}
+    };
+    this.close = !!opts.close;
+    this.style = this.style || 'solid';
+    this.fill = opts.fill || '#83cbff';
+    this.strokeWidth = opts.strokeWidth || 0;
+    this.stroke = opts.stroke || 'grey';
+  }
+
+  _createClass(Line, [{
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Line;
+}();
+
+var Arc =
+/*#__PURE__*/
+function (_Line) {
+  _inherits(Arc, _Line);
+
+  function Arc(opts) {
+    var _this;
+
+    _classCallCheck(this, Arc);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Arc).call(this, opts));
+    _this.type = 'arc';
+    return _this;
+  }
+
+  _createClass(Arc, [{
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Arc;
+}(Line);
+
+var SAT = {};
+
+SAT.detectCollide = function (shapeA, shapeB) {
+  return !SAT.separationOnAxes(shapeA, shapeB);
+};
+
+SAT.separationOnAxes = function (shapeA, shapeB) {
+  var axes = shapeA.getAxes().concat(shapeB.getAxes());
+
+  for (var i = 0; i < axes.length; i++) {
+    var axis = axes[i];
+    var projection1 = shapeA.project(axis);
+    var projection2 = shapeB.project(axis);
+
+    if (!projection1.overlaps(projection2)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+var Shape =
+/*#__PURE__*/
+function () {
+  function Shape(opts) {
+    _classCallCheck(this, Shape);
+
+    opts = opts || {};
+    this.transform = {
+      position: {}
+    };
+    this.fill = opts.fill || '#83cbff';
+    this.stroke = opts.stroke || 'grey';
+    this.strokeWidth = opts.strokeWidth || 0;
+  }
+
+  _createClass(Shape, [{
+    key: "collidesWith",
+    value: function collidesWith(otherShape) {
+      return SAT.detectCollide(this, otherShape);
+    }
+  }, {
+    key: "getAxes",
+    value: function getAxes() {
+      throw 'getAxes() not implemented';
+    }
+  }, {
+    key: "project",
+    value: function project() {
+      throw 'project(axis) not implemented';
+    }
+  }, {
+    key: "move",
+    value: function move() {
+      throw 'move(dx, dy) note implemented';
+    }
+  }]);
+
+  return Shape;
+}();
+
+var Cirlce =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Cirlce, _Shape);
+
+  function Cirlce(radius, opts) {
+    var _this;
+
+    _classCallCheck(this, Cirlce);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Cirlce).call(this, opts));
+    _this.type = 'circle';
+    _this.radius = radius;
+    return _this;
+  }
+
+  _createClass(Cirlce, [{
+    key: "getAxes",
+    value: function getAxes() {}
+  }, {
+    key: "project",
+    value: function project(axis) {}
+  }, {
+    key: "addPoint",
+    value: function addPoint(x, y) {}
+  }, {
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Cirlce;
+}(Shape);
+
+var Curve =
+/*#__PURE__*/
+function (_Line) {
+  _inherits(Curve, _Line);
+
+  function Curve(opts) {
+    var _this;
+
+    _classCallCheck(this, Curve);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Curve).call(this, opts));
+    _this.type = 'curve';
+    return _this;
+  }
+
+  _createClass(Curve, [{
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Curve;
+}(Line);
+
+var Projection =
+/*#__PURE__*/
+function () {
+  function Projection(min, max) {
+    _classCallCheck(this, Projection);
+
+    if (min > max) {
+      throw 'min value should less than max value';
+    }
+
+    this.min = min;
+    this.max = max;
+  }
+
+  _createClass(Projection, [{
+    key: "overlaps",
+    value: function overlaps(projection) {// return this.max > projection.min && projection.max > this.min;
+    }
+  }]);
+
+  return Projection;
+}();
+
+var Vector =
+/*#__PURE__*/
+function () {
+  function Vector(x, y) {
+    _classCallCheck(this, Vector);
+
+    this.x = x;
+    this.y = y;
+  }
+
+  _createClass(Vector, [{
+    key: "magnitude",
+    value: function magnitude() {
+      return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    }
+  }, {
+    key: "add",
+    value: function add(vector) {
+      var v = new Vector();
+      v.x = this.x + vector.x;
+      v.y = this.y + vector.y;
+      return v;
+    }
+    /**
+     * Subtracts another vector.
+     * @method sub
+     * @param {vector} vector
+     * @return {vector} A new vector of two vector subtracted
+     */
+
+  }, {
+    key: "sub",
+    value: function sub(vector) {
+      var v = new Vector();
+      v.x = this.x - vector.x;
+      v.y = this.y - vector.y;
+      return v;
+    }
+  }, {
+    key: "dot",
+    value: function dot(vector) {
+      return this.x * vector.x + this.y * vector.y;
+    }
+  }, {
+    key: "edge",
+    value: function edge(vector) {
+      return this.sub(vector);
+    }
+    /**
+     * Returns the perpendicular vector. Set `negate` to true for the perpendicular in the opposite direction.
+     * @method perp
+     * @param {vector} vector
+     * @param {bool} [negate=false]
+     * @return {vector} The perpendicular vector
+     */
+
+  }, {
+    key: "perp",
+    value: function perp(negate) {
+      negate = negate === true ? -1 : 1;
+      var v = new Vector();
+      v.x = negate * -this.y;
+      v.y = negate * this.x;
+      return v;
+    }
+  }, {
+    key: "normalize",
+    value: function normalize() {
+      var v = new Vector(0, 0),
+          m = this.magnitude();
+
+      if (m !== 0) {
+        v.x = this.x / m;
+        v.y = this.y / m;
+      }
+
+      return v;
+    }
+  }, {
+    key: "normal",
+    value: function normal() {
+      var p = this.perp();
+      return p.normalize();
+    }
+  }]);
+
+  return Vector;
+}();
+
 var Vertice = function Vertice(x, y) {
   _classCallCheck(this, Vertice);
 
   this.x = x;
   this.y = y;
 };
+
+function getValue(object, key) {
+  var keysArray = key.split('.');
+  var value = object;
+
+  for (var i = 0, len = keysArray.length; i < len; i++) {
+    value = value[keysArray[i]];
+
+    if (value === undefined) {
+      console.error("can't find object value ".concat(key));
+      return;
+    }
+  }
+
+  return value;
+}
+
+/**
+ * Finds maximum value in array (not necessarily "first" one)
+ * @memberOf fabric.util.array
+ * @param {Array} array Array to iterate over
+ * @param {String} byProperty
+ * @return {*}
+ */
+
+function max(array, byProperty) {
+  return find(array, byProperty, function (value1, value2) {
+    return value1 >= value2;
+  });
+}
+/**
+ * Finds minimum value in array (not necessarily "first" one)
+ * @memberOf fabric.util.array
+ * @param {Array} array Array to iterate over
+ * @param {String} byProperty
+ * @return {*}
+ */
+
+function min(array, byProperty) {
+  return find(array, byProperty, function (value1, value2) {
+    return value1 < value2;
+  });
+}
+function find(array, byProperty, condition) {
+  if (!array || array.length === 0) {
+    return;
+  }
+
+  var i = array.length - 1,
+      result = byProperty ? getValue(array[i], byProperty) : array[i];
+
+  if (byProperty) {
+    while (i--) {
+      if (condition(getValue(array[i], byProperty), result)) {
+        result = getValue(array[i], byProperty);
+      }
+    }
+  } else {
+    while (i--) {
+      if (condition(array[i], result)) {
+        result = array[i];
+      }
+    }
+  }
+
+  return result;
+}
+
+var Polygon =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Polygon, _Shape);
+
+  function Polygon(points, opts) {
+    var _this;
+
+    _classCallCheck(this, Polygon);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Polygon).call(this, opts));
+    _this.type = 'polygon';
+    _this.vertices = points.map(function (point) {
+      return new Vertice(point[0], point[1]);
+    });
+    _this.dimensions = _this.calcDimensions();
+    return _this;
+  }
+
+  _createClass(Polygon, [{
+    key: "getAxes",
+    value: function getAxes() {
+      var _this$transform$posit = this.transform.position,
+          posX = _this$transform$posit.x,
+          posY = _this$transform$posit.y;
+      var v1 = new Vector(),
+          v2 = new Vector(),
+          axes = [],
+          pointNum = this.vertices.length;
+
+      for (var i = 0; i < pointNum - 1; i++) {
+        v1.x = this.vertices[i].x + posX;
+        v1.y = this.vertices[i].y + posY;
+        v2.x = this.vertices[i + 1].x + posX;
+        v2.y = this.vertices[i + 1].y + posY;
+        axes.push(v1.edge(v2).normal());
+      }
+
+      v1.x = this.vertices[pointNum - 1].x + posX;
+      v1.y = this.vertices[pointNum - 1].y + posY;
+      v2.x = this.vertices[0].x + posX;
+      v2.y = this.vertices[0].y + posY;
+      axes.push(v1.edge(v2).normal());
+      return axes;
+    }
+  }, {
+    key: "project",
+    value: function project(axis) {
+      var _this$transform$posit2 = this.transform.position,
+          posX = _this$transform$posit2.x,
+          posY = _this$transform$posit2.y;
+      var scalars = [],
+          v = new Vector();
+      this.vertices.forEach(function (point) {
+        v.x = point.x + posX;
+        v.y = point.y + posY;
+        scalars.push(v.dot(axis));
+      });
+      return new Projection(Math.min.apply(Math, scalars), Math.max.apply(Math, scalars));
+    }
+  }, {
+    key: "addPoint",
+    value: function addPoint(x, y) {
+      this.vertices.push(new Vertice(x, y));
+    }
+  }, {
+    key: "calcDimensions",
+    value: function calcDimensions() {
+      var vertices = this.vertices,
+          minX = min(vertices, 'x') || 0,
+          minY = min(vertices, 'y') || 0,
+          maxX = max(vertices, 'x') || 0,
+          maxY = max(vertices, 'y') || 0,
+          width = maxX - minX,
+          height = maxY - minY;
+      return {
+        left: minX,
+        top: minY,
+        width: width,
+        height: height
+      };
+    }
+  }, {
+    key: "move",
+    value: function move(dx, dy) {
+      for (var i = 0, point; i < this.vertices.length; i++) {
+        point = this.vertices[i];
+        point.x += dx;
+        point.y += dy;
+      }
+    }
+  }]);
+
+  return Polygon;
+}(Shape);
+
+var Polyline =
+/*#__PURE__*/
+function (_Line) {
+  _inherits(Polyline, _Line);
+
+  function Polyline(points, opts) {
+    var _this;
+
+    _classCallCheck(this, Polyline);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Polyline).call(this, opts));
+    _this.type = 'polyline';
+    _this.vertices = points.map(function (point) {
+      return new Vertice(point[0], point[1]);
+    });
+    return _this;
+  }
+
+  _createClass(Polyline, [{
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Polyline;
+}(Line);
+
+var Rectangle =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Rectangle, _Shape);
+
+  function Rectangle(opts) {
+    var _this;
+
+    _classCallCheck(this, Rectangle);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Rectangle).call(this, opts));
+    _this.type = 'rectangle';
+    _this.width = opts.width || 0;
+    _this.height = opts.height || 0;
+    _this.rx = opts.rx || 0;
+    _this.ry = opts.ry || 0;
+    _this.dimensions = _this.calcDimensions();
+    return _this;
+  }
+
+  _createClass(Rectangle, [{
+    key: "getAxes",
+    value: function getAxes() {}
+  }, {
+    key: "project",
+    value: function project(axis) {// console.log(axis);
+    }
+  }, {
+    key: "addPoint",
+    value: function addPoint(x, y) {
+      console.log(x, y);
+    }
+  }, {
+    key: "calcDimensions",
+    value: function calcDimensions() {
+      return {
+        left: 0,
+        top: 0,
+        width: this.width,
+        height: this.height
+      };
+    }
+  }, {
+    key: "move",
+    value: function move(dx, dy) {
+      console.log(dx, dy);
+    }
+  }]);
+
+  return Rectangle;
+}(Shape);
+
+var Sprite =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Sprite, _Shape);
+
+  function Sprite(opts) {
+    var _this;
+
+    _classCallCheck(this, Sprite);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Sprite).call(this, opts));
+    _this.type = 'sprite';
+    return _this;
+  }
+
+  _createClass(Sprite, [{
+    key: "getAxes",
+    value: function getAxes() {}
+  }, {
+    key: "project",
+    value: function project(axis) {}
+  }, {
+    key: "addPoint",
+    value: function addPoint(x, y) {}
+  }, {
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Sprite;
+}(Shape);
+
+var Text =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Text, _Shape);
+
+  function Text(text, opts) {
+    var _this;
+
+    _classCallCheck(this, Text);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Text).call(this, opts));
+    _this.type = 'text';
+    _this.text = text;
+    _this.font = '18px verdana';
+    _this.fill = '#333';
+    _this.dimensions = _this.calcDimensions();
+    return _this;
+  }
+
+  _createClass(Text, [{
+    key: "getAxes",
+    value: function getAxes() {}
+  }, {
+    key: "project",
+    value: function project(axis) {}
+  }, {
+    key: "addPoint",
+    value: function addPoint(x, y) {}
+  }, {
+    key: "calcDimensions",
+    value: function calcDimensions() {
+      return {
+        left: 0,
+        top: 0,
+        width: 100,
+        height: 20
+      };
+    }
+  }, {
+    key: "move",
+    value: function move(dx, dy) {}
+  }]);
+
+  return Text;
+}(Shape);
+
+var ShapesGroup =
+/*#__PURE__*/
+function () {
+  function ShapesGroup(shapes) {
+    _classCallCheck(this, ShapesGroup);
+
+    this.shapes = shapes;
+    this.dimensions = this.calcDimensions();
+  }
+
+  _createClass(ShapesGroup, [{
+    key: "calcDimensions",
+    value: function calcDimensions() {
+      var shapes = this.shapes,
+          minX = min(shapes, 'dimensions.left') || 0,
+          minY = min(shapes, 'dimensions.top') || 0,
+          maxX = max(shapes, 'dimensions.left') || 0,
+          maxY = max(shapes, 'dimensions.top') || 0,
+          width = max(shapes, 'dimensions.width'),
+          height = max(shapes, 'dimensions.height');
+      return {
+        left: minX,
+        top: minY,
+        width: width,
+        height: height
+      };
+    }
+  }, {
+    key: "collidesWith",
+    value: function collidesWith(otherShape) {// return SAT.detectCollide(this, otherShape);
+    }
+  }, {
+    key: "getAxes",
+    value: function getAxes() {
+      throw 'getAxes() not implemented';
+    }
+  }, {
+    key: "project",
+    value: function project() {
+      throw 'project(axis) not implemented';
+    }
+  }, {
+    key: "move",
+    value: function move() {
+      throw 'move(dx, dy) note implemented';
+    }
+  }]);
+
+  return ShapesGroup;
+}();
+
+var Object$1 =
+/*#__PURE__*/
+function () {
+  function Object(opts) {
+    _classCallCheck(this, Object);
+
+    this.shape = opts.shape;
+
+    if (isArray(this.shape)) {
+      this.shape = new ShapesGroup(this.shape);
+    }
+
+    this.fill = opts.fill !== undefined ? opts.fill : '#83cbff';
+    this.startCb = isFunction(opts.start) ? opts.start : this.start;
+    this.updateCb = isFunction(opts.update) ? opts.update : this.update;
+    this.transform0 = {
+      scaleX: opts.transform.scaleX,
+      skewX: opts.transform.skewX,
+      skewY: opts.transform.skewY,
+      scaleY: opts.transform.scaleY,
+      position: {
+        x: opts.transform.position.x,
+        y: opts.transform.position.y
+      }
+    };
+    this.reset();
+  }
+
+  _createClass(Object, [{
+    key: "start",
+    value: function start() {}
+  }, {
+    key: "update",
+    value: function update() {}
+  }, {
+    key: "reset",
+    value: function reset() {
+      this.shape.transform = this.transform = JSON.parse(JSON.stringify(this.transform0));
+    }
+  }]);
+
+  return Object;
+}();
+
+var CanvasShapeRenderer =
+/*#__PURE__*/
+function () {
+  function CanvasShapeRenderer(context) {
+    _classCallCheck(this, CanvasShapeRenderer);
+
+    this.context = context;
+  }
+
+  _createClass(CanvasShapeRenderer, [{
+    key: "render",
+    value: function render(shape) {
+      var context = this.context;
+
+      switch (shape.type) {
+        case 'polygon':
+          _pathPolygon(context, shape);
+
+          break;
+
+        case 'polyline':
+          _pathPolyline(context, shape);
+
+          break;
+
+        case 'rectangle':
+          _pathRectangle(context, shape);
+
+          break;
+
+        case 'circle':
+          _pathCircle(context, shape);
+
+          break;
+
+        case 'text':
+          _pathText(context, shape);
+
+          break;
+
+        default:
+          break;
+      }
+
+      _setStrokeStyles(context, shape);
+
+      _setFillStyles(context, shape);
+
+      _renderStroke(context, shape);
+
+      _renderFill(context, shape);
+    }
+  }]);
+
+  return CanvasShapeRenderer;
+}();
+
+function _setStrokeStyles(context, shape) {
+  if (shape.stroke) {
+    context.lineWidth = shape.strokeWidth;
+    context.lineCap = shape.strokeLineCap;
+    context.lineDashOffset = shape.strokeDashOffset;
+    context.lineJoin = shape.strokeLineJoin;
+    context.miterLimit = shape.strokeMiterLimit;
+    context.strokeStyle = shape.stroke;
+  }
+}
+
+function _setFillStyles(context, shape) {
+  if (shape.fill) {
+    context.fillStyle = shape.fill;
+  }
+}
+
+function _renderStroke(context, shape) {
+  if (!shape.stroke || shape.strokeWidth === 0) {
+    return;
+  } // _setLineDash(this.context, this.strokeDashArray, this._renderDashedStroke);
+
+
+  context.save();
+  context.stroke();
+  context.restore();
+}
+
+function _renderFill(context) {
+  context.save();
+  context.fill();
+  context.restore();
+}
+
+function _pathPolygon(context, shape) {
+  var points = shape.vertices;
+  var len = points.length;
+
+  if (!len || len === 0 || isNaN(points[len - 1].y)) {
+    return false;
+  }
+
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+
+  for (var i = 0; i < len; i++) {
+    point = points[i];
+    context.lineTo(point.x, point.y);
+  }
+
+  context.closePath();
+}
+
+function _pathPolyline(context, shape) {
+  context.beginPath();
+  context.closePath();
+}
+
+function _pathRectangle(context, shape) {
+  var rx = shape.rx ? Math.min(shape.rx, shape.width / 2) : 0,
+      ry = shape.ry ? Math.min(shape.ry, shape.height / 2) : 0,
+      w = shape.width,
+      h = shape.height,
+      isRounded = rx !== 0 || ry !== 0,
+
+  /* "magic number" for bezier approximations of arcs (http://itc.ktu.lt/itc354/Riskus354.pdf) */
+  k = 1 - 0.5522847498;
+  context.beginPath();
+  context.moveTo(rx, 0);
+  context.lineTo(w - rx, 0);
+  isRounded && context.bezierCurveTo(w - k * rx, 0, w, k * ry, w, ry);
+  context.lineTo(w, h - ry);
+  isRounded && context.bezierCurveTo(w, h - k * ry, w - k * rx, h, w - rx, h);
+  context.lineTo(rx, h);
+  isRounded && context.bezierCurveTo(k * rx, h, 0, h - k * ry, 0, h - ry);
+  context.lineTo(0, ry);
+  isRounded && context.bezierCurveTo(0, k * ry, k * rx, 0, rx, 0);
+  context.closePath();
+}
+
+function _pathCircle(context, shape) {
+  context.beginPath();
+  context.arc(0, 0, shape.radius, 0, 2 * Math.PI);
+  context.closePath();
+}
+
+function _pathText(context, shape) {
+  context.beginPath();
+  context.closePath();
+}
 
 var iMatrix = [1, 0, 0, 1, 0, 0];
 
@@ -560,6 +1403,7 @@ function () {
     this.canvas = _createCanvas();
     this.context = this.canvas.getContext('2d');
     this.viewportTransform = iMatrix;
+    this.shapeRenderer = new CanvasShapeRenderer(this.context);
     this.pixelRatio = _getPixelRatio(this.canvas);
     this.canvas.setAttribute('data-pixel-ratio', this.pixelRatios);
     this.context.scale(this.pixelRatio, this.pixelRatio);
@@ -590,10 +1434,12 @@ function () {
     value: function zoomToPoint(point, value) {
       var before = point,
           vpt = this.viewportTransform.slice(0);
-      point = transformPoint(point, invertTransform(this.viewportTransform));
+      point = _transformPoint(point, _invertTransform(this.viewportTransform));
       vpt[0] = value;
       vpt[3] = value;
-      var after = transformPoint(point, vpt);
+
+      var after = _transformPoint(point, vpt);
+
       vpt[4] += before.x - after.x;
       vpt[5] += before.y - after.y;
       this.setViewportTransform(vpt);
@@ -613,7 +1459,7 @@ function () {
       context.save();
       context.transform(vpt[0] * pixelRatio, vpt[1], vpt[2], vpt[3] * pixelRatio, vpt[4], vpt[5]);
 
-      _renderObjects(this.context, objects);
+      _renderObjects.call(this, this.context, objects);
 
       context.restore();
       Events.trigger('rendered', this.context);
@@ -660,136 +1506,42 @@ function _getPixelRatio(canvas) {
 
 
 function _renderObjects(context, objects) {
+  var _this = this;
+
   objects = objects || [];
   objects.forEach(function (object) {
-    var shapeType = object.shape.type;
+    var transform = object.transform;
+    var _transform$scaleX = transform.scaleX,
+        scaleX = _transform$scaleX === void 0 ? 1 : _transform$scaleX,
+        _transform$skewX = transform.skewX,
+        skewX = _transform$skewX === void 0 ? 0 : _transform$skewX,
+        _transform$skewY = transform.skewY,
+        skewY = _transform$skewY === void 0 ? 0 : _transform$skewY,
+        _transform$scaleY = transform.scaleY,
+        scaleY = _transform$scaleY === void 0 ? 1 : _transform$scaleY;
+    var _transform$position = transform.position,
+        posX = _transform$position.x,
+        posY = _transform$position.y;
+    context.save();
+    context.transform(scaleX, skewX, skewY, scaleY, posX, posY);
 
-    switch (shapeType) {
-      case 'polygon':
-        _renderPolygon(context, object.shape);
-
-        break;
-
-      case 'rectangle':
-        _renderRectangle(context, object.shape);
-
-        break;
-
-      case 'circle':
-        _renderCircle(context, object.shape);
-
-        break;
-
-      case 'text':
-        _renderText(context, object.shape);
-
-        break;
-
-      case 'polyline':
-        _renderPolyline(context, object.shape);
-
-        break;
-
-      default:
-        break;
+    if (object.shape instanceof ShapesGroup) {
+      object.shape.shapes.forEach(function (shape) {
+        _renderShape.call(_this, shape);
+      });
+    } else {
+      _renderShape.call(_this, object.shape);
     }
+
+    context.restore();
   });
 }
 
-function _renderPolygon(context, shape) {
-  var _shape$transform$posi = shape.transform.position,
-      posX = _shape$transform$posi.x,
-      posY = _shape$transform$posi.y;
-  context.beginPath();
-  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
-
-  for (var i = 1; i < shape.vertices.length; i++) {
-    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
-  }
-
-  context.closePath();
-
-  _draw(context, shape);
+function _renderShape(shape) {
+  this.shapeRenderer.render(shape);
 }
 
-function _renderRectangle(context, shape) {
-  var _shape$transform$posi2 = shape.transform.position,
-      posX = _shape$transform$posi2.x,
-      posY = _shape$transform$posi2.y;
-  context.beginPath();
-  context.rect(posX, posY, shape.width, shape.height);
-  context.closePath();
-
-  _draw(context, shape);
-}
-
-function _renderCircle(context, shape) {
-  var _shape$transform$posi3 = shape.transform.position,
-      posX = _shape$transform$posi3.x,
-      posY = _shape$transform$posi3.y;
-  context.beginPath();
-  context.arc(posX, posY, shape.radius, 0, Math.PI * 2, false);
-  context.closePath();
-
-  _draw(context, shape);
-}
-
-function _renderText(context, shape) {
-  var _shape$transform$posi4 = shape.transform.position,
-      posX = _shape$transform$posi4.x,
-      posY = _shape$transform$posi4.y;
-  context.font = shape.font;
-  context.fillStyle = shape.fillStyle;
-  context.strokeStyle = shape.strokeStyle;
-  shape.fill && context.fillText(shape.text, posX, posY);
-  shape.strokeWidth > 0 && context.strokeText(shape.text, posX, posY);
-}
-
-function _renderPolyline(context, shape) {
-  var _shape$transform$posi5 = shape.transform.position,
-      posX = _shape$transform$posi5.x,
-      posY = _shape$transform$posi5.y;
-  context.beginPath();
-  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
-
-  for (var i = 1; i < shape.vertices.length; i++) {
-    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
-  }
-
-  shape.close && context.closePath();
-
-  _drawLine(context, shape);
-} // function _renderFill (context) {
-//   context.save();
-//   context.fill();
-//   context.restore();
-// }
-// function _renderStroke (context) {
-//   context.save();
-//   context.stroke();
-//   context.restore();
-// }
-
-
-function _draw(context, shape) {
-  context.save();
-  context.lineWidth = shape.strokeWidth;
-  context.strokeStyle = shape.strokeStyle;
-  context.fillStyle = shape.fillStyle;
-  shape.strokeWidth > 0 && context.stroke();
-  shape.fill && context.fill();
-  context.restore();
-}
-
-function _drawLine(context, shape) {
-  context.save();
-  context.lineWidth = shape.strokeWidth;
-  context.strokeStyle = shape.strokeStyle;
-  context.stroke();
-  context.restore();
-}
-
-function transformPoint(p, t, ignoreOffset) {
+function _transformPoint(p, t, ignoreOffset) {
   if (ignoreOffset) {
     return new Vertice(t[0] * p.x + t[2] * p.y, t[1] * p.x + t[3] * p.y);
   }
@@ -797,13 +1549,14 @@ function transformPoint(p, t, ignoreOffset) {
   return new Vertice(t[0] * p.x + t[2] * p.y + t[4], t[1] * p.x + t[3] * p.y + t[5]);
 }
 
-function invertTransform(t) {
+function _invertTransform(t) {
   var a = 1 / (t[0] * t[3] - t[1] * t[2]),
       r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
-      o = transformPoint({
+      o = _transformPoint({
     x: t[4],
     y: t[5]
   }, r, true);
+
   r[4] = -o.x;
   r[5] = -o.y;
   return r;
@@ -920,51 +1673,6 @@ Engine.run = function (game) {
   }
 };
 
-var Object$1 =
-/*#__PURE__*/
-function () {
-  function Object(opts) {
-    _classCallCheck(this, Object);
-
-    this.shape = opts.shape;
-    this.fill = opts.fill !== undefined ? opts.fill : '#83cbff';
-    this.startCb = isFunction(opts.start) ? opts.start : this.start;
-    this.updateCb = isFunction(opts.update) ? opts.update : this.update;
-    this.transform0 = {
-      position: {
-        x: opts.transform.position.x || 0,
-        y: opts.transform.position.y || 0
-      }
-    };
-    this.reset();
-  }
-
-  _createClass(Object, [{
-    key: "start",
-    value: function start() {}
-  }, {
-    key: "update",
-    value: function update() {}
-  }, {
-    key: "reset",
-    value: function reset() {
-      this.shape.transform = this.transform = JSON.parse(JSON.stringify(this.transform0));
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var context = this.Scene.context;
-      var position = this.transform.position;
-      var rectW = 40;
-      var rectH = 40;
-      context.fillStyle = this.fill;
-      context.fillRect(position.x, position.y, rectW, rectH);
-    }
-  }]);
-
-  return Object;
-}();
-
 var Input = {
   keyCodeArray: []
 };
@@ -1016,413 +1724,6 @@ Input.getAxis = function (direction) {
 };
 
 Input.create(); // class Input {
-
-var Projection =
-/*#__PURE__*/
-function () {
-  function Projection(min, max) {
-    _classCallCheck(this, Projection);
-
-    if (min > max) {
-      throw 'min value should less than max value';
-    }
-
-    this.min = min;
-    this.max = max;
-  }
-
-  _createClass(Projection, [{
-    key: "overlaps",
-    value: function overlaps(projection) {// return this.max > projection.min && projection.max > this.min;
-    }
-  }]);
-
-  return Projection;
-}();
-
-var SAT = {};
-
-SAT.detectCollide = function (shapeA, shapeB) {
-  return !SAT.separationOnAxes(shapeA, shapeB);
-};
-
-SAT.separationOnAxes = function (shapeA, shapeB) {
-  var axes = shapeA.getAxes().concat(shapeB.getAxes());
-
-  for (var i = 0; i < axes.length; i++) {
-    var axis = axes[i];
-    var projection1 = shapeA.project(axis);
-    var projection2 = shapeB.project(axis);
-
-    if (!projection1.overlaps(projection2)) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-var Shape =
-/*#__PURE__*/
-function () {
-  function Shape(opts) {
-    _classCallCheck(this, Shape);
-
-    opts = opts || {};
-    this.transform = {
-      position: {}
-    };
-    this.fill = opts.fill === undefined ? true : !!opts.fill;
-    this.fillStyle = opts.fillStyle || '#83cbff';
-    this.strokeWidth = opts.strokeWidth || 0;
-    this.strokeStyle = opts.stroke || 'grey';
-  }
-
-  _createClass(Shape, [{
-    key: "collidesWith",
-    value: function collidesWith(otherShape) {
-      return SAT.detectCollide(this, otherShape);
-    }
-  }, {
-    key: "getAxes",
-    value: function getAxes() {
-      throw 'getAxes() not implemented';
-    }
-  }, {
-    key: "project",
-    value: function project() {
-      throw 'project(axis) not implemented';
-    }
-  }, {
-    key: "move",
-    value: function move() {
-      throw 'move(dx, dy) note implemented';
-    }
-  }]);
-
-  return Shape;
-}();
-
-var Vector =
-/*#__PURE__*/
-function () {
-  function Vector(x, y) {
-    _classCallCheck(this, Vector);
-
-    this.x = x;
-    this.y = y;
-  }
-
-  _createClass(Vector, [{
-    key: "magnitude",
-    value: function magnitude() {
-      return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
-    }
-  }, {
-    key: "add",
-    value: function add(vector) {
-      var v = new Vector();
-      v.x = this.x + vector.x;
-      v.y = this.y + vector.y;
-      return v;
-    }
-    /**
-     * Subtracts another vector.
-     * @method sub
-     * @param {vector} vector
-     * @return {vector} A new vector of two vector subtracted
-     */
-
-  }, {
-    key: "sub",
-    value: function sub(vector) {
-      var v = new Vector();
-      v.x = this.x - vector.x;
-      v.y = this.y - vector.y;
-      return v;
-    }
-  }, {
-    key: "dot",
-    value: function dot(vector) {
-      return this.x * vector.x + this.y * vector.y;
-    }
-  }, {
-    key: "edge",
-    value: function edge(vector) {
-      return this.sub(vector);
-    }
-    /**
-     * Returns the perpendicular vector. Set `negate` to true for the perpendicular in the opposite direction.
-     * @method perp
-     * @param {vector} vector
-     * @param {bool} [negate=false]
-     * @return {vector} The perpendicular vector
-     */
-
-  }, {
-    key: "perp",
-    value: function perp(negate) {
-      negate = negate === true ? -1 : 1;
-      var v = new Vector();
-      v.x = negate * -this.y;
-      v.y = negate * this.x;
-      return v;
-    }
-  }, {
-    key: "normalize",
-    value: function normalize() {
-      var v = new Vector(0, 0),
-          m = this.magnitude();
-
-      if (m !== 0) {
-        v.x = this.x / m;
-        v.y = this.y / m;
-      }
-
-      return v;
-    }
-  }, {
-    key: "normal",
-    value: function normal() {
-      var p = this.perp();
-      return p.normalize();
-    }
-  }]);
-
-  return Vector;
-}();
-
-var Polygon =
-/*#__PURE__*/
-function (_Shape) {
-  _inherits(Polygon, _Shape);
-
-  function Polygon(points, opts) {
-    var _this;
-
-    _classCallCheck(this, Polygon);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Polygon).call(this, opts));
-    _this.type = 'polygon';
-    _this.vertices = points.map(function (point) {
-      return new Vertice(point[0], point[1]);
-    });
-    return _this;
-  }
-
-  _createClass(Polygon, [{
-    key: "getAxes",
-    value: function getAxes() {
-      var _this$transform$posit = this.transform.position,
-          posX = _this$transform$posit.x,
-          posY = _this$transform$posit.y;
-      var v1 = new Vector(),
-          v2 = new Vector(),
-          axes = [],
-          pointNum = this.vertices.length;
-
-      for (var i = 0; i < pointNum - 1; i++) {
-        v1.x = this.vertices[i].x + posX;
-        v1.y = this.vertices[i].y + posY;
-        v2.x = this.vertices[i + 1].x + posX;
-        v2.y = this.vertices[i + 1].y + posY;
-        axes.push(v1.edge(v2).normal());
-      }
-
-      v1.x = this.vertices[pointNum - 1].x + posX;
-      v1.y = this.vertices[pointNum - 1].y + posY;
-      v2.x = this.vertices[0].x + posX;
-      v2.y = this.vertices[0].y + posY;
-      axes.push(v1.edge(v2).normal());
-      return axes;
-    }
-  }, {
-    key: "project",
-    value: function project(axis) {
-      var _this$transform$posit2 = this.transform.position,
-          posX = _this$transform$posit2.x,
-          posY = _this$transform$posit2.y;
-      var scalars = [],
-          v = new Vector();
-      this.vertices.forEach(function (point) {
-        v.x = point.x + posX;
-        v.y = point.y + posY;
-        scalars.push(v.dot(axis));
-      });
-      return new Projection(Math.min.apply(Math, scalars), Math.max.apply(Math, scalars));
-    }
-  }, {
-    key: "addPoint",
-    value: function addPoint(x, y) {
-      this.vertices.push(new Vertice(x, y));
-    }
-  }, {
-    key: "move",
-    value: function move(dx, dy) {
-      for (var i = 0, point; i < this.vertices.length; i++) {
-        point = this.vertices[i];
-        point.x += dx;
-        point.y += dy;
-      }
-    }
-  }]);
-
-  return Polygon;
-}(Shape);
-
-var Cirlce =
-/*#__PURE__*/
-function (_Shape) {
-  _inherits(Cirlce, _Shape);
-
-  function Cirlce(radius, opts) {
-    var _this;
-
-    _classCallCheck(this, Cirlce);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Cirlce).call(this, opts));
-    _this.type = 'circle';
-    _this.radius = radius;
-    return _this;
-  }
-
-  _createClass(Cirlce, [{
-    key: "getAxes",
-    value: function getAxes() {}
-  }, {
-    key: "project",
-    value: function project(axis) {}
-  }, {
-    key: "addPoint",
-    value: function addPoint(x, y) {}
-  }, {
-    key: "move",
-    value: function move(dx, dy) {}
-  }]);
-
-  return Cirlce;
-}(Shape);
-
-var Rectangle =
-/*#__PURE__*/
-function (_Shape) {
-  _inherits(Rectangle, _Shape);
-
-  function Rectangle(width, height, opts) {
-    var _this;
-
-    _classCallCheck(this, Rectangle);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Rectangle).call(this, opts));
-    _this.type = 'rectangle';
-    _this.width = width;
-    _this.height = height;
-    return _this;
-  }
-
-  _createClass(Rectangle, [{
-    key: "getAxes",
-    value: function getAxes() {}
-  }, {
-    key: "project",
-    value: function project(axis) {}
-  }, {
-    key: "addPoint",
-    value: function addPoint(x, y) {}
-  }, {
-    key: "move",
-    value: function move(dx, dy) {}
-  }]);
-
-  return Rectangle;
-}(Shape);
-
-var Text =
-/*#__PURE__*/
-function (_Shape) {
-  _inherits(Text, _Shape);
-
-  function Text(text, opts) {
-    var _this;
-
-    _classCallCheck(this, Text);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Text).call(this, opts));
-    _this.type = 'text';
-    _this.text = text;
-    _this.font = '18px verdana';
-    _this.fillStyle = '#333';
-    return _this;
-  }
-
-  _createClass(Text, [{
-    key: "getAxes",
-    value: function getAxes() {}
-  }, {
-    key: "project",
-    value: function project(axis) {}
-  }, {
-    key: "addPoint",
-    value: function addPoint(x, y) {}
-  }, {
-    key: "move",
-    value: function move(dx, dy) {}
-  }]);
-
-  return Text;
-}(Shape);
-
-var Line =
-/*#__PURE__*/
-function () {
-  function Line(opts) {
-    _classCallCheck(this, Line);
-
-    opts = opts || {};
-    this.transform = {
-      position: {}
-    };
-    this.close = !!opts.close;
-    this.style = this.style || 'solid';
-    this.fill = opts.fill === undefined ? true : !!opts.fill;
-    this.fillStyle = opts.fillStyle || '#83cbff';
-    this.strokeWidth = opts.strokeWidth || 0;
-    this.strokeStyle = opts.stroke || 'grey';
-  }
-
-  _createClass(Line, [{
-    key: "move",
-    value: function move(dx, dy) {}
-  }]);
-
-  return Line;
-}();
-
-var Polyline =
-/*#__PURE__*/
-function (_Line) {
-  _inherits(Polyline, _Line);
-
-  function Polyline(points, opts) {
-    var _this;
-
-    _classCallCheck(this, Polyline);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Polyline).call(this, opts));
-    _this.type = 'polyline';
-    _this.vertices = points.map(function (point) {
-      return new Vertice(point[0], point[1]);
-    });
-    return _this;
-  }
-
-  _createClass(Polyline, [{
-    key: "move",
-    value: function move(dx, dy) {}
-  }]);
-
-  return Polyline;
-}(Line);
 
 function insertAfter(el, targetEl) {
   var parent = targetEl.parentNode;
@@ -1484,9 +1785,9 @@ var stopBtn = document.getElementById('stop');
 var pauseBtn = document.getElementById('pause');
 var fastBtn = document.getElementById('fastward');
 var recoverBtn = document.getElementById('recover');
-var player = new Object$1({
+var polygon = new Object$1({
   shape: new Polygon([[0, 0], [60, 0], [60, 20], [30, 40], [10, 40]], {
-    fillStyle: '#009688'
+    fill: '#009688'
   }),
   transform: {
     position: {
@@ -1495,33 +1796,20 @@ var player = new Object$1({
     }
   },
   start: function start() {},
-  update: function update() {
-    var transform = this.transform;
-    var horizontalInput = Input.getAxis('horizontal');
-    var verticalInput = Input.getAxis('vertical');
-    var speed = 100;
-    transform.position.x += speed * Time.deltaTime * horizontalInput;
-    transform.position.y += speed * Time.deltaTime * verticalInput;
-
-    if (this.shape.collidesWith(obstacle1.shape)) {
-      console.log('collide!!');
-    }
+  update: function update() {// let { transform } = this;
+    // const horizontalInput = Input.getAxis('horizontal');
+    // const verticalInput = Input.getAxis('vertical');
+    // const speed = 100;
+    // transform.position.x += speed * Time.deltaTime * horizontalInput;
+    // transform.position.y += speed * Time.deltaTime * verticalInput;
+    // if (this.shape.collidesWith(rectangle.shape)) {
+    //   console.log('collide!!');
+    // }
   }
 });
-var obstacle1 = new Object$1({
-  shape: new Rectangle(600, 20),
-  transform: {
-    position: {
-      x: 0,
-      y: 270
-    }
-  },
-  start: function start() {},
-  update: function update() {}
-});
-var obstacle2 = new Object$1({
+var circle = new Object$1({
   shape: new Cirlce(20, {
-    fillStyle: '#ffc107'
+    fill: '#ffc107'
   }),
   transform: {
     position: {
@@ -1559,10 +1847,42 @@ var polyline = new Object$1({
   start: function start() {},
   update: function update() {}
 });
-myGame.scene.addObject(obstacle1);
-myGame.scene.addObject(obstacle2);
-myGame.scene.addObject(title);
+var player = new Object$1({
+  shape: [new Rectangle({
+    width: 120,
+    height: 40,
+    rx: 2,
+    ry: 2,
+    fill: 'white',
+    stroke: 'grey',
+    strokeWidth: 2
+  }), new Polygon([[60, 0], [60, 20], [30, 40], [10, 40]], {
+    fill: '#009688'
+  }), new Text('这是一个方块', {
+    lineHeight: 10,
+    lineWidth: 100,
+    fontFamily: 'Avenir'
+  })],
+  transform: {
+    position: {
+      x: 360,
+      y: 40
+    }
+  },
+  start: function start() {},
+  update: function update() {
+    var transform = this.transform;
+    var horizontalInput = Input.getAxis('horizontal');
+    var verticalInput = Input.getAxis('vertical');
+    var speed = 100;
+    transform.position.x += speed * Time.deltaTime * horizontalInput;
+    transform.position.y += speed * Time.deltaTime * verticalInput;
+  }
+});
+myGame.scene.addObject(polygon);
 myGame.scene.addObject(polyline);
+myGame.scene.addObject(circle);
+myGame.scene.addObject(title);
 myGame.scene.addObject(player);
 myGame.start();
 startBtn.addEventListener('click', function () {

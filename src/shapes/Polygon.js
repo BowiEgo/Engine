@@ -2,12 +2,14 @@ import Projection from '../geometry/Projection';
 import Shape from './Shape';
 import Vector from '../geometry/Vector';
 import Vertice from '../geometry/Vertice';
+import { min, max } from '../utils/Array';
 
 class Polygon extends Shape {
   constructor (points, opts) {
     super(opts);
     this.type = 'polygon';
     this.vertices = points.map(point => new Vertice(point[0], point[1]));
+    this.dimensions = this.calcDimensions();
   }
 
   getAxes () {
@@ -57,6 +59,23 @@ class Polygon extends Shape {
 
   addPoint (x, y) {
     this.vertices.push(new Vertice(x, y));
+  }
+
+  calcDimensions () {
+    let vertices = this.vertices,
+      minX = min(vertices, 'x') || 0,
+      minY = min(vertices, 'y') || 0,
+      maxX = max(vertices, 'x') || 0,
+      maxY = max(vertices, 'y') || 0,
+      width = (maxX - minX),
+      height = (maxY - minY);
+
+    return {
+      left: minX,
+      top: minY,
+      width: width,
+      height: height
+    };
   }
 
   move (dx, dy) {

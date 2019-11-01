@@ -1,13 +1,15 @@
 /*global ENV*/
 import Engine from './core/Engine';
-import Object from './core/Object';
 import Input from './core/Input';
 import Time from './core/Time';
-import Polygon from './shapes/Polygon';
-import Circle from './shapes/Circle';
-import Rectangle from './shapes/Rectangle';
-import Text from './shapes/Text';
-import Polyline from './shapes/Polyline';
+import Object from './core/Object';
+import {
+  Polygon,
+  Polyline,
+  Circle,
+  Rectangle,
+  Text
+} from './shapes';
 import Performance from './widget/Performance';
 
 // Enable LiveReload
@@ -29,7 +31,7 @@ const pauseBtn = document.getElementById('pause');
 const fastBtn = document.getElementById('fastward');
 const recoverBtn = document.getElementById('recover');
 
-let player = new Object({
+let polygon = new Object({
   shape: new Polygon([
     [0, 0],
     [60, 0],
@@ -37,7 +39,7 @@ let player = new Object({
     [30, 40],
     [10, 40]
   ], {
-    fillStyle: '#009688'
+    fill: '#009688'
   }),
   transform: {
     position: {
@@ -48,38 +50,24 @@ let player = new Object({
   start: function () {
   },
   update: function () {
-    let { transform } = this;
+    // let { transform } = this;
 
-    const horizontalInput = Input.getAxis('horizontal');
-    const verticalInput = Input.getAxis('vertical');
-    const speed = 100;
+    // const horizontalInput = Input.getAxis('horizontal');
+    // const verticalInput = Input.getAxis('vertical');
+    // const speed = 100;
 
-    transform.position.x += speed * Time.deltaTime * horizontalInput;
-    transform.position.y += speed * Time.deltaTime * verticalInput;
+    // transform.position.x += speed * Time.deltaTime * horizontalInput;
+    // transform.position.y += speed * Time.deltaTime * verticalInput;
 
-    if (this.shape.collidesWith(obstacle1.shape)) {
-      console.log('collide!!');
-    }
+    // if (this.shape.collidesWith(rectangle.shape)) {
+    //   console.log('collide!!');
+    // }
   }
 });
 
-let obstacle1 = new Object({
-  shape: new Rectangle(600, 20),
-  transform: {
-    position: {
-      x: 0,
-      y: 270
-    }
-  },
-  start: function () {
-  },
-  update: function () {
-  }
-});
-
-let obstacle2 = new Object({
+let circle = new Object({
   shape: new Circle(20, {
-    fillStyle: '#ffc107'
+    fill: '#ffc107'
   }),
   transform: {
     position: {
@@ -133,10 +121,55 @@ let polyline = new Object({
   }
 });
 
-myGame.scene.addObject(obstacle1);
-myGame.scene.addObject(obstacle2);
-myGame.scene.addObject(title);
+let player = new Object({
+  shape: [
+    new Rectangle({
+      width: 120,
+      height: 40,
+      rx: 2,
+      ry: 2,
+      fill: 'white',
+      stroke: 'grey',
+      strokeWidth: 2
+    }),
+    new Polygon([
+      [60, 0],
+      [60, 20],
+      [30, 40],
+      [10, 40]
+    ], {
+      fill: '#009688'
+    }),
+    new Text('这是一个方块', {
+      lineHeight: 10,
+      lineWidth: 100,
+      fontFamily: 'Avenir'
+    })
+  ],
+  transform: {
+    position: {
+      x: 360,
+      y: 40
+    }
+  },
+  start: function () {
+  },
+  update: function () {
+    let { transform } = this;
+
+    const horizontalInput = Input.getAxis('horizontal');
+    const verticalInput = Input.getAxis('vertical');
+    const speed = 100;
+
+    transform.position.x += speed * Time.deltaTime * horizontalInput;
+    transform.position.y += speed * Time.deltaTime * verticalInput;
+  }
+});
+
+myGame.scene.addObject(polygon);
 myGame.scene.addObject(polyline);
+myGame.scene.addObject(circle);
+myGame.scene.addObject(title);
 myGame.scene.addObject(player);
 
 myGame.start();

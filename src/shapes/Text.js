@@ -6,7 +6,8 @@ class Text extends Shape {
     this.type = 'text';
     this.text = text;
     this.font = '18px verdana';
-    this.fillStyle = '#333';
+    this.fill = '#333';
+    this.dimensions = this.calcDimensions();
   }
 
   getAxes () {
@@ -16,6 +17,15 @@ class Text extends Shape {
   }
 
   addPoint (x, y) {
+  }
+
+  calcDimensions () {
+    return {
+      left: 0,
+      top: 0,
+      width: 100,
+      height: 20
+    };
   }
 
   move (dx, dy) {

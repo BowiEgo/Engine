@@ -1,5 +1,6 @@
-import Renderer from './Renderer'
-import CanvasRenderer from './CanvasRenderer'
+import Object from '../core/Object';
+import Renderer from './Renderer';
+import CanvasRenderer from './CanvasRenderer';
 
 export{
   Renderer,

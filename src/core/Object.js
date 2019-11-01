@@ -1,16 +1,24 @@
-import { isFunction } from '../utils/Common';
+import { isArray, isFunction } from '../utils/Common';
+import { ShapesGroup } from '../shapes';
 
 export default class Object {
   constructor (opts) {
     this.shape = opts.shape;
+    if (isArray(this.shape)) {
+      this.shape = new ShapesGroup(this.shape);
+    }
     this.fill = opts.fill !== undefined ? opts.fill : '#83cbff';
     this.startCb = isFunction(opts.start) ? opts.start : this.start;
     this.updateCb = isFunction(opts.update) ? opts.update : this.update;
     this.transform0 = {
+      scaleX: opts.transform.scaleX,
+      skewX: opts.transform.skewX,
+      skewY: opts.transform.skewY,
+      scaleY: opts.transform.scaleY,
       position: {
-        x: opts.transform.position.x || 0,
-        y: opts.transform.position.y || 0
-      }
+        x: opts.transform.position.x,
+        y: opts.transform.position.y
+      },
     }
 
     this.reset();
@@ -24,15 +32,5 @@ export default class Object {
 
   reset () {
     this.shape.transform = this.transform = JSON.parse(JSON.stringify(this.transform0));
-  }
-
-  render () {
-    const { context } = this.Scene;
-    const { position } = this.transform;
-    const rectW = 40;
-    const rectH = 40;
-
-    context.fillStyle = this.fill;
-    context.fillRect(position.x, position.y, rectW, rectH);
   }
 }

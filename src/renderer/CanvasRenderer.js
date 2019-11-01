@@ -1,5 +1,7 @@
 import Events from '../core/Events';
-import Point from '../geometry/Vertice'
+import Point from '../geometry/Vertice';
+import CanvasShapeRenderer from './CanvasShapeRenderer';
+import { ShapesGroup } from '../shapes';
 
 const iMatrix = [1, 0, 0, 1, 0, 0];
 
@@ -10,6 +12,7 @@ export default class CanvasRenderer {
     this.canvas = _createCanvas();
     this.context = this.canvas.getContext('2d');
     this.viewportTransform = iMatrix;
+    this.shapeRenderer = new CanvasShapeRenderer(this.context);
 
     this.pixelRatio = _getPixelRatio(this.canvas);
     this.canvas.setAttribute('data-pixel-ratio', this.pixelRatios);
@@ -44,10 +47,10 @@ export default class CanvasRenderer {
 
   zoomToPoint (point, value) {
     var before = point, vpt = this.viewportTransform.slice(0);
-    point = transformPoint(point, invertTransform(this.viewportTransform));
+    point = _transformPoint(point, _invertTransform(this.viewportTransform));
     vpt[0] = value;
     vpt[3] = value;
-    var after = transformPoint(point, vpt);
+    var after = _transformPoint(point, vpt);
     vpt[4] += before.x - after.x;
     vpt[5] += before.y - after.y;
 
@@ -71,7 +74,7 @@ export default class CanvasRenderer {
       vpt[4],
       vpt[5]
     );
-    _renderObjects(this.context, objects);
+    _renderObjects.call(this, this.context, objects);
     context.restore();
     Events.trigger('rendered', this.context);
   }
@@ -106,118 +109,32 @@ function _getPixelRatio (canvas) {
  */
 function _renderObjects (context, objects) {
   objects = objects || [];
-  objects.forEach(object => {
-    const shapeType = object.shape.type;
 
-    switch (shapeType) {
-      case 'polygon':
-        _renderPolygon(context, object.shape);
-        break;
-      case 'rectangle':
-        _renderRectangle(context, object.shape);
-        break;
-      case 'circle':
-        _renderCircle(context, object.shape);
-        break;
-      case 'text':
-        _renderText(context, object.shape);
-        break;
-      case 'polyline':
-        _renderPolyline(context, object.shape);
-        break;
-      default:
-        break;
+  objects.forEach(object => {
+    const transform = object.transform;
+    const { scaleX = 1, skewX = 0, skewY = 0, scaleY = 1} = transform;
+    const { x: posX, y: posY } = transform.position;
+
+    context.save();
+    context.transform(scaleX, skewX, skewY, scaleY, posX, posY);
+
+    if (object.shape instanceof ShapesGroup) {
+      object.shape.shapes.forEach(shape => {
+        _renderShape.call(this, shape);
+      })
+    } else {
+      _renderShape.call(this, object.shape);
     }
+
+    context.restore();
   })
 }
 
-function _renderPolygon (context, shape) {
-  const { x: posX, y: posY } = shape.transform.position;
-
-  context.beginPath();
-  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
-  for (let i = 1; i < shape.vertices.length; i++) {
-    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
-  }
-  context.closePath();
-
-  _draw(context, shape);
+function _renderShape (shape) {
+  this.shapeRenderer.render(shape);
 }
 
-function _renderRectangle (context, shape) {
-  const { x: posX, y: posY } = shape.transform.position;
-
-  context.beginPath();
-  context.rect(posX, posY, shape.width, shape.height);
-  context.closePath();
-
-  _draw(context, shape);
-}
-
-function _renderCircle (context, shape) {
-  const { x: posX, y: posY } = shape.transform.position;
-
-  context.beginPath();
-  context.arc(posX, posY, shape.radius, 0, Math.PI * 2, false);
-  context.closePath();
-
-  _draw(context, shape);
-}
-
-function _renderText (context, shape) {
-  const { x: posX, y: posY } = shape.transform.position;
-
-  context.font = shape.font;
-  context.fillStyle = shape.fillStyle;
-  context.strokeStyle = shape.strokeStyle;
-  shape.fill && context.fillText(shape.text, posX, posY);
-  shape.strokeWidth > 0 && context.strokeText(shape.text, posX, posY);
-}
-
-function _renderPolyline (context, shape) {
-  const { x: posX, y: posY } = shape.transform.position;
-
-  context.beginPath();
-  context.moveTo(shape.vertices[0].x + posX, shape.vertices[0].y + posY);
-  for (let i = 1; i < shape.vertices.length; i++) {
-    context.lineTo(shape.vertices[i].x + posX, shape.vertices[i].y + posY);
-  }
-  shape.close && context.closePath();
-
-  _drawLine(context, shape);
-}
-
-// function _renderFill (context) {
-//   context.save();
-//   context.fill();
-//   context.restore();
-// }
-
-// function _renderStroke (context) {
-//   context.save();
-//   context.stroke();
-//   context.restore();
-// }
-
-function _draw (context, shape) {
-  context.save();
-  context.lineWidth = shape.strokeWidth;
-  context.strokeStyle = shape.strokeStyle;
-  context.fillStyle = shape.fillStyle;
-  shape.strokeWidth > 0 && context.stroke();
-  shape.fill && context.fill();
-  context.restore();
-}
-
-function _drawLine (context, shape) {
-  context.save();
-  context.lineWidth = shape.strokeWidth;
-  context.strokeStyle = shape.strokeStyle;
-  context.stroke();
-  context.restore();
-}
-
-function transformPoint (p, t, ignoreOffset) {
+function _transformPoint (p, t, ignoreOffset) {
   if (ignoreOffset) {
     return new Point(
       t[0] * p.x + t[2] * p.y,
@@ -230,10 +147,10 @@ function transformPoint (p, t, ignoreOffset) {
   );
 }
 
-function invertTransform (t) {
+function _invertTransform (t) {
   var a = 1 / (t[0] * t[3] - t[1] * t[2]),
     r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
-    o = transformPoint({ x: t[4], y: t[5] }, r, true);
+    o = _transformPoint({ x: t[4], y: t[5] }, r, true);
   r[4] = -o.x;
   r[5] = -o.y;
   return r;
