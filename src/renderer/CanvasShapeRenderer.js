@@ -67,7 +67,8 @@ function _renderFill (context) {
 }
 
 function _pathPolygon(context, shape) {
-  let points = shape.vertices;
+  let points = shape.vertices,
+    point;
   let len = points.length;
 
   if (!len || len === 0 || isNaN(points[len - 1].y)) {
@@ -81,12 +82,12 @@ function _pathPolygon(context, shape) {
     context.lineTo(point.x, point.y);
   }
   context.closePath();
-};
+}
 
 function _pathPolyline(context, shape) {
   context.beginPath();
   context.closePath();
-};
+}
 
 function _pathRectangle(context, shape) {
   let rx = shape.rx ? Math.min(shape.rx, shape.width / 2) : 0,
@@ -113,16 +114,25 @@ function _pathRectangle(context, shape) {
   isRounded && context.bezierCurveTo(0, k * ry, k * rx, 0, rx, 0);
 
   context.closePath();
-};
+}
 
 function _pathCircle(context, shape) {
   context.beginPath();
   context.arc(0, 0, shape.radius, 0, 2 * Math.PI);
   context.closePath();
-};
+}
 
 function _pathText(context, shape) {
   context.beginPath();
-  context.closePath();
-};
 
+  shape.updateText();
+  // const lineHeight = measured.lineHeight;
+  // let linePositionX, linePositionY;
+
+  // for (let i = 0, len = lines.length; i++) {
+  //   linePositionX = 0;
+  //   linePositionY = i * lineHeight;
+  // }
+  
+  context.closePath();
+}

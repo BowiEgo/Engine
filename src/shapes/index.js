@@ -6,7 +6,7 @@ import Polygon from './Polygon';
 import Polyline from './Polyline';
 import Rectangle from './Rectangle';
 import Sprite from './Sprite';
-import Text from './Text';
+import Text from './Text/Text';
 
 import Shape from './Shape';
 import ShapesGroup from './ShapesGroup';

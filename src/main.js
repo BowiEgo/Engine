@@ -140,10 +140,21 @@ let player = new Object({
     ], {
       fill: '#009688'
     }),
-    new Text('这是一个方块', {
+    new Text('这是\n一个方块\n一个圆圆的方块', {
+      textAlign: 'right',
+      textBackgroundColor: 'rgb(0,200,0)',
       lineHeight: 10,
       lineWidth: 100,
-      fontFamily: 'Avenir'
+      fontStyle: 'italic',
+      fontFamily: 'Avenir',
+      fontWeight: 'bold',
+      underline: true,
+      linethrough: true,
+      overline: true,
+      shadow: 'rgba(0,0,0,0.3) 5px 5px 5px',
+      stroke: '#ff1318',
+      strokeWidth: 1,
+      wordWrap: true
     })
   ],
   transform: {

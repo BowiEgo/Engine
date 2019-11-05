@@ -1097,6 +1097,988 @@ function (_Shape) {
   return Sprite;
 }(Shape);
 
+/**
+ * Constants that define the type of gradient on text.
+ *
+ * @static
+ * @constant
+ * @type {object}
+ * @property {number} LINEAR_VERTICAL Vertical gradient
+ * @property {number} LINEAR_HORIZONTAL Linear gradient
+ */
+var TEXT_GRADIENT = {
+  LINEAR_VERTICAL: 0,
+  LINEAR_HORIZONTAL: 1
+};
+
+/**
+ * Converts a hexadecimal color number to a string.
+ * @param {number} hex - Number in hex (e.g., `0xffffff`)
+ * @return {string} The string color (e.g., `"#ffffff"`).
+ */
+function hex2string(hex) {
+  hex = hex.toString(16);
+  hex = '000000'.substr(0, 6 - hex.length) + hex;
+  return "#".concat(hex);
+}
+
+var defaultStyle = {
+  align: 'left',
+  breakWords: false,
+  dropShadow: false,
+  dropShadowAlpha: 1,
+  dropShadowAngle: Math.PI / 6,
+  dropShadowBlur: 0,
+  dropShadowColor: 'black',
+  dropShadowDistance: 5,
+  fill: 'black',
+  fillGradientType: TEXT_GRADIENT.LINEAR_VERTICAL,
+  fillGradientStops: [],
+  fontFamily: 'Arial',
+  fontSize: 26,
+  fontStyle: 'normal',
+  fontVariant: 'normal',
+  fontWeight: 'normal',
+  letterSpacing: 0,
+  lineHeight: 0,
+  lineJoin: 'miter',
+  miterLimit: 10,
+  padding: 0,
+  stroke: 'black',
+  strokeThickness: 0,
+  textBaseline: 'alphabetic',
+  trim: false,
+  whiteSpace: 'pre',
+  wordWrap: false,
+  wordWrapWidth: 100,
+  leading: 0
+};
+var genericFontFamilies = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui'];
+var TextStyle =
+/*#__PURE__*/
+function () {
+  function TextStyle(style) {
+    _classCallCheck(this, TextStyle);
+
+    this.styleID = 0;
+    this.reset();
+    deepCopyProperties(this, style, style);
+  }
+
+  _createClass(TextStyle, [{
+    key: "reset",
+    value: function reset() {
+      deepCopyProperties(this, defaultStyle, defaultStyle);
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      var clonedProperties = {};
+      deepCopyProperties(clonedProperties, this, defaultStyle);
+      return new TextStyle(clonedProperties);
+    }
+  }, {
+    key: "toFontString",
+    value: function toFontString() {
+      var fontSizeString = typeof this.fontSize === 'number' ? "".concat(this.fontSize, "px") : this.fontSize;
+      var fontFamilies = this.fontFamily;
+
+      if (!Array.isArray(this.fontFamily)) {
+        fontFamilies = this.fontFamily.split(',');
+      }
+
+      for (var i = fontFamilies.length - 1; i >= 0; i--) {
+        // Trim any extra white-space
+        var fontFamily = fontFamilies[i].trim(); // Check if font already contains strings
+
+        if (!/([\"\'])[^\'\"]+\1/.test(fontFamily) && genericFontFamilies.indexOf(fontFamily) < 0) {
+          fontFamily = "\"".concat(fontFamily, "\"");
+        }
+
+        fontFamilies[i] = fontFamily;
+      }
+
+      return "".concat(this.fontStyle, " ").concat(this.fontVariant, " ").concat(this.fontWeight, " ").concat(fontSizeString, " ").concat(fontFamilies.join(','));
+    }
+  }, {
+    key: "align",
+    get: function get() {
+      return this._align;
+    },
+    set: function set(align) {
+      if (this._align !== align) {
+        this._align = align;
+        this.styleID++;
+      }
+    }
+    /**
+     * Indicates if lines can be wrapped within words, it needs wordWrap to be set to true
+     *
+     * @member {boolean}
+     */
+
+  }, {
+    key: "breakWords",
+    get: function get() {
+      return this._breakWords;
+    },
+    set: function set(breakWords) {
+      if (this._breakWords !== breakWords) {
+        this._breakWords = breakWords;
+        this.styleID++;
+      }
+    }
+    /**
+     * Set a drop shadow for the text
+     *
+     * @member {boolean}
+     */
+
+  }, {
+    key: "dropShadow",
+    get: function get() {
+      return this._dropShadow;
+    },
+    set: function set(dropShadow) {
+      if (this._dropShadow !== dropShadow) {
+        this._dropShadow = dropShadow;
+        this.styleID++;
+      }
+    }
+    /**
+     * Set alpha for the drop shadow
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "dropShadowAlpha",
+    get: function get() {
+      return this._dropShadowAlpha;
+    },
+    set: function set(dropShadowAlpha) {
+      if (this._dropShadowAlpha !== dropShadowAlpha) {
+        this._dropShadowAlpha = dropShadowAlpha;
+        this.styleID++;
+      }
+    }
+    /**
+     * Set a angle of the drop shadow
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "dropShadowAngle",
+    get: function get() {
+      return this._dropShadowAngle;
+    },
+    set: function set(dropShadowAngle) {
+      if (this._dropShadowAngle !== dropShadowAngle) {
+        this._dropShadowAngle = dropShadowAngle;
+        this.styleID++;
+      }
+    }
+    /**
+     * Set a shadow blur radius
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "dropShadowBlur",
+    get: function get() {
+      return this._dropShadowBlur;
+    },
+    set: function set(dropShadowBlur) {
+      if (this._dropShadowBlur !== dropShadowBlur) {
+        this._dropShadowBlur = dropShadowBlur;
+        this.styleID++;
+      }
+    }
+    /**
+     * A fill style to be used on the dropshadow e.g 'red', '#00FF00'
+     *
+     * @member {string|number}
+     */
+
+  }, {
+    key: "dropShadowColor",
+    get: function get() {
+      return this._dropShadowColor;
+    },
+    set: function set(dropShadowColor) {
+      var outputColor = getColor(dropShadowColor);
+
+      if (this._dropShadowColor !== outputColor) {
+        this._dropShadowColor = outputColor;
+        this.styleID++;
+      }
+    }
+    /**
+     * Set a distance of the drop shadow
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "dropShadowDistance",
+    get: function get() {
+      return this._dropShadowDistance;
+    },
+    set: function set(dropShadowDistance) {
+      if (this._dropShadowDistance !== dropShadowDistance) {
+        this._dropShadowDistance = dropShadowDistance;
+        this.styleID++;
+      }
+    }
+    /**
+     * A canvas fillstyle that will be used on the text e.g 'red', '#00FF00'.
+     * Can be an array to create a gradient eg ['#000000','#FFFFFF']
+     * {@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle|MDN}
+     *
+     * @member {string|string[]|number|number[]|CanvasGradient|CanvasPattern}
+     */
+
+  }, {
+    key: "fill",
+    get: function get() {
+      return this._fill;
+    },
+    set: function set(fill) {
+      var outputColor = getColor(fill);
+
+      if (this._fill !== outputColor) {
+        this._fill = outputColor;
+        this.styleID++;
+      }
+    }
+    /**
+     * If fill is an array of colours to create a gradient, this can change the type/direction of the gradient.
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "fillGradientType",
+    get: function get() {
+      return this._fillGradientType;
+    },
+    set: function set(fillGradientType) {
+      if (this._fillGradientType !== fillGradientType) {
+        this._fillGradientType = fillGradientType;
+        this.styleID++;
+      }
+    }
+    /**
+     * If fill is an array of colours to create a gradient, this array can set the stop points
+     * (numbers between 0 and 1) for the color, overriding the default behaviour of evenly spacing them.
+     *
+     * @member {number[]}
+     */
+
+  }, {
+    key: "fillGradientStops",
+    get: function get() {
+      return this._fillGradientStops;
+    },
+    set: function set(fillGradientStops) {
+      if (!areArraysEqual(this._fillGradientStops, fillGradientStops)) {
+        this._fillGradientStops = fillGradientStops;
+        this.styleID++;
+      }
+    }
+    /**
+     * The font family
+     *
+     * @member {string|string[]}
+     */
+
+  }, {
+    key: "fontFamily",
+    get: function get() {
+      return this._fontFamily;
+    },
+    set: function set(fontFamily) {
+      if (this.fontFamily !== fontFamily) {
+        this._fontFamily = fontFamily;
+        this.styleID++;
+      }
+    }
+    /**
+     * The font size
+     * (as a number it converts to px, but as a string, equivalents are '26px','20pt','160%' or '1.6em')
+     *
+     * @member {number|string}
+     */
+
+  }, {
+    key: "fontSize",
+    get: function get() {
+      return this._fontSize;
+    },
+    set: function set(fontSize) {
+      if (this._fontSize !== fontSize) {
+        this._fontSize = fontSize;
+        this.styleID++;
+      }
+    }
+    /**
+     * The font style
+     * ('normal', 'italic' or 'oblique')
+     *
+     * @member {string}
+     */
+
+  }, {
+    key: "fontStyle",
+    get: function get() {
+      return this._fontStyle;
+    },
+    set: function set(fontStyle) {
+      if (this._fontStyle !== fontStyle) {
+        this._fontStyle = fontStyle;
+        this.styleID++;
+      }
+    }
+    /**
+     * The font variant
+     * ('normal' or 'small-caps')
+     *
+     * @member {string}
+     */
+
+  }, {
+    key: "fontVariant",
+    get: function get() {
+      return this._fontVariant;
+    },
+    set: function set(fontVariant) {
+      if (this._fontVariant !== fontVariant) {
+        this._fontVariant = fontVariant;
+        this.styleID++;
+      }
+    }
+    /**
+     * The font weight
+     * ('normal', 'bold', 'bolder', 'lighter' and '100', '200', '300', '400', '500', '600', '700', 800' or '900')
+     *
+     * @member {string}
+     */
+
+  }, {
+    key: "fontWeight",
+    get: function get() {
+      return this._fontWeight;
+    },
+    set: function set(fontWeight) {
+      if (this._fontWeight !== fontWeight) {
+        this._fontWeight = fontWeight;
+        this.styleID++;
+      }
+    }
+    /**
+     * The amount of spacing between letters, default is 0
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "letterSpacing",
+    get: function get() {
+      return this._letterSpacing;
+    },
+    set: function set(letterSpacing) {
+      if (this._letterSpacing !== letterSpacing) {
+        this._letterSpacing = letterSpacing;
+        this.styleID++;
+      }
+    }
+    /**
+     * The line height, a number that represents the vertical space that a letter uses
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "lineHeight",
+    get: function get() {
+      return this._lineHeight;
+    },
+    set: function set(lineHeight) {
+      if (this._lineHeight !== lineHeight) {
+        this._lineHeight = lineHeight;
+        this.styleID++;
+      }
+    }
+    /**
+     * The space between lines
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "leading",
+    get: function get() {
+      return this._leading;
+    },
+    set: function set(leading) {
+      if (this._leading !== leading) {
+        this._leading = leading;
+        this.styleID++;
+      }
+    }
+    /**
+     * The lineJoin property sets the type of corner created, it can resolve spiked text issues.
+     * Default is 'miter' (creates a sharp corner).
+     *
+     * @member {string}
+     */
+
+  }, {
+    key: "lineJoin",
+    get: function get() {
+      return this._lineJoin;
+    },
+    set: function set(lineJoin) {
+      if (this._lineJoin !== lineJoin) {
+        this._lineJoin = lineJoin;
+        this.styleID++;
+      }
+    }
+    /**
+     * The miter limit to use when using the 'miter' lineJoin mode
+     * This can reduce or increase the spikiness of rendered text.
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "miterLimit",
+    get: function get() {
+      return this._miterLimit;
+    },
+    set: function set(miterLimit) {
+      if (this._miterLimit !== miterLimit) {
+        this._miterLimit = miterLimit;
+        this.styleID++;
+      }
+    }
+    /**
+     * Occasionally some fonts are cropped. Adding some padding will prevent this from happening
+     * by adding padding to all sides of the text.
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "padding",
+    get: function get() {
+      return this._padding;
+    },
+    set: function set(padding) {
+      if (this._padding !== padding) {
+        this._padding = padding;
+        this.styleID++;
+      }
+    }
+    /**
+     * A canvas fillstyle that will be used on the text stroke
+     * e.g 'blue', '#FCFF00'
+     *
+     * @member {string|number}
+     */
+
+  }, {
+    key: "stroke",
+    get: function get() {
+      return this._stroke;
+    },
+    set: function set(stroke) {
+      var outputColor = getColor(stroke);
+
+      if (this._stroke !== outputColor) {
+        this._stroke = outputColor;
+        this.styleID++;
+      }
+    }
+    /**
+     * A number that represents the thickness of the stroke.
+     * Default is 0 (no stroke)
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "strokeThickness",
+    get: function get() {
+      return this._strokeThickness;
+    },
+    set: function set(strokeThickness) {
+      if (this._strokeThickness !== strokeThickness) {
+        this._strokeThickness = strokeThickness;
+        this.styleID++;
+      }
+    }
+    /**
+     * The baseline of the text that is rendered.
+     *
+     * @member {string}
+     */
+
+  }, {
+    key: "textBaseline",
+    get: function get() {
+      return this._textBaseline;
+    },
+    set: function set(textBaseline) {
+      if (this._textBaseline !== textBaseline) {
+        this._textBaseline = textBaseline;
+        this.styleID++;
+      }
+    }
+    /**
+     * Trim transparent borders
+     *
+     * @member {boolean}
+     */
+
+  }, {
+    key: "trim",
+    get: function get() {
+      return this._trim;
+    },
+    set: function set(trim) {
+      if (this._trim !== trim) {
+        this._trim = trim;
+        this.styleID++;
+      }
+    }
+    /**
+     * How newlines and spaces should be handled.
+     * Default is 'pre' (preserve, preserve).
+     *
+     *  value       | New lines     |   Spaces
+     *  ---         | ---           |   ---
+     * 'normal'     | Collapse      |   Collapse
+     * 'pre'        | Preserve      |   Preserve
+     * 'pre-line'   | Preserve      |   Collapse
+     *
+     * @member {string}
+     */
+
+  }, {
+    key: "whiteSpace",
+    get: function get() {
+      return this._whiteSpace;
+    },
+    set: function set(whiteSpace) {
+      if (this._whiteSpace !== whiteSpace) {
+        this._whiteSpace = whiteSpace;
+        this.styleID++;
+      }
+    }
+  }, {
+    key: "wordWrap",
+    get: function get() {
+      return this._wordWrap;
+    },
+    set: function set(wordWrap) {
+      if (this._wordWrap !== wordWrap) {
+        this._wordWrap = wordWrap;
+        this.styleID++;
+      }
+    }
+    /**
+     * The width at which text will wrap, it needs wordWrap to be set to true
+     *
+     * @member {number}
+     */
+
+  }, {
+    key: "wordWrapWidth",
+    get: function get() {
+      return this._wordWrapWidth;
+    },
+    set: function set(wordWrapWidth) {
+      if (this._wordWrapWidth !== wordWrapWidth) {
+        this._wordWrapWidth = wordWrapWidth;
+        this.styleID++;
+      }
+    }
+  }]);
+
+  return TextStyle;
+}();
+/**
+ * Utility function to convert hexadecimal colors to strings, and simply return the color if it's a string.
+ * @private
+ * @param {number|number[]} color
+ * @return {string} The color as a string.
+ */
+
+function getSingleColor(color) {
+  if (typeof color === 'number') {
+    return hex2string(color);
+  } else if (typeof color === 'string') {
+    if (color.indexOf('0x') === 0) {
+      color = color.replace('0x', '#');
+    }
+  }
+
+  return color;
+}
+/**
+ * Utility function to convert hexadecimal colors to strings, and simply return the color if it's a string.
+ * This version can also convert array of colors
+ * @private
+ * @param {number|number[]} color
+ * @return {string} The color as a string.
+ */
+
+
+function getColor(color) {
+  if (!Array.isArray(color)) {
+    return getSingleColor(color);
+  } else {
+    for (var i = 0; i < color.length; ++i) {
+      color[i] = getSingleColor(color[i]);
+    }
+
+    return color;
+  }
+}
+/**
+ * Utility function to convert hexadecimal colors to strings, and simply return the color if it's a string.
+ * This version can also convert array of colors
+ * @private
+ * @param {Array} array1 First array to compare
+ * @param {Array} array2 Second array to compare
+ * @return {boolean} Do the arrays contain the same values in the same order
+ */
+
+
+function areArraysEqual(array1, array2) {
+  if (!Array.isArray(array1) || !Array.isArray(array2)) {
+    return false;
+  }
+
+  if (array1.length !== array2.length) {
+    return false;
+  }
+
+  for (var i = 0; i < array1.length; ++i) {
+    if (array1[i] !== array2[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+/**
+ * Utility function to ensure that object properties are copied by value, and not by reference
+ * @private
+ * @param {Object} target Target object to copy properties into
+ * @param {Object} source Source object for the properties to copy
+ * @param {string} propertyObj Object containing properties names we want to loop over
+ */
+
+
+function deepCopyProperties(target, source, propertyObj) {
+  for (var prop in propertyObj) {
+    if (Array.isArray(source[prop])) {
+      target[prop] = source[prop].slice();
+    } else {
+      target[prop] = source[prop];
+    }
+  }
+}
+
+var TextMetrics =
+/*#__PURE__*/
+function () {
+  function TextMetrics(text, style, width, height, lines, lineWidths, lineHeight, maxLineWidth, fontProperties) {
+    _classCallCheck(this, TextMetrics);
+
+    this.text = text;
+    this.style = style;
+    this.width = width;
+    this.height = height;
+    this.lines = lines; // {string[]}
+
+    this.lineWidths = lineWidths; // {number[]}
+
+    this.lineHeight = lineHeight;
+    this.maxLineWidth = maxLineWidth;
+    this.fontProperties = fontProperties;
+  }
+
+  _createClass(TextMetrics, null, [{
+    key: "measureText",
+    value: function measureText(text, style, wordWrap) {
+      wordWrap = wordWrap === undefined || wordWrap === null ? style.wordWrap : wordWrap;
+      var font = style.toFontString();
+      var fontProperties = TextMetrics.measureFont(font);
+
+      if (fontProperties.fontSize === 0) {
+        fontProperties.fontSize = style.fontSize;
+        fontProperties.ascent = style.fontSize;
+      }
+
+      var context = TextMetrics._context;
+      context.font = font;
+      var outputText = wordWrap ? TextMetrics.wordWrap(text, style) : text;
+    }
+    /**
+     * Calculates the ascent, descent and fontSize of a given font-style
+     * http://en.wikipedia.org/wiki/Typeface
+     *
+     * @static
+     * @param {string} font - String representing the style of the font
+     * @return {FontMetrics} Font properties object
+     */
+
+  }, {
+    key: "measureFont",
+    value: function measureFont(font) {
+      if (TextMetrics._fonts[font]) {
+        return TextMetrics._fonts[font];
+      }
+
+      var properties = {};
+      var canvas = TextMetrics._canvas;
+      var context = TextMetrics._context;
+      context.font = font;
+      var metricsString = TextMetrics.METRICS_STRING + TextMetrics.BASELINE_SYMBOL;
+      var width = Math.ceil(context.measureText(metricsString).width);
+      var baseline = Math.ceil(context.measureText(TextMetrics.BASELINE_SYMBOL).width);
+      var height = 2 * baseline;
+      baseline = baseline * TextMetrics.BASELINE_MULTIPLIER | 0;
+      canvas.width = width;
+      canvas.height = height;
+      context.fillStyle = '#f00';
+      context.fillRect(0, 0, width, height);
+      context.font = font;
+      context.textBaseline = 'alphabetic';
+      context.fillStyle = '#000';
+      context.fillText(metricsString, 0, baseline);
+      var imagedata = context.getImageData(0, 0, width, height).data;
+      var pixels = imagedata.length;
+      var line = width * 4;
+      var i = 0;
+      var idx = 0;
+      var stop = false;
+
+      for (i = 0; i < baseline; ++i) {
+        for (var j = 0; j < line; j += 4) {
+          if (imagedata[idx + j] !== 255) {
+            stop = true;
+            break;
+          }
+        }
+
+        if (!stop) {
+          idx += line;
+        } else {
+          break;
+        }
+      }
+
+      properties.ascent = baseline - i;
+      idx = pixels - line;
+      stop = false;
+
+      for (i = height; i > baseline; --i) {
+        for (var _j = 0; _j < line; _j += 4) {
+          if (imagedata[idx + _j] !== 255) {
+            stop = true;
+            break;
+          }
+        }
+
+        if (!stop) {
+          idx -= line;
+        } else {
+          break;
+        }
+      }
+
+      properties.descent = i - baseline;
+      properties.fontSize = properties.ascent + properties.descent;
+      TextMetrics._fonts[font] = properties;
+      return properties;
+    }
+    /**
+     * Applies newlines to a string to have it optimally fit into the horizontal
+     * bounds set by the Text object's wordWrapWidth property.
+     *
+     * @private
+     * @param {string} text - String to apply word wrapping to
+     * @param {TextStyle} style - the style to use when wrapping
+     * @param {HTMLCanvasElement} [canvas] - optional specification of the canvas to use for measuring.
+     * @return {string} New string with new lines applied where required
+     */
+
+  }, {
+    key: "wordWrap",
+    value: function wordWrap(text, style) {
+      var letterSpacing = style.letterSpacing,
+          whiteSpace = style.whiteSpace; // How to handle whitespaces
+
+      var collapseSpaces = TextMetrics.collapseSpaces(whiteSpace);
+      var collapseNewlines = TextMetrics.collapseNewlines(whiteSpace); // whether or not spaces may be added to the beginning of lines
+      // t_h_i_s_' '_i_s_' '_a_n_' '_e_x_a_m_p_l_e_' '_!
+      // so for convenience the above needs to be compared to width + 1 extra letterSpace
+      // t_h_i_s_' '_i_s_' '_a_n_' '_e_x_a_m_p_l_e_' '_!_
+      // ________________________________________________
+      // And then the final space is simply no appended to each line
+
+      var wordWrapWidth = style.wordWrapWidth + letterSpacing; // break text into words, spaces and newline chars
+
+      var tokens = TextMetrics.tokenize(text);
+      console.log('tokens', tokens);
+
+      for (var i = 0; i < tokens.length; i++) {}
+    }
+    /**
+     * Determines whether we should collapse breaking spaces
+     *
+     * @private
+     * @param  {string}   whiteSpace  The TextStyle property whiteSpace
+     * @return {boolean}  should collapse
+     */
+
+  }, {
+    key: "collapseSpaces",
+    value: function collapseSpaces(whiteSpace) {
+      return whiteSpace === 'normal' || whiteSpace === 'pre-line';
+    }
+    /**
+     * Determines whether we should collapse newLine chars
+     *
+     * @private
+     * @param  {string}   whiteSpace  The white space
+     * @return {boolean}  should collapse
+     */
+
+  }, {
+    key: "collapseNewlines",
+    value: function collapseNewlines(whiteSpace) {
+      return whiteSpace === 'normal';
+    }
+    /**
+     * Splits a string into words, breaking-spaces and newLine characters
+     *
+     * @private
+     * @param  {string}  text       The text
+     * @return {string[]}  A tokenized array
+     */
+
+  }, {
+    key: "tokenize",
+    value: function tokenize(text) {
+      var tokens = [];
+      var token = '';
+
+      if (typeof text !== 'string') {
+        return tokens;
+      }
+
+      for (var i = 0; i < text.length; i++) {
+        var char = text[i];
+
+        if (TextMetrics.isBreakingSpace(char) || TextMetrics.isNewline(char)) {
+          if (token !== '') {
+            tokens.push(token);
+            token = '';
+          }
+
+          tokens.push(char);
+          continue;
+        }
+
+        token += char;
+      }
+
+      if (token !== '') {
+        tokens.push(token);
+      }
+
+      return tokens;
+    }
+    /**
+     * Determines if char is a breaking whitespace.
+     *
+     * @private
+     * @param  {string}  char  The character
+     * @return {boolean}  True if whitespace, False otherwise.
+     */
+
+  }, {
+    key: "isBreakingSpace",
+    value: function isBreakingSpace(char) {
+      if (typeof char !== 'string') {
+        return false;
+      }
+
+      return TextMetrics._breakingSpaces.indexOf(char.charCodeAt(0)) >= 0;
+    }
+    /**
+     * Determines if char is a newline.
+     *
+     * @private
+     * @param  {string}  char  The character
+     * @return {boolean}  True if newline, False otherwise.
+     */
+
+  }, {
+    key: "isNewline",
+    value: function isNewline(char) {
+      if (typeof char !== 'string') {
+        return false;
+      }
+
+      return TextMetrics._newlines.indexOf(char.charCodeAt(0)) >= 0;
+    }
+  }]);
+
+  return TextMetrics;
+}();
+
+var canvas = function () {
+  try {
+    // OffscreenCanvas2D measureText can be up to 40% faster.
+    var c = new OffscreenCanvas(0, 0);
+    return c.getContext('2d') ? c : document.createElement('canvas');
+  } catch (ex) {
+    return document.createElement('canvas');
+  }
+}();
+
+canvas.width = canvas.height = 10;
+TextMetrics._canvas = canvas;
+TextMetrics._context = canvas.getContext('2d');
+TextMetrics._fonts = {};
+TextMetrics.METRICS_STRING = '|ÉqÅ';
+TextMetrics.BASELINE_SYMBOL = 'M';
+TextMetrics.BASELINE_MULTIPLIER = 1.4;
+TextMetrics._newlines = [0x000A, // line feed
+0x000D];
+TextMetrics._breakingSpaces = [0x0009, // character tabulation
+0x0020, // space
+0x2000, // en quad
+0x2001, // em quad
+0x2002, // en space
+0x2003, // em space
+0x2004, // three-per-em space
+0x2005, // four-per-em space
+0x2006, // six-per-em space
+0x2008, // punctuation space
+0x2009, // thin space
+0x200A, // hair space
+0x205F, // medium mathematical space
+0x3000];
+
 var Text =
 /*#__PURE__*/
 function (_Shape) {
@@ -1110,13 +2092,34 @@ function (_Shape) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Text).call(this, opts));
     _this.type = 'text';
     _this.text = text;
+    _this._style = null;
+    _this.style = opts;
     _this.font = '18px verdana';
     _this.fill = '#333';
     _this.dimensions = _this.calcDimensions();
+    _this.localStyleID = -1;
+    console.log('new Text:', _assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
 
   _createClass(Text, [{
+    key: "updateText",
+    value: function updateText() {
+      var style = this._style;
+
+      if (this.localStyleID !== style.styleID) {
+        this.dirty = true;
+        this.localStyleID = style.styleID;
+      }
+
+      if (!this.dirty) {
+        return;
+      }
+
+      var measured = TextMetrics.measureText(this.text || ' ', style, style.wordWrap);
+      this.dirty = false;
+    }
+  }, {
     key: "getAxes",
     value: function getAxes() {}
   }, {
@@ -1138,6 +2141,23 @@ function (_Shape) {
   }, {
     key: "move",
     value: function move(dx, dy) {}
+  }, {
+    key: "style",
+    get: function get() {
+      return this._style;
+    },
+    set: function set(style) {
+      style = style || {};
+
+      if (style instanceof TextStyle) {
+        this._style = style;
+      } else {
+        this._style = new TextStyle(style);
+      }
+
+      this.localStyleID = -1;
+      this.dirty = true;
+    }
   }]);
 
   return Text;
@@ -1330,7 +2350,8 @@ function _renderFill(context) {
 }
 
 function _pathPolygon(context, shape) {
-  var points = shape.vertices;
+  var points = shape.vertices,
+      point;
   var len = points.length;
 
   if (!len || len === 0 || isNaN(points[len - 1].y)) {
@@ -1383,6 +2404,13 @@ function _pathCircle(context, shape) {
 
 function _pathText(context, shape) {
   context.beginPath();
+  shape.updateText(); // const lineHeight = measured.lineHeight;
+  // let linePositionX, linePositionY;
+  // for (let i = 0, len = lines.length; i++) {
+  //   linePositionX = 0;
+  //   linePositionY = i * lineHeight;
+  // }
+
   context.closePath();
 }
 
@@ -1858,10 +2886,21 @@ var player = new Object$1({
     strokeWidth: 2
   }), new Polygon([[60, 0], [60, 20], [30, 40], [10, 40]], {
     fill: '#009688'
-  }), new Text('这是一个方块', {
+  }), new Text('这是\n一个方块\n一个圆圆的方块', {
+    textAlign: 'right',
+    textBackgroundColor: 'rgb(0,200,0)',
     lineHeight: 10,
     lineWidth: 100,
-    fontFamily: 'Avenir'
+    fontStyle: 'italic',
+    fontFamily: 'Avenir',
+    fontWeight: 'bold',
+    underline: true,
+    linethrough: true,
+    overline: true,
+    shadow: 'rgba(0,0,0,0.3) 5px 5px 5px',
+    stroke: '#ff1318',
+    strokeWidth: 1,
+    wordWrap: true
   })],
   transform: {
     position: {
