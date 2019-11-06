@@ -12,9 +12,9 @@ export default class CanvasRenderer {
     this.canvas = _createCanvas();
     this.context = this.canvas.getContext('2d');
     this.viewportTransform = iMatrix;
-    this.shapeRenderer = new CanvasShapeRenderer(this.context);
-
+    
     this.pixelRatio = _getPixelRatio(this.canvas);
+    this.shapeRenderer = new CanvasShapeRenderer(this.context, this.pixelRatio, this);
     this.canvas.setAttribute('data-pixel-ratio', this.pixelRatios);
     this.context.scale(this.pixelRatio, this.pixelRatio);
 
@@ -46,11 +46,11 @@ export default class CanvasRenderer {
   }
 
   zoomToPoint (point, value) {
-    var before = point, vpt = this.viewportTransform.slice(0);
+    let before = point, vpt = this.viewportTransform.slice(0);
     point = _transformPoint(point, _invertTransform(this.viewportTransform));
     vpt[0] = value;
     vpt[3] = value;
-    var after = _transformPoint(point, vpt);
+    let after = _transformPoint(point, vpt);
     vpt[4] += before.x - after.x;
     vpt[5] += before.y - after.y;
 
@@ -58,8 +58,12 @@ export default class CanvasRenderer {
   }
 
   translate (offset) {
-    this.clear();
-    this.context.translate(offset.x, offset.y);
+    let vpt = this.viewportTransform.slice(0);
+
+    vpt[4] += offset.x;
+    vpt[5] += offset.y;
+
+    this.setViewportTransform(vpt);
   }
 
   render (objects) {
@@ -94,7 +98,7 @@ function _createCanvas () {
  * Gets the pixel ratio of the canvas.
  */
 function _getPixelRatio (canvas) {
-  var context = canvas.getContext('2d'),
+  let context = canvas.getContext('2d'),
     devicePixelRatio = window.devicePixelRatio || 1,
     backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio ||
     context.msBackingStorePixelRatio ||
@@ -148,7 +152,7 @@ function _transformPoint (p, t, ignoreOffset) {
 }
 
 function _invertTransform (t) {
-  var a = 1 / (t[0] * t[3] - t[1] * t[2]),
+  let a = 1 / (t[0] * t[3] - t[1] * t[2]),
     r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
     o = _transformPoint({ x: t[4], y: t[5] }, r, true);
   r[4] = -o.x;

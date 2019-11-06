@@ -1811,6 +1811,7 @@ function () {
     this.lineHeight = lineHeight;
     this.maxLineWidth = maxLineWidth;
     this.fontProperties = fontProperties;
+    console.log(this);
   }
 
   _createClass(TextMetrics, null, [{
@@ -1828,6 +1829,30 @@ function () {
       var context = TextMetrics._context;
       context.font = font;
       var outputText = wordWrap ? TextMetrics.wordWrap(text, style) : text;
+      var lines = outputText.split(/(?:\r\n|\r|\n)/);
+      var lineWidths = new Array(lines.length);
+      var maxLineWidth = 0;
+
+      for (var i = 0; i < lines.length; i++) {
+        var lineWidth = context.measureText(lines[i]).width + (lines[i].length - 1) * style.letterSpacing;
+        lineWidths[i] = lineWidth;
+        maxLineWidth = Math.max(maxLineWidth, lineWidth);
+      }
+
+      var width = maxLineWidth + style.strokeThickness;
+
+      if (style.dropShadow) {
+        width += style.dropShadowDistance;
+      }
+
+      var lineHeight = style.lineHeight || fontProperties.fontSize + style.strokeThickness;
+      var height = Math.max(lineHeight, fontProperties.fontSize + style.strokeThickness);
+
+      if (style.dropShadow) {
+        height += style.dropShadowDistance;
+      }
+
+      return new TextMetrics(text, style, width, height, lines, lineWidths, lineHeight + style.leading, maxLineWidth, fontProperties);
     }
     /**
      * Calculates the ascent, descent and fontSize of a given font-style
@@ -1922,11 +1947,18 @@ function () {
   }, {
     key: "wordWrap",
     value: function wordWrap(text, style) {
+      var context = TextMetrics._context;
+      var width = 0;
+      var line = '';
+      var lines = '';
+      var cache = {};
       var letterSpacing = style.letterSpacing,
           whiteSpace = style.whiteSpace; // How to handle whitespaces
 
       var collapseSpaces = TextMetrics.collapseSpaces(whiteSpace);
       var collapseNewlines = TextMetrics.collapseNewlines(whiteSpace); // whether or not spaces may be added to the beginning of lines
+
+      var canPrependSpaces = !collapseSpaces; // There is letterSpacing after every char except the last one
       // t_h_i_s_' '_i_s_' '_a_n_' '_e_x_a_m_p_l_e_' '_!
       // so for convenience the above needs to be compared to width + 1 extra letterSpace
       // t_h_i_s_' '_i_s_' '_a_n_' '_e_x_a_m_p_l_e_' '_!_
@@ -1936,9 +1968,147 @@ function () {
       var wordWrapWidth = style.wordWrapWidth + letterSpacing; // break text into words, spaces and newline chars
 
       var tokens = TextMetrics.tokenize(text);
-      console.log('tokens', tokens);
 
-      for (var i = 0; i < tokens.length; i++) {}
+      for (var i = 0; i < tokens.length; i++) {
+        var token = tokens[i];
+
+        if (TextMetrics.isNewline(token)) {
+          if (!collapseNewlines) {
+            lines += TextMetrics.addLine(line);
+            canPrependSpaces = !collapseSpaces;
+            line = '';
+            width = 0;
+            continue;
+          } // if we should collapse new lines
+          // we simply convert it into a space
+
+
+          token = ' ';
+        } // if we should collapse repeated whitespaces
+
+
+        if (collapseSpaces) {
+          // check both this and the last tokens for spaces
+          var currIsBreakingSpace = TextMetrics.isBreakingSpace(token);
+          var lastIsBreakingSpace = TextMetrics.isBreakingSpace(line[line.length - 1]);
+
+          if (currIsBreakingSpace && lastIsBreakingSpace) {
+            continue;
+          }
+        }
+
+        var tokenWidth = TextMetrics.getFromCache(token, letterSpacing, cache, context); // word is longer than desired bounds
+
+        if (tokenWidth > wordWrapWidth) {
+          // if we are not already at the beginning of a line
+          if (line !== '') {
+            // start newlines for overflow words
+            lines += TextMetrics.addLine(line);
+            line = '';
+            width = 0;
+          } // break large word over multiple lines
+
+
+          if (TextMetrics.canBreakWords(token, style.breakWords)) {
+            // break word into characters
+            var characters = token.split(''); // loop the characters
+
+            for (var j = 0; j < characters.length; j++) {
+              var char = characters[j];
+              var k = 1; // we are not at the end of the token
+
+              while (characters[j + k]) {
+                var nextChar = characters[j + k];
+                var lastChar = char[char.length - 1]; // should not split chars
+
+                if (!TextMetrics.canBreakChars(lastChar, nextChar, token, j, style.breakWords)) {
+                  // combine chars & move forward one
+                  char += nextChar;
+                } else {
+                  break;
+                }
+
+                k++;
+              }
+
+              j += char.length - 1;
+              var characterWidth = TextMetrics.getFromCache(char, letterSpacing, cache, context);
+
+              if (characterWidth + width > wordWrapWidth) {
+                lines += TextMetrics.addLine(line);
+                canPrependSpaces = false;
+                line = '';
+                width = 0;
+              }
+
+              line += char;
+              width += characterWidth;
+            }
+          } else {
+            // if there are words in this line already
+            // finish that line and start a new one
+            if (line.length > 0) {
+              lines += TextMetrics.addLine(line);
+              line = '';
+              width = 0;
+            }
+
+            var isLastToken = i === tokens.length - 1; // give it its own line if it's not the end
+
+            lines += TextMetrics.addLine(token, !isLastToken);
+            canPrependSpaces = false;
+            line = '';
+            width = 0;
+          }
+        } else {
+          // word won't fit because of existing words
+          // start a new line
+          if (tokenWidth + width > wordWrapWidth) {
+            // if its a space we don't want it
+            canPrependSpaces = false; // add a new line
+
+            lines += TextMetrics.addLine(line); // start a new line
+
+            line = '';
+            width = 0;
+          } // don't add spaces to the beginning of lines
+
+
+          if (line.length > 0 || !TextMetrics.isBreakingSpace(token) || canPrependSpaces) {
+            // add the word to the current line
+            line += token; // update width counter
+
+            width += tokenWidth;
+          }
+        }
+      }
+
+      lines += TextMetrics.addLine(line, false);
+      return lines;
+    }
+    /**
+     * Gets & sets the widths of calculated characters in a cache object
+     *
+     * @private
+     * @param  {string}                    key            The key
+     * @param  {number}                    letterSpacing  The letter spacing
+     * @param  {object}                    cache          The cache
+     * @param  {CanvasRenderingContext2D}  context        The canvas context
+     * @return {number}                    The from cache.
+     */
+
+  }, {
+    key: "getFromCache",
+    value: function getFromCache(key, letterSpacing, cache, context) {
+      var width = cache[key];
+
+      if (width === undefined) {
+        var spacing = key.length * letterSpacing;
+        width = context.measureText(key).width + spacing;
+        cache[key] = width;
+      }
+
+      return width;
     }
     /**
      * Determines whether we should collapse breaking spaces
@@ -2007,6 +2177,23 @@ function () {
       return tokens;
     }
     /**
+     * This method exists to be easily overridden
+     * It allows one to customise which words should break
+     * Examples are if the token is CJK or numbers.
+     * It must return a boolean.
+     *
+     * @private
+     * @param  {string}  token       The token
+     * @param  {boolean}  breakWords  The style attr break words
+     * @return {boolean} whether to break word or not
+     */
+
+  }, {
+    key: "canBreakWords",
+    value: function canBreakWords(token, breakWords) {
+      return breakWords;
+    }
+    /**
      * Determines if char is a breaking whitespace.
      *
      * @private
@@ -2039,6 +2226,51 @@ function () {
       }
 
       return TextMetrics._newlines.indexOf(char.charCodeAt(0)) >= 0;
+    }
+    /**
+     * Convienience function for logging each line added during the wordWrap
+     * method
+     *
+     * @private
+     * @param  {string}   line        - The line of text to add
+     * @param  {boolean}  newLine     - Add new line character to end
+     * @return {string}   A formatted line
+     */
+
+  }, {
+    key: "addLine",
+    value: function addLine(line) {
+      var newLine = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      line = TextMetrics.trimRight(line);
+      line = newLine ? "".concat(line, "\n") : line;
+      return line;
+    }
+    /**
+     * trims breaking whitespaces from string
+     *
+     * @private
+     * @param  {string}  text  The text
+     * @return {string}  trimmed string
+     */
+
+  }, {
+    key: "trimRight",
+    value: function trimRight(text) {
+      if (typeof text !== 'string') {
+        return '';
+      }
+
+      for (var i = text.length - 1; i >= 0; i--) {
+        var char = text[i];
+
+        if (!TextMetrics.isBreakingSpace(char)) {
+          break;
+        }
+
+        text = text.slice(0, -1);
+      }
+
+      return text;
     }
   }]);
 
@@ -2094,10 +2326,11 @@ function (_Shape) {
     _this.text = text;
     _this._style = null;
     _this.style = opts;
-    _this.font = '18px verdana';
+    _this._font = '18px verdana';
     _this.fill = '#333';
     _this.dimensions = _this.calcDimensions();
     _this.localStyleID = -1;
+    _this.measured = {};
     console.log('new Text:', _assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
@@ -2116,7 +2349,8 @@ function (_Shape) {
         return;
       }
 
-      var measured = TextMetrics.measureText(this.text || ' ', style, style.wordWrap);
+      this.measured = TextMetrics.measureText(this.text || ' ', style, style.wordWrap);
+      this._font = this.style.toFontString();
       this.dirty = false;
     }
   }, {
@@ -2261,16 +2495,26 @@ function () {
 var CanvasShapeRenderer =
 /*#__PURE__*/
 function () {
-  function CanvasShapeRenderer(context) {
+  function CanvasShapeRenderer(context, pixelRatio, canvasRenderer) {
     _classCallCheck(this, CanvasShapeRenderer);
 
     this.context = context;
+    this.pixelRatio = pixelRatio;
+    this.canvasRenderer = canvasRenderer;
   }
 
   _createClass(CanvasShapeRenderer, [{
     key: "render",
     value: function render(shape) {
-      var context = this.context;
+      var context = this.context,
+          pixelRatio = this.pixelRatio,
+          canvasRenderer = this.canvasRenderer;
+
+      if (shape.type === 'text') {
+        _drawText(context, shape, pixelRatio, canvasRenderer);
+
+        return;
+      }
 
       switch (shape.type) {
         case 'polygon':
@@ -2290,11 +2534,6 @@ function () {
 
         case 'circle':
           _pathCircle(context, shape);
-
-          break;
-
-        case 'text':
-          _pathText(context, shape);
 
           break;
 
@@ -2402,16 +2641,193 @@ function _pathCircle(context, shape) {
   context.closePath();
 }
 
-function _pathText(context, shape) {
+function _drawText(context, shape, pixelRatio, canvasRenderer) {
   context.beginPath();
-  shape.updateText(); // const lineHeight = measured.lineHeight;
-  // let linePositionX, linePositionY;
-  // for (let i = 0, len = lines.length; i++) {
-  //   linePositionX = 0;
-  //   linePositionY = i * lineHeight;
-  // }
+  shape.updateText();
+  var measured = shape.measured,
+      style = shape.style;
+  var width = measured.width;
+  var height = measured.height;
+  var lines = measured.lines;
+  var lineHeight = measured.lineHeight;
+  var lineWidths = measured.lineWidths;
+  var maxLineWidth = measured.maxLineWidth;
+  var fontProperties = measured.fontProperties;
+  context.font = shape._font;
+  context.lineWidth = style.strokeThickness;
+  context.textBaseline = style.textBaseline;
+  context.lineJoin = style.lineJoin;
+  context.miterLimit = style.miterLimit;
+  var linePositionX;
+  var linePositionY;
+  context.fillStyle = _generateFillStyle(style, lines, width, height);
+  context.strokeStyle = style.stroke;
+
+  if (style.dropShadow) {
+    context.shadowColor = style.dropShadowColor;
+    context.shadowBlur = style.dropShadowBlur;
+    context.shadowOffsetX = Math.cos(style.dropShadowAngle) * style.dropShadowDistance * canvasRenderer.getZoom();
+    context.shadowOffsetY = Math.sin(style.dropShadowAngle) * style.dropShadowDistance * canvasRenderer.getZoom();
+  }
+
+  for (var i = 0; i < lines.length; i++) {
+    linePositionX = style.strokeThickness / 2;
+    linePositionY = style.strokeThickness / 2 + i * lineHeight + fontProperties.ascent;
+
+    if (style.align === 'right') {
+      linePositionX += maxLineWidth - lineWidths[i];
+    } else if (style.align === 'center') {
+      linePositionX += (maxLineWidth - lineWidths[i]) / 2;
+    }
+
+    if (style.stroke && style.strokeThickness) {
+      _drawLetterSpacing(context, lines[i], style, linePositionX + style.padding, linePositionY + style.padding, true);
+    }
+
+    if (style.fill) {
+      _drawLetterSpacing(context, lines[i], style, linePositionX + style.padding, linePositionY + style.padding);
+    }
+  }
 
   context.closePath();
+}
+/**
+ * Generates the fill style. Can automatically generate a gradient based on the fill style being an array
+ *
+ * @param {object} style - The style.
+ * @param {string[]} lines - The lines of text.
+ * @param {number} width
+ * @param {number} height
+ * @return {string|number|CanvasGradient} The fill style
+ */
+
+
+function _generateFillStyle(style, lines, width, height) {
+  if (!Array.isArray(style.fill)) {
+    return style.fill;
+  } else if (style.fill.length === 1) {
+    return style.fill[0];
+  } // the gradient will be evenly spaced out according to how large the array is.
+  // ['#FF0000', '#00FF00', '#0000FF'] would created stops at 0.25, 0.5 and 0.75
+
+
+  var gradient;
+  var totalIterations;
+  var currentIteration;
+  var stop; // make a copy of the style settings, so we can manipulate them later
+
+  var fill = style.fill.slice();
+  var fillGradientStops = style.fillGradientStops.slice(); // wanting to evenly distribute the fills. So an array of 4 colours should give fills of 0.25, 0.5 and 0.75
+
+  if (!fillGradientStops.length) {
+    var lengthPlus1 = fill.length + 1;
+
+    for (var i = 1; i < lengthPlus1; ++i) {
+      fillGradientStops.push(i / lengthPlus1);
+    }
+  } // stop the bleeding of the last gradient on the line above to the top gradient of the this line
+  // by hard defining the first gradient colour at point 0, and last gradient colour at point 1
+
+
+  fill.unshift(style.fill[0]);
+  fillGradientStops.unshift(0);
+  fill.push(style.fill[style.fill.length - 1]);
+  fillGradientStops.push(1);
+
+  if (style.fillGradientType === TEXT_GRADIENT.LINEAR_VERTICAL) {
+    // start the gradient at the top center of the canvas, and end at the bottom middle of the canvas
+    gradient = this.context.createLinearGradient(width / 2, 0, width / 2, height); // we need to repeat the gradient so that each individual line of text has the same vertical gradient effect
+    // ['#FF0000', '#00FF00', '#0000FF'] over 2 lines would create stops at 0.125, 0.25, 0.375, 0.625, 0.75, 0.875
+
+    totalIterations = (fill.length + 1) * lines.length;
+    currentIteration = 0;
+
+    for (var _i = 0; _i < lines.length; _i++) {
+      currentIteration += 1;
+
+      for (var j = 0; j < fill.length; j++) {
+        if (typeof fillGradientStops[j] === 'number') {
+          stop = fillGradientStops[j] / lines.length + _i / lines.length;
+        } else {
+          stop = currentIteration / totalIterations;
+        }
+
+        gradient.addColorStop(stop, fill[j]);
+        currentIteration++;
+      }
+    }
+  } else {
+    // start the gradient at the center left of the canvas, and end at the center right of the canvas
+    gradient = this.context.createLinearGradient(0, height / 2, width, height / 2); // can just evenly space out the gradients in this case, as multiple lines makes no difference
+    // to an even left to right gradient
+
+    totalIterations = fill.length + 1;
+    currentIteration = 1;
+
+    for (var _i2 = 0; _i2 < fill.length; _i2++) {
+      if (typeof fillGradientStops[_i2] === 'number') {
+        stop = fillGradientStops[_i2];
+      } else {
+        stop = currentIteration / totalIterations;
+      }
+
+      gradient.addColorStop(stop, fill[_i2]);
+      currentIteration++;
+    }
+  }
+
+  return gradient;
+}
+/**
+ * Render the text with letter-spacing.
+ * @param {string} text - The text to draw
+ * @param {number} x - Horizontal position to draw the text
+ * @param {number} y - Vertical position to draw the text
+ * @param {boolean} [isStroke=false] - Is this drawing for the outside stroke of the
+ *  text? If not, it's for the inside fill
+ * @private
+ */
+
+
+function _drawLetterSpacing(context, text, style, x, y) {
+  var isStroke = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+  // letterSpacing of 0 means normal
+  var letterSpacing = style.letterSpacing;
+
+  if (letterSpacing === 0) {
+    if (isStroke) {
+      context.strokeText(text, x, y);
+    } else {
+      context.fillText(text, x, y);
+    }
+
+    return;
+  }
+
+  var currentPosition = x; // Using Array.from correctly splits characters whilst keeping emoji together.
+  // This is not supported on IE as it requires ES6, so regular text splitting occurs.
+  // This also doesn't account for emoji that are multiple emoji put together to make something else.
+  // Handling all of this would require a big library itself.
+  // https://medium.com/@giltayar/iterating-over-emoji-characters-the-es6-way-f06e4589516
+  // https://github.com/orling/grapheme-splitter
+
+  var stringArray = Array.from ? Array.from(text) : text.split('');
+  var previousWidth = context.measureText(text).width;
+  var currentWidth = 0;
+
+  for (var i = 0; i < stringArray.length; ++i) {
+    var currentChar = stringArray[i];
+
+    if (isStroke) {
+      context.strokeText(currentChar, currentPosition, y);
+    } else {
+      context.fillText(currentChar, currentPosition, y);
+    }
+
+    currentWidth = context.measureText(text.substring(i + 1)).width;
+    currentPosition += previousWidth - currentWidth + letterSpacing;
+    previousWidth = currentWidth;
+  }
 }
 
 var iMatrix = [1, 0, 0, 1, 0, 0];
@@ -2431,8 +2847,8 @@ function () {
     this.canvas = _createCanvas();
     this.context = this.canvas.getContext('2d');
     this.viewportTransform = iMatrix;
-    this.shapeRenderer = new CanvasShapeRenderer(this.context);
     this.pixelRatio = _getPixelRatio(this.canvas);
+    this.shapeRenderer = new CanvasShapeRenderer(this.context, this.pixelRatio, this);
     this.canvas.setAttribute('data-pixel-ratio', this.pixelRatios);
     this.context.scale(this.pixelRatio, this.pixelRatio);
     this.canvas.width = width * this.pixelRatio;
@@ -2475,8 +2891,10 @@ function () {
   }, {
     key: "translate",
     value: function translate(offset) {
-      this.clear();
-      this.context.translate(offset.x, offset.y);
+      var vpt = this.viewportTransform.slice(0);
+      vpt[4] += offset.x;
+      vpt[5] += offset.y;
+      this.setViewportTransform(vpt);
     }
   }, {
     key: "render",
@@ -2884,22 +3302,21 @@ var player = new Object$1({
     fill: 'white',
     stroke: 'grey',
     strokeWidth: 2
-  }), new Polygon([[60, 0], [60, 20], [30, 40], [10, 40]], {
-    fill: '#009688'
   }), new Text('这是\n一个方块\n一个圆圆的方块', {
-    textAlign: 'right',
-    textBackgroundColor: 'rgb(0,200,0)',
-    lineHeight: 10,
-    lineWidth: 100,
+    align: 'center',
+    lineHeight: 12,
+    lineWidth: 16,
+    fontSize: 10,
     fontStyle: 'italic',
     fontFamily: 'Avenir',
     fontWeight: 'bold',
     underline: true,
     linethrough: true,
     overline: true,
-    shadow: 'rgba(0,0,0,0.3) 5px 5px 5px',
-    stroke: '#ff1318',
-    strokeWidth: 1,
+    dropShadow: true,
+    dropShadowColor: 'rgba(0, 0, 0, 0.3)',
+    letterSpacing: 4,
+    fill: '#03a9f4',
     wordWrap: true
   })],
   transform: {
