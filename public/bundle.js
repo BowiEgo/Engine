@@ -705,6 +705,22 @@ function (_Line) {
   return Curve;
 }(Line);
 
+var commandLengths = {
+  m: 2,
+  l: 2,
+  h: 1,
+  v: 1,
+  c: 6,
+  s: 4,
+  q: 4,
+  t: 2,
+  a: 7
+},
+    repeatedCommands = {
+  m: 'l',
+  M: 'L'
+};
+
 var Path =
 /*#__PURE__*/
 function (_Shape) {
@@ -716,7 +732,9 @@ function (_Shape) {
     _classCallCheck(this, Path);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Path).call(this, opts));
-    _this.path = path;
+    _this.type = 'path';
+    _this.path = path.match(/[mzlhvcsqta][^mzlhvcsqta]*/gi);
+    _this.path = Path.parsePath(_this.path);
     _this.width = 0;
     _this.height = 0;
     _this.dimensions = _this.calcDimensions();
@@ -733,6 +751,52 @@ function (_Shape) {
         width: this.width,
         height: this.height
       };
+    }
+  }], [{
+    key: "parsePath",
+    value: function parsePath(path) {
+      var result = [],
+          coords = [],
+          currentPath,
+          parsed,
+          re = /([-+]?((\d+\.\d+)|((\d+)|(\.\d+)))(?:e[-+]?\d+)?)/ig,
+          match,
+          coordsStr;
+
+      for (var i = 0, coordsParsed, len = path.length; i < len; i++) {
+        currentPath = path[i];
+        coordsStr = currentPath.slice(1).trim();
+        coords.length = 0;
+
+        while (match = re.exec(coordsStr)) {
+          coords.push(match[0]);
+        }
+
+        coordsParsed = [currentPath.charAt(0)];
+
+        for (var j = 0, jlen = coords.length; j < jlen; j++) {
+          parsed = parseFloat(coords[j]);
+
+          if (!isNaN(parsed)) {
+            coordsParsed.push(parsed);
+          }
+        }
+
+        var command = coordsParsed[0],
+            commandLength = commandLengths[command.toLowerCase()],
+            repeatedCommand = repeatedCommands[command] || command;
+
+        if (coordsParsed.length - 1 > commandLength) {
+          for (var k = 1, klen = coordsParsed.length; k < klen; k += commandLength) {
+            result.push([command].concat(coordsParsed.slice(k, k + commandLength)));
+            command = repeatedCommand;
+          }
+        } else {
+          result.push(coordsParsed);
+        }
+      }
+
+      return result;
     }
   }]);
 
@@ -2551,6 +2615,11 @@ function () {
       }
 
       switch (shape.type) {
+        case 'path':
+          _execPathCommands(context, shape);
+
+          break;
+
         case 'polygon':
           _pathPolygon(context, shape);
 
@@ -2673,6 +2742,109 @@ function _pathCircle(context, shape) {
   context.beginPath();
   context.arc(0, 0, shape.radius, 0, 2 * Math.PI);
   context.closePath();
+}
+
+function _execPathCommands(context, shape) {
+  var path = shape.path;
+  var current,
+      subpathStartX = 0,
+      subpathStartY = 0,
+      x = 0,
+      y = 0;
+  context.beginPath();
+
+  for (var i = 0, len = path.length; i < len; i++) {
+    current = path[i];
+
+    switch (current[0]) {
+      case 'l':
+        // lineTo, relative
+        break;
+
+      case 'L':
+        // lineTo, absolute
+        x = current[1];
+        y = current[2];
+        context.lineTo(x, y);
+        break;
+
+      case 'h':
+        // horizontal lineTo, relative
+        break;
+
+      case 'H':
+        // horizontal lineTo, absolute
+        break;
+
+      case 'v':
+        // vertical lineTo, relative
+        break;
+
+      case 'V':
+        // verical lineTo, absolute
+        break;
+
+      case 'm':
+        // moveTo, relative
+        break;
+
+      case 'M':
+        // moveTo, absolute
+        x = current[1];
+        y = current[2];
+        subpathStartX = x;
+        subpathStartY = y;
+        context.moveTo(x, y);
+        break;
+
+      case 'c':
+        // bezierCurveTo, relative
+        break;
+
+      case 'C':
+        // bezierCurveTo, absolute
+        break;
+
+      case 's':
+        // shorthand cubic bezierCurveTo, relative
+        break;
+
+      case 'S':
+        // shorthand cubic bezierCurveTo, absolute
+        break;
+
+      case 'q':
+        // quadraticCurveTo, relative
+        break;
+
+      case 'Q':
+        // quadraticCurveTo, absolute
+        break;
+
+      case 't':
+        // shorthand quadraticCurveTo, relative
+        break;
+
+      case 'T':
+        // shorthand quadraticCurveTo, absolute
+        break;
+
+      case 'a':
+        // arc, relative
+        break;
+
+      case 'A':
+        // arc, absolute
+        break;
+
+      case 'z':
+      case 'Z':
+        x = subpathStartX;
+        y = subpathStartY;
+        context.closePath();
+        break;
+    }
+  }
 }
 
 function _drawText(context, shape, pixelRatio, canvasRenderer) {

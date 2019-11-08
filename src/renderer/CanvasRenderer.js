@@ -1,6 +1,6 @@
 import Events from '../core/Events';
 import Point from '../geometry/Vertice';
-import CanvasShapeRenderer from './CanvasShapeRenderer';
+import { CanvasShapeRenderer } from './ShapeRenderer';
 import { ShapesGroup } from '../shapes';
 
 const iMatrix = [1, 0, 0, 1, 0, 0];

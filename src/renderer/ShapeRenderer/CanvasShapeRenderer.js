@@ -1,4 +1,4 @@
-import { TEXT_GRADIENT } from '../shapes/Text/const';
+import { TEXT_GRADIENT } from '../../shapes/Text/const';
 
 export default class CanvasShapeRenderer {
   constructor (context, pixelRatio, canvasRenderer) {
@@ -16,6 +16,9 @@ export default class CanvasShapeRenderer {
     }
 
     switch (shape.type) {
+      case 'path':
+        _execPathCommands(context, shape);
+        break;
       case 'polygon':
         _pathPolygon(context, shape);
         break;
@@ -128,7 +131,81 @@ function _pathCircle(context, shape) {
   context.closePath();
 }
 
-function _drawText(context, shape, pixelRatio, canvasRenderer) {
+function _execPathCommands(context, shape) {
+  const { path } = shape;
+  let current,
+    previous,
+    subpathStartX = 0,
+    subpathStartY = 0,
+    x = 0,
+    y = 0,
+    controlX = 0,
+    controlY = 0,
+    tempX,
+    tempY
+
+  context.beginPath();
+
+  for (let i = 0, len = path.length; i < len; i++) {
+    current = path[i];
+
+    switch (current[0]) {
+      case 'l': // lineTo, relative
+        break;
+      case 'L': // lineTo, absolute
+        x = current[1];
+        y = current[2];
+        context.lineTo(x, y);
+        break;
+      case 'h': // horizontal lineTo, relative
+        break;
+      case 'H': // horizontal lineTo, absolute
+        break;
+      case 'v': // vertical lineTo, relative
+        break;
+      case 'V': // verical lineTo, absolute
+        break;
+      case 'm': // moveTo, relative
+        break;
+      case 'M': // moveTo, absolute
+        x = current[1];
+        y = current[2];
+        subpathStartX = x;
+        subpathStartY = y;
+        context.moveTo(x, y);
+        break;
+      case 'c': // bezierCurveTo, relative
+        break;
+      case 'C': // bezierCurveTo, absolute
+        break;
+      case 's': // shorthand cubic bezierCurveTo, relative
+        break;
+      case 'S': // shorthand cubic bezierCurveTo, absolute
+        break;
+      case 'q': // quadraticCurveTo, relative
+        break;
+      case 'Q': // quadraticCurveTo, absolute
+        break;
+      case 't': // shorthand quadraticCurveTo, relative
+        break;
+      case 'T': // shorthand quadraticCurveTo, absolute
+        break;
+      case 'a': // arc, relative
+        break;
+      case 'A': // arc, absolute
+        break;
+      case 'z':
+      case 'Z':
+        x = subpathStartX;
+        y = subpathStartY;
+        context.closePath();
+        break;
+    }
+    previous = current;
+  }
+}
+
+function _drawText (context, shape, pixelRatio, canvasRenderer) {
   context.beginPath();
 
   shape.updateText();
