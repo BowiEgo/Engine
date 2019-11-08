@@ -12,7 +12,7 @@ export default class CanvasShapeRenderer {
 
     if (shape.type === 'text') {
       _drawText(context, shape, pixelRatio, canvasRenderer);
-      return
+      return;
     }
 
     switch (shape.type) {
