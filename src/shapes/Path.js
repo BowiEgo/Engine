@@ -29,7 +29,7 @@ class Path extends Shape {
   }
 
   static parsePath (path) {
-    var result = [],
+    let result = [],
       coords = [],
       currentPath,
       parsed,
@@ -37,7 +37,7 @@ class Path extends Shape {
       match,
       coordsStr;
 
-    for (var i = 0, coordsParsed, len = path.length; i < len; i++) {
+    for (let i = 0, coordsParsed, len = path.length; i < len; i++) {
       currentPath = path[i];
 
       coordsStr = currentPath.slice(1).trim();
@@ -49,19 +49,19 @@ class Path extends Shape {
 
       coordsParsed = [currentPath.charAt(0)];
 
-      for (var j = 0, jlen = coords.length; j < jlen; j++) {
+      for (let j = 0, jlen = coords.length; j < jlen; j++) {
         parsed = parseFloat(coords[j]);
         if (!isNaN(parsed)) {
           coordsParsed.push(parsed);
         }
       }
 
-      var command = coordsParsed[0],
+      let command = coordsParsed[0],
           commandLength = commandLengths[command.toLowerCase()],
           repeatedCommand = repeatedCommands[command] || command;
 
       if (coordsParsed.length - 1 > commandLength) {
-        for (var k = 1, klen = coordsParsed.length; k < klen; k += commandLength) {
+        for (let k = 1, klen = coordsParsed.length; k < klen; k += commandLength) {
           result.push([command].concat(coordsParsed.slice(k, k + commandLength)));
           command = repeatedCommand;
         }

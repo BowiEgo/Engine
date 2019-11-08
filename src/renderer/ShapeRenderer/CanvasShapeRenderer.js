@@ -37,6 +37,7 @@ export default class CanvasShapeRenderer {
 
     _setStrokeStyles(context, shape);
     _setFillStyles(context, shape);
+    _setDropShadowStyles(context, shape);
     _renderStroke(context, shape);
     _renderFill(context, shape);
   }
@@ -73,6 +74,20 @@ function _renderFill (context) {
   context.save();
   context.fill();
   context.restore();
+}
+
+function _setDropShadowStyles (context, shape) {
+  if (shape.dropShadow) {
+    context.shadowColor = shape.dropShadowColor;
+    context.shadowBlur = shape.dropShadowBlur;
+    context.shadowOffsetX = Math.cos(shape.dropShadowAngle) * shape.dropShadowDistance * canvasRenderer.getZoom();
+    context.shadowOffsetY = (Math.sin(shape.dropShadowAngle) * shape.dropShadowDistance) * canvasRenderer.getZoom();
+  } else {
+    context.shadowColor = 'black';
+    context.shadowBlur = 0;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+  }
 }
 
 function _pathPolygon(context, shape) {
@@ -151,6 +166,9 @@ function _execPathCommands(context, shape) {
 
     switch (current[0]) {
       case 'l': // lineTo, relative
+        x += current[1];
+        y += current[2];
+        context.lineTo(x, y);
         break;
       case 'L': // lineTo, absolute
         x = current[1];
@@ -158,14 +176,27 @@ function _execPathCommands(context, shape) {
         context.lineTo(x, y);
         break;
       case 'h': // horizontal lineTo, relative
+        x += current[1];
+        context.lineTo(x, y);
         break;
       case 'H': // horizontal lineTo, absolute
+        x = current[1];
+        context.lineTo(x, y);
         break;
       case 'v': // vertical lineTo, relative
+        y += current[1];
+        context.lineTo(x, y);
         break;
       case 'V': // verical lineTo, absolute
+        y = current[1];
+        context.lineTo(x, y);
         break;
       case 'm': // moveTo, relative
+        x += current[1];
+        y += current[2];
+        subpathStartX = x;
+        subpathStartY = y;
+        context.moveTo(x, y);
         break;
       case 'M': // moveTo, absolute
         x = current[1];
@@ -175,24 +206,207 @@ function _execPathCommands(context, shape) {
         context.moveTo(x, y);
         break;
       case 'c': // bezierCurveTo, relative
+        tempX = x + current[5];
+        tempY = y + current[6];
+        controlX = x + current[3];
+        controlY = y + current[4];
+        context.bezierCurveTo(
+          x + current[1], // x1
+          y + current[2], // y1
+          controlX, // x2
+          controlY, // y2
+          tempX,
+          tempY
+        )
+        x = tempX;
+        y = tempY;
         break;
       case 'C': // bezierCurveTo, absolute
+        x = current[5];
+        y = current[6];
+        controlX = current[3];
+        controlY = current[4];
+        context.bezierCurveTo(
+          current[1],
+          current[2],
+          controlX,
+          controlY,
+          x,
+          y
+        );
         break;
       case 's': // shorthand cubic bezierCurveTo, relative
+        // transform to absolute x,y
+        tempX = x + current[3];
+        tempY = y + current[4];
+        if (previous[0].match(/[CcSs]/) === null) {
+          // If there is no previous command or if the previous command was not a C, c, S, or s,
+          // the control point is coincident with the current point
+          controlX = x;
+          controlY = y;
+        }
+        else {
+          // calculate reflection of previous control points
+          controlX = 2 * x - controlX;
+          controlY = 2 * y - controlY;
+        }
+        context.bezierCurveTo(
+          controlX,
+          controlY,
+          x + current[1],
+          y + current[2],
+          tempX,
+          tempY
+        );
+        // set control point to 2nd one of this command
+        // "... the first control point is assumed to be
+        // the reflection of the second control point on
+        // the previous command relative to the current point."
+        controlX = x + current[1];
+        controlY = y + current[2];
+
+        x = tempX;
+        y = tempY;
         break;
       case 'S': // shorthand cubic bezierCurveTo, absolute
+        tempX = current[3];
+        tempY = current[4];
+        if (previous[0].match(/[CcSs]/) === null) {
+          // If there is no previous command or if the previous command was not a C, c, S, or s,
+          // the control point is coincident with the current point
+          controlX = x;
+          controlY = y;
+        }
+        else {
+          // calculate reflection of previous control points
+          controlX = 2 * x - controlX;
+          controlY = 2 * y - controlY;
+        }
+        context.bezierCurveTo(
+          controlX,
+          controlY,
+          current[1],
+          current[2],
+          tempX,
+          tempY
+        );
+        x = tempX;
+        y = tempY;
+
+        // set control point to 2nd one of this command
+        // "... the first control point is assumed to be
+        // the reflection of the second control point on
+        // the previous command relative to the current point."
+        controlX = current[1];
+        controlY = current[2];
         break;
       case 'q': // quadraticCurveTo, relative
+        // transform to absolute x,y
+        tempX = x + current[3];
+        tempY = y + current[4];
+
+        controlX = x + current[1];
+        controlY = y + current[2];
+
+        context.quadraticCurveTo(
+          controlX,
+          controlY,
+          tempX,
+          tempY
+        );
+        x = tempX;
+        y = tempY;
         break;
       case 'Q': // quadraticCurveTo, absolute
+        tempX = current[3];
+        tempY = current[4];
+
+        context.quadraticCurveTo(
+          current[1],
+          current[2],
+          tempX,
+          tempY
+        );
+        x = tempX;
+        y = tempY;
+        controlX = current[1];
+        controlY = current[2];
         break;
       case 't': // shorthand quadraticCurveTo, relative
+        // transform to absolute x,y
+        tempX = x + current[1];
+        tempY = y + current[2];
+
+        if (previous[0].match(/[QqTt]/) === null) {
+          // If there is no previous command or if the previous command was not a Q, q, T or t,
+          // assume the control point is coincident with the current point
+          controlX = x;
+          controlY = y;
+        }
+        else {
+          // calculate reflection of previous control point
+          controlX = 2 * x - controlX;
+          controlY = 2 * y - controlY;
+        }
+
+        context.quadraticCurveTo(
+          controlX,
+          controlY,
+          tempX,
+          tempY
+        );
+        x = tempX;
+        y = tempY;
         break;
       case 'T': // shorthand quadraticCurveTo, absolute
+        tempX = current[1];
+        tempY = current[2];
+
+        if (previous[0].match(/[QqTt]/) === null) {
+          // If there is no previous command or if the previous command was not a Q, q, T or t,
+          // assume the control point is coincident with the current point
+          controlX = x;
+          controlY = y;
+        }
+        else {
+          // calculate reflection of previous control point
+          controlX = 2 * x - controlX;
+          controlY = 2 * y - controlY;
+        }
+        context.quadraticCurveTo(
+          controlX,
+          controlY,
+          tempX,
+          tempY
+        );
+        x = tempX;
+        y = tempY;
         break;
       case 'a': // arc, relative
+        drawArc(context, x, y, [
+          current[1],
+          current[2],
+          current[3],
+          current[4],
+          current[5],
+          current[6] + x,
+          current[7] + y
+        ]);
+        x += current[6];
+        y += current[7];
         break;
       case 'A': // arc, absolute
+        drawArc(context, x, y, [
+          current[1],
+          current[2],
+          current[3],
+          current[4],
+          current[5],
+          current[6],
+          current[7]
+        ]);
+        x = current[6];
+        y = current[7];
         break;
       case 'z':
       case 'Z':
@@ -273,15 +487,6 @@ function _drawText (context, shape, pixelRatio, canvasRenderer) {
   context.closePath();
 }
 
-/**
- * Generates the fill style. Can automatically generate a gradient based on the fill style being an array
- *
- * @param {object} style - The style.
- * @param {string[]} lines - The lines of text.
- * @param {number} width
- * @param {number} height
- * @return {string|number|CanvasGradient} The fill style
- */
 function _generateFillStyle (style, lines, width, height) {
   if (!Array.isArray(style.fill)) {
     return style.fill;
@@ -360,15 +565,6 @@ function _generateFillStyle (style, lines, width, height) {
   return gradient;
 }
 
-/**
- * Render the text with letter-spacing.
- * @param {string} text - The text to draw
- * @param {number} x - Horizontal position to draw the text
- * @param {number} y - Vertical position to draw the text
- * @param {boolean} [isStroke=false] - Is this drawing for the outside stroke of the
- *  text? If not, it's for the inside fill
- * @private
- */
 function _drawLetterSpacing (context, text, style, x, y, isStroke = false) {
   // letterSpacing of 0 means normal
   const letterSpacing = style.letterSpacing;

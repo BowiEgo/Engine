@@ -2648,6 +2648,8 @@ function () {
 
       _setFillStyles(context, shape);
 
+      _setDropShadowStyles(context, shape);
+
       _renderStroke(context, shape);
 
       _renderFill(context, shape);
@@ -2689,6 +2691,20 @@ function _renderFill(context) {
   context.save();
   context.fill();
   context.restore();
+}
+
+function _setDropShadowStyles(context, shape) {
+  if (shape.dropShadow) {
+    context.shadowColor = shape.dropShadowColor;
+    context.shadowBlur = shape.dropShadowBlur;
+    context.shadowOffsetX = Math.cos(shape.dropShadowAngle) * shape.dropShadowDistance * canvasRenderer.getZoom();
+    context.shadowOffsetY = Math.sin(shape.dropShadowAngle) * shape.dropShadowDistance * canvasRenderer.getZoom();
+  } else {
+    context.shadowColor = 'black';
+    context.shadowBlur = 0;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+  }
 }
 
 function _pathPolygon(context, shape) {
@@ -2747,10 +2763,15 @@ function _pathCircle(context, shape) {
 function _execPathCommands(context, shape) {
   var path = shape.path;
   var current,
+      previous,
       subpathStartX = 0,
       subpathStartY = 0,
       x = 0,
-      y = 0;
+      y = 0,
+      controlX = 0,
+      controlY = 0,
+      tempX,
+      tempY;
   context.beginPath();
 
   for (var i = 0, len = path.length; i < len; i++) {
@@ -2759,6 +2780,9 @@ function _execPathCommands(context, shape) {
     switch (current[0]) {
       case 'l':
         // lineTo, relative
+        x += current[1];
+        y += current[2];
+        context.lineTo(x, y);
         break;
 
       case 'L':
@@ -2770,22 +2794,35 @@ function _execPathCommands(context, shape) {
 
       case 'h':
         // horizontal lineTo, relative
+        x += current[1];
+        context.lineTo(x, y);
         break;
 
       case 'H':
         // horizontal lineTo, absolute
+        x = current[1];
+        context.lineTo(x, y);
         break;
 
       case 'v':
         // vertical lineTo, relative
+        y += current[1];
+        context.lineTo(x, y);
         break;
 
       case 'V':
         // verical lineTo, absolute
+        y = current[1];
+        context.lineTo(x, y);
         break;
 
       case 'm':
         // moveTo, relative
+        x += current[1];
+        y += current[2];
+        subpathStartX = x;
+        subpathStartY = y;
+        context.moveTo(x, y);
         break;
 
       case 'M':
@@ -2799,42 +2836,161 @@ function _execPathCommands(context, shape) {
 
       case 'c':
         // bezierCurveTo, relative
+        tempX = x + current[5];
+        tempY = y + current[6];
+        controlX = x + current[3];
+        controlY = y + current[4];
+        context.bezierCurveTo(x + current[1], // x1
+        y + current[2], // y1
+        controlX, // x2
+        controlY, // y2
+        tempX, tempY);
+        x = tempX;
+        y = tempY;
         break;
 
       case 'C':
         // bezierCurveTo, absolute
+        x = current[5];
+        y = current[6];
+        controlX = current[3];
+        controlY = current[4];
+        context.bezierCurveTo(current[1], current[2], controlX, controlY, x, y);
         break;
 
       case 's':
         // shorthand cubic bezierCurveTo, relative
+        // transform to absolute x,y
+        tempX = x + current[3];
+        tempY = y + current[4];
+
+        if (previous[0].match(/[CcSs]/) === null) {
+          // If there is no previous command or if the previous command was not a C, c, S, or s,
+          // the control point is coincident with the current point
+          controlX = x;
+          controlY = y;
+        } else {
+          // calculate reflection of previous control points
+          controlX = 2 * x - controlX;
+          controlY = 2 * y - controlY;
+        }
+
+        context.bezierCurveTo(controlX, controlY, x + current[1], y + current[2], tempX, tempY); // set control point to 2nd one of this command
+        // "... the first control point is assumed to be
+        // the reflection of the second control point on
+        // the previous command relative to the current point."
+
+        controlX = x + current[1];
+        controlY = y + current[2];
+        x = tempX;
+        y = tempY;
         break;
 
       case 'S':
         // shorthand cubic bezierCurveTo, absolute
+        tempX = current[3];
+        tempY = current[4];
+
+        if (previous[0].match(/[CcSs]/) === null) {
+          // If there is no previous command or if the previous command was not a C, c, S, or s,
+          // the control point is coincident with the current point
+          controlX = x;
+          controlY = y;
+        } else {
+          // calculate reflection of previous control points
+          controlX = 2 * x - controlX;
+          controlY = 2 * y - controlY;
+        }
+
+        context.bezierCurveTo(controlX, controlY, current[1], current[2], tempX, tempY);
+        x = tempX;
+        y = tempY; // set control point to 2nd one of this command
+        // "... the first control point is assumed to be
+        // the reflection of the second control point on
+        // the previous command relative to the current point."
+
+        controlX = current[1];
+        controlY = current[2];
         break;
 
       case 'q':
         // quadraticCurveTo, relative
+        // transform to absolute x,y
+        tempX = x + current[3];
+        tempY = y + current[4];
+        controlX = x + current[1];
+        controlY = y + current[2];
+        context.quadraticCurveTo(controlX, controlY, tempX, tempY);
+        x = tempX;
+        y = tempY;
         break;
 
       case 'Q':
         // quadraticCurveTo, absolute
+        tempX = current[3];
+        tempY = current[4];
+        context.quadraticCurveTo(current[1], current[2], tempX, tempY);
+        x = tempX;
+        y = tempY;
+        controlX = current[1];
+        controlY = current[2];
         break;
 
       case 't':
         // shorthand quadraticCurveTo, relative
+        // transform to absolute x,y
+        tempX = x + current[1];
+        tempY = y + current[2];
+
+        if (previous[0].match(/[QqTt]/) === null) {
+          // If there is no previous command or if the previous command was not a Q, q, T or t,
+          // assume the control point is coincident with the current point
+          controlX = x;
+          controlY = y;
+        } else {
+          // calculate reflection of previous control point
+          controlX = 2 * x - controlX;
+          controlY = 2 * y - controlY;
+        }
+
+        context.quadraticCurveTo(controlX, controlY, tempX, tempY);
+        x = tempX;
+        y = tempY;
         break;
 
       case 'T':
         // shorthand quadraticCurveTo, absolute
+        tempX = current[1];
+        tempY = current[2];
+
+        if (previous[0].match(/[QqTt]/) === null) {
+          // If there is no previous command or if the previous command was not a Q, q, T or t,
+          // assume the control point is coincident with the current point
+          controlX = x;
+          controlY = y;
+        } else {
+          // calculate reflection of previous control point
+          controlX = 2 * x - controlX;
+          controlY = 2 * y - controlY;
+        }
+
+        context.quadraticCurveTo(controlX, controlY, tempX, tempY);
+        x = tempX;
+        y = tempY;
         break;
 
       case 'a':
         // arc, relative
+        drawArc(context, x, y, [current[1], current[2], current[3], current[4], current[5], current[6] + x, current[7] + y]);
+        x += current[6];
+        y += current[7];
         break;
 
       case 'A':
         // arc, absolute
+        drawArc(context, x, y, [current[1], current[2], current[3], current[4], current[5], current[6], current[7]]);
+        x = current[6];
+        y = current[7];
         break;
 
       case 'z':
@@ -2844,6 +3000,8 @@ function _execPathCommands(context, shape) {
         context.closePath();
         break;
     }
+
+    previous = current;
   }
 }
 
@@ -2897,16 +3055,6 @@ function _drawText(context, shape, pixelRatio, canvasRenderer) {
 
   context.closePath();
 }
-/**
- * Generates the fill style. Can automatically generate a gradient based on the fill style being an array
- *
- * @param {object} style - The style.
- * @param {string[]} lines - The lines of text.
- * @param {number} width
- * @param {number} height
- * @return {string|number|CanvasGradient} The fill style
- */
-
 
 function _generateFillStyle(style, lines, width, height) {
   if (!Array.isArray(style.fill)) {
@@ -2984,16 +3132,6 @@ function _generateFillStyle(style, lines, width, height) {
 
   return gradient;
 }
-/**
- * Render the text with letter-spacing.
- * @param {string} text - The text to draw
- * @param {number} x - Horizontal position to draw the text
- * @param {number} y - Vertical position to draw the text
- * @param {boolean} [isStroke=false] - Is this drawing for the outside stroke of the
- *  text? If not, it's for the inside fill
- * @private
- */
-
 
 function _drawLetterSpacing(context, text, style, x, y) {
   var isStroke = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
@@ -3524,14 +3662,11 @@ var player = new Object$1({
     letterSpacing: 4,
     fill: '#03a9f4',
     wordWrap: true
-  }), new Path('M 0 0 L 300 100 L 200 300 z', {
-    fill: 'red',
-    stroke: 'green'
   })],
   transform: {
     position: {
-      x: 360,
-      y: 40
+      x: 240,
+      y: 220
     }
   },
   start: function start() {},
@@ -3544,11 +3679,33 @@ var player = new Object$1({
     transform.position.y += speed * Time.deltaTime * verticalInput;
   }
 });
+var arrow = new Object$1({
+  shape: new Path('M121.32,0L44.58,0C36.67,0,29.5,3.22,24.31,8.41\
+  c-5.19,5.19-8.41,12.37-8.41,20.28c0,15.82,12.87,28.69,28.69,28.69c0,0,4.4,\
+  0,7.48,0C36.66,72.78,8.4,101.04,8.4,101.04C2.98,106.45,0,113.66,0,121.32\
+  c0,7.66,2.98,14.87,8.4,20.29l0,0c5.42,5.42,12.62,8.4,20.28,8.4c7.66,0,14.87\
+  -2.98,20.29-8.4c0,0,28.26-28.25,43.66-43.66c0,3.08,0,7.48,0,7.48c0,15.82,\
+  12.87,28.69,28.69,28.69c7.66,0,14.87-2.99,20.29-8.4c5.42-5.42,8.4-12.62,8.4\
+  -20.28l0-76.74c0-7.66-2.98-14.87-8.4-20.29C136.19,2.98,128.98,0,121.32,0z', {
+    fill: '#e91e63',
+    stroke: 'green',
+    strokeWidth: 2
+  }),
+  transform: {
+    position: {
+      x: 360,
+      y: 40
+    }
+  },
+  start: function start() {},
+  update: function update() {}
+});
 myGame.scene.addObject(polygon);
 myGame.scene.addObject(polyline);
 myGame.scene.addObject(circle);
 myGame.scene.addObject(title);
 myGame.scene.addObject(player);
+myGame.scene.addObject(arrow);
 myGame.start();
 startBtn.addEventListener('click', function () {
   myGame.restart();
