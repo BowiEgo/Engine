@@ -705,6 +705,40 @@ function (_Line) {
   return Curve;
 }(Line);
 
+var Path =
+/*#__PURE__*/
+function (_Shape) {
+  _inherits(Path, _Shape);
+
+  function Path(path, opts) {
+    var _this;
+
+    _classCallCheck(this, Path);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Path).call(this, opts));
+    _this.path = path;
+    _this.width = 0;
+    _this.height = 0;
+    _this.dimensions = _this.calcDimensions();
+    console.log('new Path', _assertThisInitialized(_assertThisInitialized(_this)));
+    return _this;
+  }
+
+  _createClass(Path, [{
+    key: "calcDimensions",
+    value: function calcDimensions() {
+      return {
+        left: 0,
+        top: 0,
+        width: this.width,
+        height: this.height
+      };
+    }
+  }]);
+
+  return Path;
+}(Shape);
+
 var Projection =
 /*#__PURE__*/
 function () {
@@ -3318,6 +3352,9 @@ var player = new Object$1({
     letterSpacing: 4,
     fill: '#03a9f4',
     wordWrap: true
+  }), new Path('M 0 0 L 300 100 L 200 300 z', {
+    fill: 'red',
+    stroke: 'green'
   })],
   transform: {
     position: {

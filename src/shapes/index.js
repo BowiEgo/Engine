@@ -2,6 +2,7 @@ import Arc from './Arc';
 import Circle from './Circle';
 import Curve from './Curve';
 import Line from './Line';
+import Path from './Path';
 import Polygon from './Polygon';
 import Polyline from './Polyline';
 import Rectangle from './Rectangle';
@@ -16,6 +17,7 @@ export {
   Circle,
   Curve,
   Line,
+  Path,
   Polygon,
   Polyline,
   Rectangle,

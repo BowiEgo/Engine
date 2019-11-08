@@ -4,6 +4,7 @@ import Input from './core/Input';
 import Time from './core/Time';
 import Object from './core/Object';
 import {
+  Path,
   Polygon,
   Polyline,
   Circle,
@@ -148,6 +149,10 @@ let player = new Object({
       letterSpacing: 4,
       fill: '#03a9f4',
       wordWrap: true
+    }),
+    new Path('M 0 0 L 300 100 L 200 300 z', {
+      fill: 'red',
+      stroke: 'green'
     })
   ],
   transform: {
