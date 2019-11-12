@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "reload": "livereload 'public/'",
+    "reload": "livereload 'example/'",
     "watch": "rollup -c build/rollup.config.dev.js -w",
     "dev": "npm-run-all --parallel start watch reload",
-    "start": "serve public",
+    "start": "serve example",
     "build": "NODE_ENV=production rollup -c build/rollup.config.prod.js",
     "build:amd": "NODE_ENV=production rollup -c build/rollup.config.prod.js -f amd -o ./dist/bundle.amd.js",
     "build:cjs": "NODE_ENV=production rollup -c build/rollup.config.prod.js -f cjs -o ./dist/bundle.cjs.js",

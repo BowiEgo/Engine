@@ -9,10 +9,7 @@ import Rectangle from './Rectangle';
 import Sprite from './Sprite';
 import Text from './Text/Text';
 
-import Shape from './Shape';
-import ShapesGroup from './ShapesGroup';
-
-export {
+export default {
   Arc,
   Circle,
   Curve,
@@ -23,6 +20,4 @@ export {
   Rectangle,
   Sprite,
   Text,
-  Shape,
-  ShapesGroup
 }

@@ -1,7 +1,7 @@
 import { isArray, isFunction } from '../utils/Common';
-import { ShapesGroup } from '../shapes';
+import ShapesGroup from '../shapes/ShapesGroup';
 
-export default class Object {
+export default class Body {
   constructor (opts) {
     this.shape = opts.shape;
     if (isArray(this.shape)) {

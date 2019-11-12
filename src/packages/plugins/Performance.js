@@ -1,11 +1,11 @@
-import Time from '../core/Time';
-import Events from '../core/Events';
-import CanvasRenderer from '../renderer/CanvasRenderer';
-import { insertAfter } from '../utils/Dom';
+import { insertAfter } from '../../utils/Dom';
 
 let Performance = {};
 
-Performance.create = function (game, opts) {
+Performance.create = function (Engine, game, opts) {
+  this.engine = Engine;
+  const { Events } = this.engine;
+
   let performance = {};
   let view = game.view.getBoundingClientRect();
 
@@ -25,11 +25,12 @@ Performance.create = function (game, opts) {
     Performance.update(performance);
   })
 
-  game.widget = game.widget || {};
-  game.widget['performance'] = Performance;
+  game.plugin = game.plugin || {};
+  game.plugin['performance'] = Performance;
 }
 
 Performance.update = function (performance) {
+  const { Time } = this.engine;
   performance.fpsEl.innerText = Time.fps.toFixed(2);
 }
 

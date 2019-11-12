@@ -5,24 +5,24 @@ let Scene = {};
 Scene.create = (game) => {
   let scene = {};
 
-  scene.objects = [];
+  scene.bodies = [];
 
-  scene.addObject = (object) => {
-    scene.objects.push(object);
+  scene.addBody = (body) => {
+    scene.bodies.push(body);
 
-    Events.trigger('addObject', object);
+    Events.trigger('addBody', body);
   }
 
   scene.reset = () => {
-    scene.objects.forEach((object) => {
-      object.reset();
+    scene.bodies.forEach((body) => {
+      body.reset();
     })
   }
 
   scene.update = () => {
-    scene.objects.forEach((object) => {
+    scene.bodies.forEach((body) => {
       if (game.status === 'playing') {
-        object.updateCb.call(object);
+        body.updateCb.call(body);
       }
     })
   }
