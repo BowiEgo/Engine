@@ -1,32 +1,38 @@
 const STARTING_FPS = 60;
 
-let Time = {
-  timeScale: 0,
-  unscaledDeltaTime: 0,
-  deltaTime: 0
-};
-
-Time.reset = () => {
-  Time.timeStart = 0;
-  Time.timePassed = 0;
-  Time.fps = STARTING_FPS;
-}
-
-Time.update = (timeStamp) => {
-  if (Time.timeStart === 0) {
-    Time.timeStart = timeStamp;
-    Time.fps = STARTING_FPS;
-  } else {
-    Time.fps = 1000 / (timeStamp - Time.timeStart);
+class Time {
+  constructor (game) {
+    this.game = game;
+    this.timeScale = 0;
+    this.unscaledDeltaTime = 0;
+    this.deltaTime = 0;
+    this.reset();
   }
 
-  Time.unscaledDeltaTime = 1 / Time.fps;
-  Time.deltaTime = Time.unscaledDeltaTime * Time.timeScale;
+  static create (game) {
+    game.Time = new Time(game);
+  }
 
-  Time.timePassed += Time.unscaledDeltaTime;
-  Time.timeStart = timeStamp;
+  reset () {
+    this.timeStart = 0;
+    this.timePassed = 0;
+    this.fps = STARTING_FPS;
+  }
+
+  update (timeStamp) {
+    if (this.timeStart === 0) {
+      this.timeStart = timeStamp;
+      this.fps = STARTING_FPS;
+    } else {
+      this.fps = 1000 / (timeStamp - this.timeStart);
+    }
+  
+    this.unscaledDeltaTime = 1 / this.fps;
+    this.deltaTime = this.unscaledDeltaTime * this.timeScale;
+  
+    this.timePassed += this.unscaledDeltaTime;
+    this.timeStart = timeStamp;
+  }
 }
-
-Time.reset();
 
 export default Time

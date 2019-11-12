@@ -6,7 +6,9 @@ import ShapesGroup from '../shapes/ShapesGroup';
 const iMatrix = [1, 0, 0, 1, 0, 0];
 
 export default class CanvasRenderer {
-  constructor (opts) {
+  constructor (game, opts) {
+    this.game = game;
+
     const { width = 300, height = 300, bgColor = 'aliceblue' } = opts;
 
     this.canvas = _createCanvas();
@@ -67,7 +69,7 @@ export default class CanvasRenderer {
   }
 
   render (objects) {
-    const { context, pixelRatio } = this;
+    const { context, pixelRatio, game } = this;
     let vpt = this.viewportTransform;
     context.save();
     context.transform(
@@ -80,7 +82,7 @@ export default class CanvasRenderer {
     );
     _renderObjects.call(this, this.context, objects);
     context.restore();
-    Events.trigger('rendered', this.context);
+    game.Events.trigger('rendered', this.context);
   }
 
   clear () {

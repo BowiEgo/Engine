@@ -1,4 +1,4 @@
-const { Time, Body, Input, Shape } = Engine;
+const { Body, Input, Shape } = Engine;
 
 const myGame = Engine.create(
   document.getElementById('stage'),
@@ -8,7 +8,6 @@ const myGame = Engine.create(
     plugins: [ Performance ]
   },
 );
-console.log(Engine, myGame);
 const startBtn = document.getElementById('start');
 const stopBtn = document.getElementById('stop');
 const pauseBtn = document.getElementById('pause');
@@ -149,8 +148,8 @@ let player = new Body({
     const verticalInput = Input.getAxis('vertical');
     const speed = 100;
 
-    transform.position.x += speed * Time.deltaTime * horizontalInput;
-    transform.position.y += speed * Time.deltaTime * verticalInput;
+    transform.position.x += speed * myGame.Time.deltaTime * horizontalInput;
+    transform.position.y += speed * myGame.Time.deltaTime * verticalInput;
   }
 });
 
@@ -211,4 +210,59 @@ recoverBtn.addEventListener('click', () => {
   myGame.camera.recover();
 })
 
+// graph
+const myGraph = Engine.create(
+  document.getElementById('graph'),
+  {
+    width: 600,
+    height: 300,
+    autoStart: true,
+    plugins: [ Performance ]
+  },
+);
+
+let textNode = new Body({
+  shape: [
+    new Shape.Rectangle({
+      width: 120,
+      height: 40,
+      rx: 2,
+      ry: 2,
+      fill: 'white',
+      stroke: 'grey',
+      strokeWidth: 2
+    }),
+    new Shape.Text('这是\n一个方块\n一个圆圆的方块', {
+      align: 'left',
+      lineHeight: 12,
+      lineWidth: 16,
+      fontSize: 10,
+      fontStyle: 'italic',
+      fontFamily: 'Avenir',
+      fontWeight: 'bold',
+      underline: true,
+      linethrough: true,
+      overline: true,
+      dropShadow: true,
+      dropShadowColor: 'rgba(0, 0, 0, 0.3)',
+      letterSpacing: 4,
+      fill: '#03a9f4',
+      wordWrap: true
+    })
+  ],
+  transform: {
+    position: {
+      x: 240,
+      y: 220
+    }
+  },
+  start: function () {
+  },
+  update: function () {
+  }
+});
+
+myGraph.scene.addBody(textNode);
+
 console.log('myGame', myGame);
+console.log('myGraph', myGraph);

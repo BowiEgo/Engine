@@ -1,7 +1,6 @@
 /*global ENV*/
 import Engine from './core/Engine';
 import Input from './core/Input';
-import Time from './core/Time';
 import Body from './core/Body';
 import Shape from './shapes';
 
@@ -14,7 +13,6 @@ if (ENV !== 'production') {
 }
 
 Engine.Input = Input;
-Engine.Time = Time;
 Engine.Body = Body;
 Engine.Shape = Shape;
 

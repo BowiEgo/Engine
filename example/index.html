@@ -2,14 +2,22 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
 	<title>tree-graph-d3</title>
+	<style>
+		#stage, #graph {
+			display: inline-block;
+		}
+	</style>
 </head>
 <body>
 	<div id="stage"></div>
-	<button id="start">start</button>
-	<button id="stop">stop</button>
-	<button id="pause">pause</button>
-	<button id="fastward">fastward</button>
-	<button id="recover">recover</button>
+	<div id="graph"></div>
+	<div class="button-group">
+		<button id="start">start</button>
+		<button id="stop">stop</button>
+		<button id="pause">pause</button>
+		<button id="fastward">fastward</button>
+		<button id="recover">recover</button>
+	</div>
 <script src="./dist/engine.js"></script>
 <script src="./dist/packages/Performance.js"></script>
 <script src="./main.js"></script>

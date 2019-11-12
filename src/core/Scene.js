@@ -1,16 +1,13 @@
-import Events from '../core/Events';
-
 let Scene = {};
 
 Scene.create = (game) => {
   let scene = {};
 
   scene.bodies = [];
-
+  
   scene.addBody = (body) => {
     scene.bodies.push(body);
-
-    Events.trigger('addBody', body);
+    game.renderer.render([body]);
   }
 
   scene.reset = () => {

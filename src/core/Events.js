@@ -1,83 +1,94 @@
 import { keys, clone } from '../utils/Common';
 
-let Events = {};
-
-Events.create = function (game) {
-  this.game = game;
-  game.events = {};
-}
-
-Events.on = function (eventNames, callback) {
-  let names = eventNames.split(' '),
-    name;
-
-  for (let i = 0; i < names.length; i++) {
-    name = names[i];
-    this.game.events[name] = this.game.events[name] || [];
-    this.game.events[name].push(callback);
+export default class Events {
+  constructor (game) {
+    this.game = game;
+    game.events = {};
   }
 
-  return callback;
-}
-
-Events.off = function(eventNames, callback) {
-  if (!eventNames) {
-    object.events = {};
-    return;
+  static create (game) {
+    game.Events = new Events(game);
   }
 
-  // handle Events.off(callback)
-  if (typeof eventNames === 'function') {
-    callback = eventNames;
-    eventNames = keys(this.game.events).join(' ');
-  }
-
-  let names = eventNames.split(' ');
-
-  for (let i = 0; i < names.length; i++) {
-    let callbacks = this.game.events[names[i]],
-      newCallbacks = [];
-
-    if (callback && callbacks) {
-      for (let j = 0; j < callbacks.length; j++) {
-        if (callbacks[j] !== callback)
-          newCallbacks.push(callbacks[j]);
-      }
-    }
-
-    this.game.events[names[i]] = newCallbacks;
-  }
-};
-
-Events.trigger = function(eventNames, event) {
-  let names,
-    name,
-    callbacks,
-    eventClone;
-
-  let events = this.game.events;
-
-  if (events && keys(events).length > 0) {
-    if (!event)
-      event = {};
-
-    names = eventNames.split(' ');
+  on (eventNames, callback) {
+    let game = this.game;
+    let names = eventNames.split(' '),
+      name;
 
     for (let i = 0; i < names.length; i++) {
       name = names[i];
-      callbacks = events[name];
+      game.events[name] = game.events[name] || [];
+      game.events[name].push(callback);
+    }
 
-      if (callbacks) {
-        eventClone = clone(event, false);
-        eventClone.name = name;
-        eventClone.source = this.game;
+    return callback;
+  }
 
+  off (eventNames, callback) {
+    let game = this.game;
+
+    if (!eventNames) {
+      object.events = {};
+      return;
+    }
+  
+    // handle Events.off(callback)
+    if (typeof eventNames === 'function') {
+      callback = eventNames;
+      eventNames = keys(game.events).join(' ');
+    }
+  
+    let names = eventNames.split(' ');
+  
+    for (let i = 0; i < names.length; i++) {
+      let callbacks = game.events[names[i]],
+        newCallbacks = [];
+  
+      if (callback && callbacks) {
         for (let j = 0; j < callbacks.length; j++) {
-          callbacks[j].apply(this.game, [eventClone]);
+          if (callbacks[j] !== callback)
+            newCallbacks.push(callbacks[j]);
+        }
+      }
+  
+      game.events[names[i]] = newCallbacks;
+    }
+  }
+
+  trigger (eventNames, event) {
+    let names,
+      name,
+      callbacks,
+      eventClone;
+
+    let game = this.game;
+
+    if (!game) {
+      return;
+    }
+    
+    let events = game.events;
+    
+    if (events && keys(events).length > 0) {
+      if (!event)
+        event = {};
+    
+      names = eventNames.split(' ');
+    
+      for (let i = 0; i < names.length; i++) {
+        name = names[i];
+        callbacks = events[name];
+    
+        if (callbacks) {
+          eventClone = clone(event, false);
+          eventClone.name = name;
+          eventClone.source = game;
+    
+          for (let j = 0; j < callbacks.length; j++) {
+            callbacks[j].apply(game, [eventClone]);
+          }
         }
       }
     }
   }
-};
-
-export default Events;
+}

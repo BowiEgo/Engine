@@ -25,18 +25,22 @@ if (typeof window !== 'undefined') {
   };
 }
 
+let uid = 0;
+
 class Engine {
   static create (el, opts) {
     console.log('create', el)
     let game = {};
+    game.uid = uid++;
     game.el = el;
     game.status = 'stop';
     game.PAUSE_TIMEOUT = 100;
 
     Events.create(game);
+    Time.create(game);
 
     game.renderer = Renderer.create(
-      el,
+      game,
       opts
     );
 
@@ -49,7 +53,10 @@ class Engine {
     game.scene = Scene.create(game);
 
     game.start = () => {
-      Time.timeScale = 1;
+      if (game.status === 'playing') {
+        return;
+      }
+      game.Time.timeScale = 1;
       Engine.run(game);
       game.status = 'playing';
     }
@@ -61,14 +68,14 @@ class Engine {
 
     game.pause = () => {
       if (game.status === 'playing') {
-        Time.timeScale = 0;
+        game.Time.timeScale = 0;
         game.status = 'paused';
       }
     }
 
     game.resume = () => {
       if (game.status === 'paused') {
-        Time.timeScale = 1;
+        game.Time.timeScale = 1;
         game.status = 'playing';
       }
     }
@@ -80,22 +87,24 @@ class Engine {
 
     Engine.reset(game);
 
-    Events.on('addBody', (body) => {
-      game.renderer.render([body]);
-    })
-
+    // install plugins
     let plugins = opts.plugins || [];
 
     plugins.forEach(plugin => {
-      plugin.create(Engine, game);
+      plugin.create(game);
     });
+
+    // check autoStart
+    if (opts.autoStart) {
+      game.start();
+    }
 
     return game;
   }
 
   static reset (game) {
     _cancelFrame(game.frameReq);
-    Time.reset();
+    game.Time.reset();
     game.frameReq = null;
     game.scene.reset();
     game.renderer.clear();
@@ -110,8 +119,8 @@ class Engine {
     game.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
   
     function tick (timeStamp) {
-      Events.trigger('tick', timeStamp);
-      Time.update(timeStamp); // update Time
+      game.Events.trigger('tick', timeStamp);
+      game.Time.update(timeStamp); // update Time
       game.scene.update();
       game.renderer.clear();
       game.renderer.render(game.scene.bodies);
@@ -120,8 +129,6 @@ class Engine {
   }
 }
 
-Engine.Time = Time;
-Engine.Events = Events;
 Engine.Body = Body;
 Engine.Shape = Shape;
 
