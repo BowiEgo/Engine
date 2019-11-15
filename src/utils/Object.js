@@ -12,5 +12,3 @@ export function getValue (object, key) {
   
   return value;
 }
-
-

@@ -2,7 +2,7 @@ import Projection from '../geometry/Projection';
 import Shape from './Shape';
 import Vector from '../geometry/Vector';
 import Vertice from '../geometry/Vertice';
-import { min, max } from '../utils/Array';
+import { min, max } from '../utils/array';
 
 class Polygon extends Shape {
   constructor (points, opts) {

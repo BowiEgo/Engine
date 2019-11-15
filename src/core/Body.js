@@ -1,4 +1,4 @@
-import { isArray, isFunction } from '../utils/Common';
+import { isArray, isFunction } from '../utils/common';
 import ShapesGroup from '../shapes/ShapesGroup';
 
 export default class Body {
@@ -22,6 +22,10 @@ export default class Body {
     }
 
     this.reset();
+  }
+
+  get shapes () {
+    return this.shape.shapes;
   }
 
   start () {

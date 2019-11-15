@@ -1,4 +1,4 @@
-import { min, max } from '../utils/Array';
+import { min, max } from '../utils/array';
 
 export default class ShapesGroup {
   constructor (shapes) {

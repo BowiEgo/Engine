@@ -1,4 +1,4 @@
-import { keys, clone } from '../utils/Common';
+import { keys, clone } from '../utils/common';
 
 export default class Events {
   constructor (game) {

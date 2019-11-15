@@ -25,6 +25,7 @@ class Path extends Shape {
     this.width = 0;
     this.height = 0;
     this.dimensions = this.calcDimensions();
+    this.fill = opts.fill;
     console.log('new Path', this);
   }
 
@@ -72,6 +73,16 @@ class Path extends Shape {
     }
 
     return result;
+  }
+
+  transition (transition) {
+    // console.log('transition', transition);
+    return this;
+  }
+
+  update () {
+    // console.log('update', this);
+    return this;
   }
 
   calcDimensions () {

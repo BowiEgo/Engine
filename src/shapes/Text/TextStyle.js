@@ -1,5 +1,5 @@
 import { TEXT_GRADIENT } from './const';
-import { hex2string } from '../../utils/Color'
+import { hex2string } from '../../utils/color'
 
 const defaultStyle = {
   align: 'left',

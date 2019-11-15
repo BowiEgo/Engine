@@ -1,4 +1,4 @@
-import { insertAfter } from '../../utils/Dom';
+import { insertAfter } from '../../utils/dom';
 
 export default class Performance {
   static create (game, opts) {

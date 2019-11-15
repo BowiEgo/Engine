@@ -1,4 +1,5 @@
 import { TEXT_GRADIENT } from '../../shapes/Text/const';
+import { arcToSegments } from '../../utils/arc';
 
 export default class CanvasShapeRenderer {
   constructor (context, pixelRatio, canvasRenderer) {
@@ -38,8 +39,8 @@ export default class CanvasShapeRenderer {
     _setStrokeStyles(context, shape);
     _setFillStyles(context, shape);
     _setDropShadowStyles(context, shape);
-    _renderStroke(context, shape);
-    _renderFill(context, shape);
+    shape.strokeWidth > 0 && _renderStroke(context, shape);
+    shape.fill && _renderFill(context, shape);
   }
 }
 
@@ -383,7 +384,7 @@ function _execPathCommands(context, shape) {
         y = tempY;
         break;
       case 'a': // arc, relative
-        drawArc(context, x, y, [
+        _drawArc(context, x, y, [
           current[1],
           current[2],
           current[3],
@@ -396,7 +397,7 @@ function _execPathCommands(context, shape) {
         y += current[7];
         break;
       case 'A': // arc, absolute
-        drawArc(context, x, y, [
+        _drawArc(context, x, y, [
           current[1],
           current[2],
           current[3],
@@ -416,6 +417,28 @@ function _execPathCommands(context, shape) {
         break;
     }
     previous = current;
+  }
+}
+
+function _drawArc (context, fx, fy, coords) {
+  var rx = coords[0],
+      ry = coords[1],
+      rot = coords[2],
+      large = coords[3],
+      sweep = coords[4],
+      tx = coords[5],
+      ty = coords[6],
+      segs = [[], [], [], []],
+      segsNorm = arcToSegments(tx - fx, ty - fy, rx, ry, large, sweep, rot);
+
+  for (var i = 0, len = segsNorm.length; i < len; i++) {
+    segs[i][0] = segsNorm[i][0] + fx;
+    segs[i][1] = segsNorm[i][1] + fy;
+    segs[i][2] = segsNorm[i][2] + fx;
+    segs[i][3] = segsNorm[i][3] + fy;
+    segs[i][4] = segsNorm[i][4] + fx;
+    segs[i][5] = segsNorm[i][5] + fy;
+    context.bezierCurveTo.apply(context, segs[i]);
   }
 }
 

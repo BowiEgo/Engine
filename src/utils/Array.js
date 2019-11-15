@@ -1,4 +1,4 @@
-import { getValue } from '../utils/Object';
+import { getValue } from './object';
 
 /**
  * Finds maximum value in array (not necessarily "first" one)
