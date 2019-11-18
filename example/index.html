@@ -4,13 +4,14 @@
 	<title>tree-graph-d3</title>
 	<style>
 		#stage, #graph {
-			display: inline-block;
+			position: relative;
+			/* display: inline-block; */
 		}
 	</style>
 </head>
 <body>
-	<div id="stage"></div>
 	<div id="graph"></div>
+	<div id="stage"></div>
 	<div class="button-group">
 		<button id="start">start</button>
 		<button id="stop">stop</button>
@@ -19,6 +20,7 @@
 		<button id="recover">recover</button>
 	</div>
 <script src="./dist/engine.js"></script>
-<script src="./dist/packages/Performance.js"></script>
+<script src="./dist/plugins/Performance.js"></script>
+<script src="./dist/plugins/Input.js"></script>
 <script src="./main.js"></script>
 </body></html>

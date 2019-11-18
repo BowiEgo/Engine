@@ -6,10 +6,10 @@ import ShapesGroup from '../shapes/ShapesGroup';
 const iMatrix = [1, 0, 0, 1, 0, 0];
 
 export default class CanvasRenderer {
-  constructor (game, opts) {
+  constructor (game) {
     this.game = game;
 
-    const { width = 300, height = 300, bgColor = 'aliceblue' } = opts;
+    const { width = 300, height = 300, bgColor = 'aliceblue' } = game.opts;
 
     this.canvas = _createCanvas();
     this.context = this.canvas.getContext('2d');
@@ -48,11 +48,15 @@ export default class CanvasRenderer {
   }
 
   zoomToPoint (point, value) {
-    let before = point, vpt = this.viewportTransform.slice(0);
-    point = _transformPoint(point, _invertTransform(this.viewportTransform));
+    let relativePoint = {
+      x: point.x * this.pixelRatio,
+      y: point.y * this.pixelRatio
+    }
+    let before = relativePoint, vpt = this.viewportTransform.slice(0);
+    relativePoint = _transformPoint(relativePoint, _invertTransform(this.viewportTransform));
     vpt[0] = value;
     vpt[3] = value;
-    let after = _transformPoint(point, vpt);
+    let after = _transformPoint(relativePoint, vpt);
     vpt[4] += before.x - after.x;
     vpt[5] += before.y - after.y;
 
@@ -62,8 +66,8 @@ export default class CanvasRenderer {
   translate (offset) {
     let vpt = this.viewportTransform.slice(0);
 
-    vpt[4] += offset.x;
-    vpt[5] += offset.y;
+    vpt[4] += offset.x * this.pixelRatio;
+    vpt[5] += offset.y * this.pixelRatio;
 
     this.setViewportTransform(vpt);
   }
@@ -82,7 +86,7 @@ export default class CanvasRenderer {
     );
     _renderObjects.call(this, this.context, objects);
     context.restore();
-    game.Events.trigger('rendered', this.context);
+    game.events.trigger('rendered', this.context);
   }
 
   clear () {

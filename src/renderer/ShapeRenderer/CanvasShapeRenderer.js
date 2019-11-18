@@ -115,6 +115,9 @@ function _pathPolyline(context, shape) {
 }
 
 function _pathRectangle(context, shape) {
+  const { transform } = shape;
+  const shapePosition = transform.position;
+
   let rx = shape.rx ? Math.min(shape.rx, shape.width / 2) : 0,
     ry = shape.ry ? Math.min(shape.ry, shape.height / 2) : 0,
     w = shape.width,
@@ -124,19 +127,19 @@ function _pathRectangle(context, shape) {
     k = 1 - 0.5522847498;
 
   context.beginPath();
-  context.moveTo(rx, 0);
+  context.moveTo(rx + shapePosition.x, shapePosition.y);
 
-  context.lineTo(w - rx, 0);
-  isRounded && context.bezierCurveTo(w - k * rx, 0, w, k * ry, w, ry);
+  context.lineTo(w - rx + shapePosition.x, shapePosition.y);
+  isRounded && context.bezierCurveTo(w - k * rx + shapePosition.x, shapePosition.y, w + shapePosition.x, k * ry + shapePosition.y, w + shapePosition.x, ry + shapePosition.y);
 
-  context.lineTo(w, h - ry);
-  isRounded && context.bezierCurveTo(w, h - k * ry, w - k * rx, h, w - rx, h);
+  context.lineTo(w + shapePosition.x, h - ry + shapePosition.y);
+  isRounded && context.bezierCurveTo(w + shapePosition.x, h - k * ry + shapePosition.y, w - k * rx + shapePosition.x, h + shapePosition.y, w - rx + shapePosition.x, h + shapePosition.y);
 
-  context.lineTo(rx, h);
-  isRounded && context.bezierCurveTo(k * rx, h, 0, h - k * ry, 0, h - ry);
+  context.lineTo(rx + shapePosition.x, h + shapePosition.y);
+  isRounded && context.bezierCurveTo(k * rx + shapePosition.x, h + shapePosition.y, shapePosition.x, h - k * ry + shapePosition.y, shapePosition.x, h - ry + shapePosition.y);
 
-  context.lineTo(0, ry);
-  isRounded && context.bezierCurveTo(0, k * ry, k * rx, 0, rx, 0);
+  context.lineTo(shapePosition.x, ry + shapePosition.y);
+  isRounded && context.bezierCurveTo(shapePosition.x, k * ry + shapePosition.y, k * rx + shapePosition.x, shapePosition.y, rx + shapePosition.x, shapePosition.y);
 
   context.closePath();
 }
@@ -447,7 +450,8 @@ function _drawText (context, shape, pixelRatio, canvasRenderer) {
 
   shape.updateText();
 
-  const { measured, style } = shape;
+  const { measured, style, transform } = shape;
+  const shapePosition = transform.position;
   const width = measured.width;
   const height = measured.height;
   const lines = measured.lines;
@@ -490,8 +494,8 @@ function _drawText (context, shape, pixelRatio, canvasRenderer) {
         context,
         lines[i],
         style,
-        linePositionX + style.padding,
-        linePositionY + style.padding,
+        linePositionX + style.padding + shapePosition.x,
+        linePositionY + style.padding + shapePosition.y,
         true
       );
     }
@@ -501,8 +505,8 @@ function _drawText (context, shape, pixelRatio, canvasRenderer) {
         context,
         lines[i],
         style,
-        linePositionX + style.padding,
-        linePositionY + style.padding
+        linePositionX + style.padding + shapePosition.x,
+        linePositionY + style.padding + shapePosition.y
       );
     }
   }

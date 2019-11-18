@@ -3,11 +3,11 @@ import { keys, clone } from '../utils/common';
 export default class Events {
   constructor (game) {
     this.game = game;
-    game.events = {};
+    game._eventPool = {};
   }
 
   static create (game) {
-    game.Events = new Events(game);
+    game.events = new Events(game);
   }
 
   on (eventNames, callback) {
@@ -17,8 +17,8 @@ export default class Events {
 
     for (let i = 0; i < names.length; i++) {
       name = names[i];
-      game.events[name] = game.events[name] || [];
-      game.events[name].push(callback);
+      game._eventPool[name] = game._eventPool[name] || [];
+      game._eventPool[name].push(callback);
     }
 
     return callback;
@@ -28,20 +28,19 @@ export default class Events {
     let game = this.game;
 
     if (!eventNames) {
-      object.events = {};
       return;
     }
   
     // handle Events.off(callback)
     if (typeof eventNames === 'function') {
       callback = eventNames;
-      eventNames = keys(game.events).join(' ');
+      eventNames = keys(game._eventPool).join(' ');
     }
   
     let names = eventNames.split(' ');
   
     for (let i = 0; i < names.length; i++) {
-      let callbacks = game.events[names[i]],
+      let callbacks = game._eventPool[names[i]],
         newCallbacks = [];
   
       if (callback && callbacks) {
@@ -51,7 +50,7 @@ export default class Events {
         }
       }
   
-      game.events[names[i]] = newCallbacks;
+      game._eventPool[names[i]] = newCallbacks;
     }
   }
 
@@ -67,9 +66,9 @@ export default class Events {
       return;
     }
     
-    let events = game.events;
+    let _eventPool = game._eventPool;
     
-    if (events && keys(events).length > 0) {
+    if (_eventPool && keys(_eventPool).length > 0) {
       if (!event)
         event = {};
     
@@ -77,7 +76,7 @@ export default class Events {
     
       for (let i = 0; i < names.length; i++) {
         name = names[i];
-        callbacks = events[name];
+        callbacks = _eventPool[name];
     
         if (callbacks) {
           eventClone = clone(event, false);

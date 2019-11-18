@@ -1,11 +1,11 @@
-const { Body, Input, Shape } = Engine;
+const { Body, Shape } = Engine;
 
 const myGame = Engine.create(
   document.getElementById('stage'),
   {
     width: 600,
     height: 300,
-    plugins: [ Performance ]
+    plugins: [ Performance, Input ]
   },
 );
 const startBtn = document.getElementById('start');
@@ -143,13 +143,14 @@ let player = new Body({
   },
   update: function () {
     let { transform } = this;
+    let { input } = myGame;
 
-    const horizontalInput = Input.getAxis('horizontal');
-    const verticalInput = Input.getAxis('vertical');
+    const horizontalInput = input.getAxis('horizontal');
+    const verticalInput = input.getAxis('vertical');
     const speed = 100;
 
-    transform.position.x += speed * myGame.Time.deltaTime * horizontalInput;
-    transform.position.y += speed * myGame.Time.deltaTime * verticalInput;
+    transform.position.x += speed * myGame.time.deltaTime * horizontalInput;
+    transform.position.y += speed * myGame.time.deltaTime * verticalInput;
   }
 });
 
@@ -246,40 +247,47 @@ const myGraph = Engine.create(
   document.getElementById('graph'),
   {
     width: 600,
-    height: 300,
+    height: 800,
     autoStart: true,
     plugins: [ Performance ]
   },
 );
 
+let direction = -1;
+
 let textNode = new Body({
   shape: [
     new Shape.Rectangle({
       width: 120,
-      height: 40,
+      height: 56,
       rx: 2,
       ry: 2,
       fill: 'white',
       stroke: 'grey',
       strokeWidth: 2
     }),
-    new Shape.Text('这是\n一个方块\n一个圆圆的方块', {
+    new Shape.Text('深圳市腾讯信息技术有限公司', {
       align: 'left',
-      lineHeight: 12,
-      lineWidth: 16,
+      lineHeight: 16,
+      fill: '#333',
       fontSize: 10,
-      fontStyle: 'italic',
       fontFamily: 'Avenir',
-      fontWeight: 'bold',
-      underline: true,
-      linethrough: true,
-      overline: true,
-      dropShadow: true,
-      dropShadowColor: 'rgba(0, 0, 0, 0.3)',
-      letterSpacing: 4,
-      fill: '#03a9f4',
-      wordWrap: true
-    }),
+      letterSpacing: 1,
+      wordWrap: true,
+      wordWrapWidth: 100,
+      breakWords: true
+    }).translate(10, 6),
+    new Shape.Text('2.60%', {
+      align: 'left',
+      lineHeight: 16,
+      fill: '#333',
+      fontSize: 10,
+      fontFamily: 'Avenir',
+      letterSpacing: 1,
+      wordWrap: true,
+      wordWrapWidth: 100,
+      breakWords: true
+    }).translate(10, 38),
     new Shape.Path('M120,20C140,20,160,60,180,60',
     {
       stroke: 'grey',
@@ -295,11 +303,55 @@ let textNode = new Body({
   start: function () {
   },
   update: function () {
-    this.shapes[2].transition('ease 1s').update('M120,20C140,20,160,60,180,60');
+    let { transform } = this;
+    let { time, camera } = myGraph;
+
+    // const speed = 200;
+    // if (transform.position.y <= 0 && direction === -1) {
+    //   direction = 1;
+    // }
+    // if (transform.position.y >= 300 && direction === 1) {
+    //   direction = -1;
+    // }
+
+    let endPointX = 180 - camera.position.x;
+    let endPointY = 60 - camera.position.y;
+
+    // transform.position.y += speed * Time.deltaTime * direction;
+
+    this.shapes[3].update(`M120,20C140,20,${endPointX - 20},${endPointY},${endPointX},${endPointY}`);
   }
 });
 
+let branch = new Body({
+  shape: new Shape.Rectangle({
+    width: 20,
+    height: 60,
+    rx: 2,
+    ry: 2,
+    fill: 'white',
+    stroke: 'grey',
+    strokeWidth: 2
+  }),
+  transform: {
+    position: {
+      x: 420,
+      y: 150
+    }
+  },
+  update: function () {
+    let { transform } = this;
+    let { Time, camera } = myGraph;
+
+    this.shape.transform.position = {
+      x: -camera.position.x,
+      y: -camera.position.y
+    }
+  }
+})
+
 myGraph.scene.addBody(textNode);
+myGraph.scene.addBody(branch);
 
 console.log('myGame', myGame);
 console.log('myGraph', myGraph);

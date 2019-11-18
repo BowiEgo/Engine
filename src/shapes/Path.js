@@ -75,13 +75,9 @@ class Path extends Shape {
     return result;
   }
 
-  transition (transition) {
-    // console.log('transition', transition);
-    return this;
-  }
-
-  update () {
-    // console.log('update', this);
+  update (path) {
+    this.path = path.match(/[mzlhvcsqta][^mzlhvcsqta]*/gi);
+    this.path = Path.parsePath(this.path);
     return this;
   }
 

@@ -2,12 +2,12 @@ import CanvasRenderer from './CanvasRenderer';
 
 let Renderer = {};
 
-Renderer.create = (game, opts) => {
-  let renderer = new CanvasRenderer(game, opts);
+Renderer.create = (game) => {
+  let renderer = new CanvasRenderer(game);
 
   game.el.append(renderer.canvas);
 
-  return renderer;
+  game.renderer = renderer;
 }
 
 export default Renderer;

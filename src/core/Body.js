@@ -35,6 +35,6 @@ export default class Body {
   }
 
   reset () {
-    this.shape.transform = this.transform = JSON.parse(JSON.stringify(this.transform0));
+    this.transform = JSON.parse(JSON.stringify(this.transform0));
   }
 }

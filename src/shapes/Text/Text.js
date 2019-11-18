@@ -70,6 +70,10 @@ class Text extends Shape {
     };
   }
 
+  update () {
+    return this;
+  }
+
   move (dx, dy) {
   }
 }

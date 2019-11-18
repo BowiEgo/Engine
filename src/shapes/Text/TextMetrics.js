@@ -9,7 +9,6 @@ export class TextMetrics {
     this.lineHeight = lineHeight;
     this.maxLineWidth = maxLineWidth;
     this.fontProperties = fontProperties;
-    console.log(this)
   }
 
   static measureText (text, style, wordWrap) {
@@ -412,6 +411,26 @@ export class TextMetrics {
    */
   static canBreakWords(token, breakWords) {
     return breakWords;
+  }
+
+  /**
+   * This method exists to be easily overridden
+   * It allows one to determine whether a pair of characters
+   * should be broken by newlines
+   * For example certain characters in CJK langs or numbers.
+   * It must return a boolean.
+   *
+   * @private
+   * @param  {string}  char      The character
+   * @param  {string}  nextChar  The next character
+   * @param  {string}  token     The token/word the characters are from
+   * @param  {number}  index     The index in the token of the char
+   * @param  {boolean}  breakWords  The style attr break words
+   * @return {boolean} whether to break word or not
+   */
+  static canBreakChars(char, nextChar, token, index, breakWords) // eslint-disable-line no-unused-vars
+  {
+      return true;
   }
 
   /**

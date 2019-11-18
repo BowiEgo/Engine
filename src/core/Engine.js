@@ -2,10 +2,11 @@ import Camera from './Camera';
 import Time from './Time';
 import Mouse from './Mouse';  
 import Scene from './Scene';
+import Select from './Select';  
 import Events from './Events';
 import Body from './Body';
 import Shape from '../shapes';
-import { Renderer, CanvasRenderer } from '../renderer';
+import { Renderer } from '../renderer';
 
 let _reqFrame, _cancelFrame, _frameTimeout;
 if (typeof window !== 'undefined') {
@@ -32,31 +33,30 @@ class Engine {
     console.log('create', el)
     let game = {};
     game.uid = uid++;
+    game.opts = opts;
     game.el = el;
     game.status = 'stop';
     game.PAUSE_TIMEOUT = 100;
 
     Events.create(game);
     Time.create(game);
-
-    game.renderer = Renderer.create(
-      game,
-      opts
-    );
+    Renderer.create(game);
 
     game.view = game.renderer.canvas;
 
-    game.mouse = Mouse.create(game.view);
+    Mouse.create(game);
 
     game.camera = Camera.create(game);
 
-    game.scene = Scene.create(game);
+    Scene.create(game);
+
+    Select.create(game);
 
     game.start = () => {
       if (game.status === 'playing') {
         return;
       }
-      game.Time.timeScale = 1;
+      game.time.timeScale = 1;
       Engine.run(game);
       game.status = 'playing';
     }
@@ -68,7 +68,7 @@ class Engine {
 
     game.pause = () => {
       if (game.status === 'playing') {
-        game.Time.timeScale = 0;
+        game.time.timeScale = 0;
         game.status = 'paused';
       }
     }
@@ -104,7 +104,7 @@ class Engine {
 
   static reset (game) {
     _cancelFrame(game.frameReq);
-    game.Time.reset();
+    game.time.reset();
     game.frameReq = null;
     game.scene.reset();
     game.renderer.clear();
@@ -119,8 +119,8 @@ class Engine {
     game.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
   
     function tick (timeStamp) {
-      game.Events.trigger('tick', timeStamp);
-      game.Time.update(timeStamp); // update Time
+      game.events.trigger('tick', timeStamp);
+      game.time.update(timeStamp); // update Time
       game.scene.update();
       game.renderer.clear();
       game.renderer.render(game.scene.bodies);

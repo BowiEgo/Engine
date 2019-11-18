@@ -10,7 +10,7 @@ class Time {
   }
 
   static create (game) {
-    game.Time = new Time(game);
+    game.time = new Time(game);
   }
 
   reset () {

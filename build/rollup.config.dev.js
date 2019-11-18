@@ -79,6 +79,7 @@ async function main () {
 
   packages = [
     { name: 'Performance', path: 'plugins/Performance.js' },
+    { name: 'Input', path: 'plugins/Input.js' },
   ];
   packages.forEach((pkg) => {
     let input = `src/packages/${pkg.path}`;
@@ -91,7 +92,7 @@ async function main () {
     results.push({
       input,
       output: {
-        file: `example/dist/packages/${pkg.name}.js`,
+        file: `example/dist/plugins/${pkg.name}.js`,
         format: 'umd',
         banner,
         sourcemap: true,

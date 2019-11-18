@@ -4,7 +4,10 @@ class Shape {
   constructor (opts) {
     opts = opts || {};
     this.transform = {
-      position: {}
+      position: {
+        x: 0,
+        y: 0
+      }
     };
     this.fill = opts.fill || '#83cbff';
     this.stroke = opts.stroke || 'grey';
@@ -25,6 +28,16 @@ class Shape {
 
   move () {
     throw 'move(dx, dy) note implemented';
+  }
+
+  transition () {
+    return this;
+  }
+
+  translate (dx, dy) {
+    this.transform.position.x += dx;
+    this.transform.position.y += dy;
+    return this;
   }
 }
 

@@ -1,30 +1,29 @@
-let Scene = {};
-
-Scene.create = (game) => {
-  let scene = {};
-
-  scene.bodies = [];
-  
-  scene.addBody = (body) => {
-    scene.bodies.push(body);
-    game.renderer.render([body]);
+export default class Scene {
+  constructor (game) {
+    this.game = game;
+    this.bodies = [];
   }
 
-  scene.reset = () => {
-    scene.bodies.forEach((body) => {
+  static create (game) {
+    game.scene = new Scene(game);
+  }
+
+  addBody (body) {
+    this.bodies.push(body);
+    this.game.renderer.render([body]);
+  }
+
+  reset () {
+    this.bodies.forEach(body => {
       body.reset();
     })
   }
 
-  scene.update = () => {
-    scene.bodies.forEach((body) => {
-      if (game.status === 'playing') {
+  update () {
+    this.bodies.forEach((body) => {
+      if (this.game.status === 'playing') {
         body.updateCb.call(body);
       }
     })
   }
-
-  return scene
 }
-
-export default Scene

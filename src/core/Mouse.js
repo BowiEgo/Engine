@@ -1,188 +1,166 @@
-let Mouse = {};
+export default class Mouse {
+  constructor (game) {
+    this.game = game;
+    this.element = game.view;
+    this.pixelRatio = game.renderer.pixelRatio;
+    this.absolute = { x: 0, y: 0 };
+    this.position = { x: 0, y: 0 };
+    this.mousedownPosition = { x: 0, y: 0 };
+    this.mouseupPosition = { x: 0, y: 0 };
+    this.offset = { x: 0, y: 0 };
+    this.scale = { x: 1, y: 1 };
+    this.wheelDelta = 0;
+    this.button = -1;
 
-Mouse.create = (element) => {
-  let mouse = {};
+    this.sourceEvents = {
+      mousemove: null,
+      mouseout: null,
+      mousedown: null,
+      mouseup: null,
+      mousewheel: null
+    };
 
-  mouse.element = element;
-  mouse.absolute = { x: 0, y: 0 };
-  mouse.position = { x: 0, y: 0 };
-  mouse.mousedownPosition = { x: 0, y: 0 };
-  mouse.mouseupPosition = { x: 0, y: 0 };
-  mouse.offset = { x: 0, y: 0 };
-  mouse.scale = { x: 1, y: 1 };
-  mouse.wheelDelta = 0;
-  mouse.button = -1;
-  mouse.pixelRatio = parseInt(mouse.element.getAttribute('data-pixel-ratio'), 10) || 1;
+    this.eventHooks = {
+      mousemove: null,
+      mouseout: null,
+      mousedown: null,
+      mouseup: null,
+      mousewheel: null
+    }
 
-  mouse.sourceEvents = {
-    mousemove: null,
-    mouseout: null,
-    mousedown: null,
-    mouseup: null,
-    mousewheel: null
-  };
-
-  mouse.eventHooks = {
-    mousemove: null,
-    mouseout: null,
-    mousedown: null,
-    mouseup: null,
-    mousewheel: null
+    Mouse.setElement(this, this.element);
   }
 
-  mouse.on = function (eventName, callback) {
-    mouse.eventHooks[eventName] = callback;
+  static create (game) {
+    game.mouse = new Mouse(game);
   }
 
-  mouse.triggerHook = function (eventName) {
-    mouse.eventHooks[eventName].call(null, mouse);
+  static setElement (mouse, element) {
+    element.addEventListener('mousemove', mouse.mousemove.bind(mouse));
+    element.addEventListener('mouseout', mouse.mouseout.bind(mouse));
+    element.addEventListener('mousedown', mouse.mousedown.bind(mouse));
+    element.addEventListener('mouseup', mouse.mouseup.bind(mouse));
+    
+    element.addEventListener('mousewheel', mouse.mousewheel.bind(mouse));
+    element.addEventListener('DOMMouseScroll', mouse.mousewheel.bind(mouse));
+  
+    element.addEventListener('touchmove', mouse.mousemove.bind(mouse));
+    element.addEventListener('touchstart', mouse.mousedown.bind(mouse));
+    element.addEventListener('touchend', mouse.mouseup.bind(mouse));
   }
 
-  mouse.mousemove = function (event) {
-    let position = Mouse._getRelativeMousePosition(event, mouse.element, mouse.pixelRatio),
+  static _getRelativeMousePosition (event, element, pixelRatio) {
+    let elementBounds = element.getBoundingClientRect(),
+      rootNode = (document.documentElement || document.body.parentNode || document.body),
+      scrollX = (window.pageXOffset !== undefined) ? window.pageXOffset : rootNode.scrollLeft,
+      scrollY = (window.pageYOffset !== undefined) ? window.pageYOffset : rootNode.scrollTop,
+      touches = event.changedTouches,
+      x, y;
+    
+    if (touches) {
+      x = touches[0].pageX - elementBounds.left - scrollX;
+      y = touches[0].pageY - elementBounds.top - scrollY;
+    } else {
+      x = event.pageX - elementBounds.left - scrollX;
+      y = event.pageY - elementBounds.top - scrollY;
+    }
+
+    return { 
+      x: x / (element.clientWidth / (element.width || element.clientWidth) * pixelRatio),
+      y: y / (element.clientHeight / (element.height || element.clientHeight) * pixelRatio)
+    };
+  }
+
+  mousemove (event) {
+    let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
       touches = event.changedTouches;
 
     if (touches) {
-      mouse.button = 0;
+      this.button = 0;
       event.preventDefault();
     }
 
-    mouse.absolute.x = position.x;
-    mouse.absolute.y = position.y;
-    mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
-    mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
-    mouse.sourceEvents.mousemove = event;
+    this.absolute.x = position.x;
+    this.absolute.y = position.y;
+    this.position.x = this.absolute.x * this.scale.x + this.offset.x;
+    this.position.y = this.absolute.y * this.scale.y + this.offset.y;
+    this.sourceEvents.mousemove = event;
 
-    mouse.triggerHook('mousemove');
+    this.triggerHook('mousemove');
   }
 
-  mouse.mouseout = function () {
-    mouse.triggerHook('mouseout');
-  }
-
-  mouse.mousedown = function(event) {
-    let position = Mouse._getRelativeMousePosition(event, mouse.element, mouse.pixelRatio),
+  mousedown (event) {
+    let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
       touches = event.changedTouches;
-
+    
     if (touches) {
-      mouse.button = 0;
+      this.button = 0;
       event.preventDefault();
     } else {
-      mouse.button = event.button;
+      this.button = event.button;
     }
+    
+    this.absolute.x = position.x;
+    this.absolute.y = position.y;
+    this.position.x = this.absolute.x * this.scale.x + this.offset.x;
+    this.position.y = this.absolute.y * this.scale.y + this.offset.y;
+    this.mousedownPosition.x = this.position.x;
+    this.mousedownPosition.y = this.position.y;
+    this.sourceEvents.mousedown = event;
+    
+    this.triggerHook('mousedown');
+  }
 
-    mouse.absolute.x = position.x;
-    mouse.absolute.y = position.y;
-    mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
-    mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
-    mouse.mousedownPosition.x = mouse.position.x;
-    mouse.mousedownPosition.y = mouse.position.y;
-    mouse.sourceEvents.mousedown = event;
-
-    mouse.triggerHook('mousedown');
-  };
-
-  mouse.mouseup = function(event) {
-    let position = Mouse._getRelativeMousePosition(event, mouse.element, mouse.pixelRatio),
+  mouseup (event) {
+    let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
       touches = event.changedTouches;
-
+    
     if (touches) {
       event.preventDefault();
     }
     
-    mouse.button = -1;
-    mouse.absolute.x = position.x;
-    mouse.absolute.y = position.y;
-    mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
-    mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
-    mouse.mouseupPosition.x = mouse.position.x;
-    mouse.mouseupPosition.y = mouse.position.y;
-    mouse.sourceEvents.mouseup = event;
-
-    mouse.triggerHook('mouseup');
-  };
-
-  mouse.mousewheel = function(event) {
-    mouse.wheelDelta = Math.max(-1, Math.min(1, event.wheelDelta || -event.detail));
-    event.preventDefault();
-
-    mouse.triggerHook('mousewheel');
-  };
-
-  Mouse.setElement(mouse, element);
-
-  return mouse;
-};
-
-Mouse.setElement = (mouse, element) => {
-  element.addEventListener('mousemove', mouse.mousemove);
-  element.addEventListener('mouseout', mouse.mouseout);
-  element.addEventListener('mousedown', mouse.mousedown);
-  element.addEventListener('mouseup', mouse.mouseup);
-  
-  element.addEventListener('mousewheel', mouse.mousewheel);
-  element.addEventListener('DOMMouseScroll', mouse.mousewheel);
-
-  element.addEventListener('touchmove', mouse.mousemove);
-  element.addEventListener('touchstart', mouse.mousedown);
-  element.addEventListener('touchend', mouse.mouseup);
-};
-
-/**
- * Sets the mouse position offset.
- * @method setOffset
- * @param {mouse} mouse
- * @param {vector} offset
- */
-Mouse.setOffset = function(mouse, offset) {
-  mouse.offset.x = offset.x;
-  mouse.offset.y = offset.y;
-  mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
-  mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
-};
-
-/**
- * Sets the mouse position scale.
- * @method setScale
- * @param {mouse} mouse
- * @param {vector} scale
- */
-Mouse.setScale = function(mouse, scale) {
-  mouse.scale.x = scale.x;
-  mouse.scale.y = scale.y;
-  mouse.position.x = mouse.absolute.x * mouse.scale.x + mouse.offset.x;
-  mouse.position.y = mouse.absolute.y * mouse.scale.y + mouse.offset.y;
-};
-
-/**
- * Gets the mouse position relative to an element given a screen pixel ratio.
- * @method _getRelativeMousePosition
- * @private
- * @param {} event
- * @param {} element
- * @param {number} pixelRatio
- * @return {}
- */
-Mouse._getRelativeMousePosition = function(event, element, pixelRatio) {
-  let elementBounds = element.getBoundingClientRect(),
-    rootNode = (document.documentElement || document.body.parentNode || document.body),
-    scrollX = (window.pageXOffset !== undefined) ? window.pageXOffset : rootNode.scrollLeft,
-    scrollY = (window.pageYOffset !== undefined) ? window.pageYOffset : rootNode.scrollTop,
-    touches = event.changedTouches,
-    x, y;
-  
-  if (touches) {
-    x = touches[0].pageX - elementBounds.left - scrollX;
-    y = touches[0].pageY - elementBounds.top - scrollY;
-  } else {
-    x = event.pageX - elementBounds.left - scrollX;
-    y = event.pageY - elementBounds.top - scrollY;
+    this.button = -1;
+    this.absolute.x = position.x;
+    this.absolute.y = position.y;
+    this.position.x = this.absolute.x * this.scale.x + this.offset.x;
+    this.position.y = this.absolute.y * this.scale.y + this.offset.y;
+    this.mouseupPosition.x = this.position.x;
+    this.mouseupPosition.y = this.position.y;
+    this.sourceEvents.mouseup = event;
+    
+    this.triggerHook('mouseup');
   }
 
-  return { 
-    x: x / (element.clientWidth / (element.width || element.clientWidth) * pixelRatio),
-    y: y / (element.clientHeight / (element.height || element.clientHeight) * pixelRatio)
-  };
-};
+  mouseout () {
+    this.triggerHook('mouseout');
+  }
 
-export default Mouse
+  mousewheel (event) {
+    this.wheelDelta = Math.max(-1, Math.min(1, event.wheelDelta || -event.detail));
+    event.preventDefault();
+    
+    this.triggerHook('mousewheel');
+  }
+
+  setOffset (offset) {
+    this.offset.x = offset.x;
+    this.offset.y = offset.y;
+    this.position.x = this.absolute.x * this.scale.x + this.offset.x;
+    this.position.y = this.absolute.y * this.scale.y + this.offset.y;
+  }
+
+  setScale (scale) {
+    this.scale.x = scale.x;
+    this.scale.y = scale.y;
+    this.position.x = this.absolute.x * this.scale.x + this.offset.x;
+    this.position.y = this.absolute.y * this.scale.y + this.offset.y;
+  }
+
+  on (eventName, callback) {
+    this.eventHooks[eventName] = callback;
+  }
+
+  triggerHook (eventName) {
+    this.eventHooks[eventName].call(null, this);
+  }
+}
