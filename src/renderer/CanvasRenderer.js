@@ -1,4 +1,3 @@
-import Events from '../core/Events';
 import Point from '../geometry/Vertice';
 import { CanvasShapeRenderer } from './ShapeRenderer';
 import ShapesGroup from '../shapes/ShapesGroup';
@@ -6,10 +5,10 @@ import ShapesGroup from '../shapes/ShapesGroup';
 const iMatrix = [1, 0, 0, 1, 0, 0];
 
 export default class CanvasRenderer {
-  constructor (game) {
-    this.game = game;
+  constructor (app) {
+    this.app = app;
 
-    const { width = 300, height = 300, bgColor = 'aliceblue' } = game.opts;
+    const { width = 300, height = 300, bgColor = 'aliceblue' } = app.opts;
 
     this.canvas = _createCanvas();
     this.context = this.canvas.getContext('2d');
@@ -73,7 +72,7 @@ export default class CanvasRenderer {
   }
 
   render (objects) {
-    const { context, pixelRatio, game } = this;
+    const { context, pixelRatio, app } = this;
     let vpt = this.viewportTransform;
     context.save();
     context.transform(
@@ -86,7 +85,7 @@ export default class CanvasRenderer {
     );
     _renderObjects.call(this, this.context, objects);
     context.restore();
-    game.events.trigger('rendered', this.context);
+    app.trigger.fire('rendered', this.context);
   }
 
   clear () {

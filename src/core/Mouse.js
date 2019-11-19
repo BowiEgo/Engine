@@ -1,8 +1,8 @@
 export default class Mouse {
-  constructor (game) {
-    this.game = game;
-    this.element = game.view;
-    this.pixelRatio = game.renderer.pixelRatio;
+  constructor (app) {
+    this.app = app;
+    this.element = app.view;
+    this.pixelRatio = app.renderer.pixelRatio;
     this.absolute = { x: 0, y: 0 };
     this.position = { x: 0, y: 0 };
     this.mousedownPosition = { x: 0, y: 0 };
@@ -31,8 +31,8 @@ export default class Mouse {
     Mouse.setElement(this, this.element);
   }
 
-  static create (game) {
-    game.mouse = new Mouse(game);
+  static create (app) {
+    app._mouse = new Mouse(app);
   }
 
   static setElement (mouse, element) {
@@ -157,10 +157,13 @@ export default class Mouse {
   }
 
   on (eventName, callback) {
-    this.eventHooks[eventName] = callback;
+    this.eventHooks[eventName] = this.eventHooks[eventName] || [];
+    this.eventHooks[eventName].push(callback);
   }
 
   triggerHook (eventName) {
-    this.eventHooks[eventName].call(null, this);
+    this.eventHooks[eventName].forEach(cb => {
+      cb.call(null, this);
+    });
   }
 }

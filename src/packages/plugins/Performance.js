@@ -17,7 +17,7 @@ export default class Performance {
     this._addFPS(performance);
     insertAfter(performance.el, game.view);
     
-    game.events.on('tick', () => {
+    game.trigger.on('tick', () => {
       this._update(game);
     });
 

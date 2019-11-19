@@ -1,62 +1,73 @@
-let Camera = {};
+export default class Camera {
+  constructor (app) {
+    this.app = app;
 
-Camera.create = function (game) {
-  let camera = {};
-  camera.position = { x: 0, y: 0 };
-  camera.offset = { x: 0, y: 0 };
-  camera.scale = 1;
-  camera.lookAt = null;
+    this.position = { x: 0, y: 0 };
+    this.offset = { x: 0, y: 0 };
+    this.scale = 1;
+    this.lookAt = null;
 
-  let isDragging = false;
-  let lastMousePosition = { x: 0, y: 0 };
+    this.bindMouseEvents();
+  }
 
-  // trackTransforms(CanvasRenderer.context);
+  static create (app) {
+    app._camera = new Camera(app);
+  }
 
-  game.mouse.on('mousemove', mouse => {
-    if (isDragging) {
-      camera.offset = subPos(mouse.position, lastMousePosition);
-      camera.position = addPos(camera.position, camera.offset);
-      lastMousePosition.x = mouse.position.x;
-      lastMousePosition.y = mouse.position.y;
-      game.renderer.translate(camera.offset);
-    }
-  });
+  recover () {
+    let { renderer } = this.app;
+    renderer.clear(camera.scale);
+    renderer.context.translate(-camera.position.x, -camera.position.y);
+    renderer.context.scale(1 / camera.scale, 1 / camera.scale);
+    this.scale = 1;
+    this.offset = { x: 0, y: 0 };
+    this.position = { x: 0, y: 0 };
+  }
 
-  game.mouse.on('mouseout', mouse => {
-    isDragging = false;
-  });
+  lookAt () {
 
-  game.mouse.on('mousedown', mouse => {
-    isDragging = true;
-    lastMousePosition.x = mouse.mousedownPosition.x;
-    lastMousePosition.y = mouse.mousedownPosition.y;
-  });
+  }
 
-  game.mouse.on('mouseup', mouse => {
-    camera.offset = { x: 0, y: 0 };
-    isDragging = false;
-  });
+  follow () {
 
-  game.mouse.on('mousewheel', mouse => {
-    camera.scale *= (1 + mouse.wheelDelta * 0.03);
-    game.renderer.zoomToPoint(mouse.position, camera.scale);
-  });
+  }
 
-  camera.recover = function () {
-    game.renderer.clear(camera.scale);
-    game.renderer.context.translate(-camera.position.x, -camera.position.y);
-    game.renderer.context.scale(1 / camera.scale, 1 / camera.scale);
-    camera.scale = 1;
-    camera.offset = { x: 0, y: 0 };
-    camera.position = { x: 0, y: 0 };
-  };
-  return camera;
-}
+  bindMouseEvents () {
+    const app = this.app;
 
-Camera.lookAt = function ()  {
-}
+    let isDragging = false;
+    let lastMousePosition = { x: 0, y: 0 };
 
-Camera.follow = function ()  {
+    app.mouse.on('mousemove', mouse => {
+      if (isDragging) {
+        this.offset = subPos(mouse.position, lastMousePosition);
+        this.position = addPos(this.position, this.offset);
+        lastMousePosition.x = mouse.position.x;
+        lastMousePosition.y = mouse.position.y;
+        app.renderer.translate(this.offset);
+      }
+    });
+  
+    app.mouse.on('mouseout', mouse => {
+      isDragging = false;
+    });
+  
+    app.mouse.on('mousedown', mouse => {
+      isDragging = true;
+      lastMousePosition.x = mouse.mousedownPosition.x;
+      lastMousePosition.y = mouse.mousedownPosition.y;
+    });
+  
+    app.mouse.on('mouseup', mouse => {
+      this.offset = { x: 0, y: 0 };
+      isDragging = false;
+    });
+  
+    app.mouse.on('mousewheel', mouse => {
+      this.scale *= (1 + mouse.wheelDelta * 0.03);
+      app.renderer.zoomToPoint(mouse.position, this.scale);
+    });
+  }
 }
 
 function addPos (posA, posB) {
@@ -72,16 +83,3 @@ function subPos (posA, posB) {
     y: posA.y - posB.y 
   }
 }
-
-// function trackTransforms(context){
-//   let svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
-//   let xform = svg.createSVGMatrix();
-
-//   let pt  = svg.createSVGPoint();
-//   context.transformedPoint = function(x,y){
-//     pt.x=x; pt.y=y;
-//     return pt.matrixTransform(xform.inverse());
-//   }
-// }
-
-export default Camera

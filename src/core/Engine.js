@@ -1,12 +1,13 @@
+import Application from './Application';
 import Camera from './Camera';
 import Time from './Time';
 import Mouse from './Mouse';  
 import Scene from './Scene';
-import Select from './Select';  
-import Events from './Events';
+import TargetFinder from './TargetFinder';
+import Trigger from './Trigger';
 import Body from './Body';
 import Shape from '../shapes';
-import { Renderer } from '../renderer';
+import Renderer from './Renderer';
 
 let _reqFrame, _cancelFrame, _frameTimeout;
 if (typeof window !== 'undefined') {
@@ -26,105 +27,59 @@ if (typeof window !== 'undefined') {
   };
 }
 
-let uid = 0;
 
 class Engine {
   static create (el, opts) {
-    console.log('create', el)
-    let game = {};
-    game.uid = uid++;
-    game.opts = opts;
-    game.el = el;
-    game.status = 'stop';
-    game.PAUSE_TIMEOUT = 100;
+    let app = new Application(el, opts);
 
-    Events.create(game);
-    Time.create(game);
-    Renderer.create(game);
+    Trigger.create(app);
+    Time.create(app);
+    Renderer.create(app);
+    Mouse.create(app);
+    Camera.create(app);
+    Scene.create(app);
+    TargetFinder.create(app);
 
-    game.view = game.renderer.canvas;
-
-    Mouse.create(game);
-
-    game.camera = Camera.create(game);
-
-    Scene.create(game);
-
-    Select.create(game);
-
-    game.start = () => {
-      if (game.status === 'playing') {
-        return;
-      }
-      game.time.timeScale = 1;
-      Engine.run(game);
-      game.status = 'playing';
-    }
-
-    game.restart = () => {
-      Engine.reset(game);
-      game.start();
-    }
-
-    game.pause = () => {
-      if (game.status === 'playing') {
-        game.time.timeScale = 0;
-        game.status = 'paused';
-      }
-    }
-
-    game.resume = () => {
-      if (game.status === 'paused') {
-        game.Time.timeScale = 1;
-        game.status = 'playing';
-      }
-    }
-
-    game.stop = () => {
-      Engine.reset(game);
-      game.status = 'stop';
-    }
-
-    Engine.reset(game);
+    Engine.reset(app);
 
     // install plugins
     let plugins = opts.plugins || [];
 
     plugins.forEach(plugin => {
-      plugin.create(game);
+      plugin.create(app);
     });
 
     // check autoStart
     if (opts.autoStart) {
-      game.start();
+      app.start();
     }
 
-    return game;
+    return app;
   }
 
-  static reset (game) {
-    _cancelFrame(game.frameReq);
-    game.time.reset();
-    game.frameReq = null;
-    game.scene.reset();
-    game.renderer.clear();
-    game.renderer.render(game.scene.bodies);
+  static reset (app) {
+    _cancelFrame(app.frameReq);
+    app.time.reset();
+    app.frameReq = null;
+    app.scene.reset();
+    app.renderer.clear();
+    app.renderer.render(app.scene.bodies);
   }
 
-  static run (game) {
-    if (game.frameReq) {
-      game.stop();
+  static run (app) {
+    if (app.frameReq) {
+      app.stop();
     }
   
-    game.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
+    app.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
   
     function tick (timeStamp) {
-      game.events.trigger('tick', timeStamp);
-      game.time.update(timeStamp); // update Time
-      game.scene.update();
-      game.renderer.clear();
-      game.renderer.render(game.scene.bodies);
-      game.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
+      app.trigger.fire('tick', timeStamp);
+      app.time.update(timeStamp); // update Time
+      app.scene.update();
+      app.renderer.clear();
+      app.renderer.render(app.scene.bodies);
+      app.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
     }
   }
 }

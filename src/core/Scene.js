@@ -1,16 +1,16 @@
 export default class Scene {
-  constructor (game) {
-    this.game = game;
+  constructor (app) {
+    this.app = app;
     this.bodies = [];
   }
 
-  static create (game) {
-    game.scene = new Scene(game);
+  static create (app) {
+    app._scene = new Scene(app);
   }
 
   addBody (body) {
     this.bodies.push(body);
-    this.game.renderer.render([body]);
+    this.app.renderer.render([body]);
   }
 
   reset () {
@@ -21,7 +21,7 @@ export default class Scene {
 
   update () {
     this.bodies.forEach((body) => {
-      if (this.game.status === 'playing') {
+      if (this.app.status === 'playing') {
         body.updateCb.call(body);
       }
     })

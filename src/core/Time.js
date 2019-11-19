@@ -1,16 +1,16 @@
 const STARTING_FPS = 60;
 
-class Time {
-  constructor (game) {
-    this.game = game;
+export default class Time {
+  constructor (app) {
+    this.app = app;
     this.timeScale = 0;
     this.unscaledDeltaTime = 0;
     this.deltaTime = 0;
     this.reset();
   }
 
-  static create (game) {
-    game.time = new Time(game);
+  static create (app) {
+    app._time = new Time(app);
   }
 
   reset () {
@@ -34,5 +34,3 @@ class Time {
     this.timeStart = timeStamp;
   }
 }
-
-export default Time

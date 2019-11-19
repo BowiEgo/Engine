@@ -19,13 +19,17 @@ export default class Body {
         x: opts.transform.position.x,
         y: opts.transform.position.y
       },
-    }
+    };
 
     this.reset();
   }
 
   get shapes () {
     return this.shape.shapes;
+  }
+
+  get bound () {
+    return null;
   }
 
   start () {
@@ -36,5 +40,43 @@ export default class Body {
 
   reset () {
     this.transform = JSON.parse(JSON.stringify(this.transform0));
+  }
+
+  containsPoint (point) {
+    return true;
+    let lines = this._getImageLines(),
+      xPoints = this._findCrossPoints(point, lines);
+
+    return (xPoints !== 0 && xPoints % 2 === 1);
+  }
+
+  /**
+   * Method that returns an object with the object edges in it, given the coordinates of the corners
+   * @private
+   * @param {Object} oCoords Coordinates of the object corners
+   */
+  _getImageLines (oCoords) {
+    return {
+      topline: {
+        o: oCoords.tl,
+        d: oCoords.tr
+      },
+      rightline: {
+        o: oCoords.tr,
+        d: oCoords.br
+      },
+      bottomline: {
+        o: oCoords.br,
+        d: oCoords.bl
+      },
+      leftline: {
+        o: oCoords.bl,
+        d: oCoords.tl
+      }
+    };
+  }
+
+  _findCrossPoints (point, lines) {
+
   }
 }

@@ -1,31 +1,31 @@
 import { keys, clone } from '../utils/common';
 
-export default class Events {
-  constructor (game) {
-    this.game = game;
-    game._eventPool = {};
+export default class Trigger {
+  constructor (app) {
+    this.app = app;
+    app._eventPool = {};
   }
 
-  static create (game) {
-    game.events = new Events(game);
+  static create (app) {
+    app._trigger = new Trigger(app);
   }
 
   on (eventNames, callback) {
-    let game = this.game;
+    let app = this.app;
     let names = eventNames.split(' '),
       name;
 
     for (let i = 0; i < names.length; i++) {
       name = names[i];
-      game._eventPool[name] = game._eventPool[name] || [];
-      game._eventPool[name].push(callback);
+      app._eventPool[name] = app._eventPool[name] || [];
+      app._eventPool[name].push(callback);
     }
 
     return callback;
   }
 
   off (eventNames, callback) {
-    let game = this.game;
+    let app = this.app;
 
     if (!eventNames) {
       return;
@@ -34,13 +34,13 @@ export default class Events {
     // handle Events.off(callback)
     if (typeof eventNames === 'function') {
       callback = eventNames;
-      eventNames = keys(game._eventPool).join(' ');
+      eventNames = keys(app._eventPool).join(' ');
     }
   
     let names = eventNames.split(' ');
   
     for (let i = 0; i < names.length; i++) {
-      let callbacks = game._eventPool[names[i]],
+      let callbacks = app._eventPool[names[i]],
         newCallbacks = [];
   
       if (callback && callbacks) {
@@ -50,23 +50,23 @@ export default class Events {
         }
       }
   
-      game._eventPool[names[i]] = newCallbacks;
+      app._eventPool[names[i]] = newCallbacks;
     }
   }
 
-  trigger (eventNames, event) {
+  fire (eventNames, event) {
     let names,
       name,
       callbacks,
       eventClone;
 
-    let game = this.game;
+    let app = this.app;
 
-    if (!game) {
+    if (!app) {
       return;
     }
     
-    let _eventPool = game._eventPool;
+    let _eventPool = app._eventPool;
     
     if (_eventPool && keys(_eventPool).length > 0) {
       if (!event)
@@ -81,10 +81,10 @@ export default class Events {
         if (callbacks) {
           eventClone = clone(event, false);
           eventClone.name = name;
-          eventClone.source = game;
+          eventClone.source = app;
     
           for (let j = 0; j < callbacks.length; j++) {
-            callbacks[j].apply(game, [eventClone]);
+            callbacks[j].apply(app, [eventClone]);
           }
         }
       }
