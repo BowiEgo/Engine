@@ -26,7 +26,7 @@ class Path extends Shape {
     this.height = 0;
     this.dimensions = this.calcDimensions();
     this.fill = opts.fill;
-    console.log('new Path', this);
+    // console.log('new Path', this);
   }
 
   static parsePath (path) {

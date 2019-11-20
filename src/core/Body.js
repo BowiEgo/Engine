@@ -1,12 +1,20 @@
 import { isArray, isFunction } from '../utils/common';
 import ShapesGroup from '../shapes/ShapesGroup';
 
+function getRandomColor () {
+  const r = Math.round(Math.random() * 255);
+  const g = Math.round(Math.random() * 255);
+  const b = Math.round(Math.random() * 255);
+  return `rgb(${r},${g},${b})`;
+}
+
 export default class Body {
   constructor (opts) {
     this.shape = opts.shape;
     if (isArray(this.shape)) {
       this.shape = new ShapesGroup(this.shape);
     }
+    this.shape.body = this;
     this.fill = opts.fill !== undefined ? opts.fill : '#83cbff';
     this.startCb = isFunction(opts.start) ? opts.start : this.start;
     this.updateCb = isFunction(opts.update) ? opts.update : this.update;
@@ -21,6 +29,7 @@ export default class Body {
       },
     };
 
+    this.hitFill = getRandomColor();
     this.reset();
   }
 

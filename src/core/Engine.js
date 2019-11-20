@@ -3,7 +3,7 @@ import Camera from './Camera';
 import Time from './Time';
 import Mouse from './Mouse';  
 import Scene from './Scene';
-import TargetFinder from './TargetFinder';
+import Hit from './Hit';
 import Trigger from './Trigger';
 import Body from './Body';
 import Shape from '../shapes';
@@ -38,9 +38,7 @@ class Engine {
     Mouse.create(app);
     Camera.create(app);
     Scene.create(app);
-    TargetFinder.create(app);
-
-    Engine.reset(app);
+    Hit.create(app);
 
     // install plugins
     let plugins = opts.plugins || [];
@@ -48,6 +46,8 @@ class Engine {
     plugins.forEach(plugin => {
       plugin.create(app);
     });
+
+    Engine.reset(app);
 
     // check autoStart
     if (opts.autoStart) {

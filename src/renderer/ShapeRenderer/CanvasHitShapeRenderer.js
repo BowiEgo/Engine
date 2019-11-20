@@ -36,59 +36,21 @@ export default class CanvasShapeRenderer {
         break;
     }
 
-    _setStrokeStyles(context, shape);
     _setFillStyles(context, shape);
-    _setDropShadowStyles(context, shape);
-    shape.strokeWidth > 0 && _renderStroke(context, shape);
-    shape.fill && _renderFill(context, shape);
-  }
-}
-
-function _setStrokeStyles (context, shape) {
-  if (shape.stroke) {
-    context.lineWidth = shape.strokeWidth;
-    context.lineCap = shape.strokeLineCap;
-    context.lineDashOffset = shape.strokeDashOffset;
-    context.lineJoin = shape.strokeLineJoin;
-    context.miterLimit = shape.strokeMiterLimit;
-    context.strokeStyle = shape.stroke;
+    _renderFill(context, shape);
   }
 }
 
 function _setFillStyles (context, shape) {
   if (shape.fill) {
-    context.fillStyle = shape.fill;
+    context.fillStyle = shape.hitFill;
   }
-}
-
-function _renderStroke (context, shape) {
-  if (!shape.stroke || shape.strokeWidth === 0) {
-    return;
-  }
-  // _setLineDash(this.context, this.strokeDashArray, this._renderDashedStroke);
-  context.save();
-  context.stroke();
-  context.restore();
 }
 
 function _renderFill (context) {
   context.save();
   context.fill();
   context.restore();
-}
-
-function _setDropShadowStyles (context, shape) {
-  if (shape.dropShadow) {
-    context.shadowColor = shape.dropShadowColor;
-    context.shadowBlur = shape.dropShadowBlur;
-    context.shadowOffsetX = Math.cos(shape.dropShadowAngle) * shape.dropShadowDistance * _canvas.getZoom();
-    context.shadowOffsetY = (Math.sin(shape.dropShadowAngle) * shape.dropShadowDistance) * _canvas.getZoom();
-  } else {
-    context.shadowColor = 'black';
-    context.shadowBlur = 0;
-    context.shadowOffsetX = 0;
-    context.shadowOffsetY = 0;
-  }
 }
 
 function _pathPolygon(context, shape) {

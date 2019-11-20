@@ -1,79 +1,50 @@
-import Point from '../geometry/Vertice';
-import { CanvasShapeRenderer } from './ShapeRenderer';
+import Canvas from './Canvas';
+import { CanvasShapeRenderer, CanvasHitShapeRenderer } from './ShapeRenderer';
 import ShapesGroup from '../shapes/ShapesGroup';
-
-const iMatrix = [1, 0, 0, 1, 0, 0];
 
 export default class CanvasRenderer {
   constructor (app) {
     this.app = app;
 
-    const { width = 300, height = 300, bgColor = 'aliceblue' } = app.opts;
+    this._canvas = new Canvas(app.opts);
+    this._context = this.canvas.getContext('2d');
+    this.pixelRatio = this._canvas.pixelRatio;
+    this._shapeRenderer = new CanvasShapeRenderer(this._context, this.pixelRatio, this._canvas);
 
-    this.canvas = _createCanvas();
-    this.context = this.canvas.getContext('2d');
-    this.viewportTransform = iMatrix;
-    
-    this.pixelRatio = _getPixelRatio(this.canvas);
-    this.shapeRenderer = new CanvasShapeRenderer(this.context, this.pixelRatio, this);
-    this.canvas.setAttribute('data-pixel-ratio', this.pixelRatios);
-    this.context.scale(this.pixelRatio, this.pixelRatio);
-
-    this.canvas.width = width * this.pixelRatio;
-    this.canvas.height = height * this.pixelRatio;
-    this.canvas.style.width = width + 'px';
-    this.canvas.style.height = height + 'px';
-    this.canvas.style.backgroundColor = bgColor;
+    this._hitCanvas = new Canvas(app.opts);
+    this._hitContext = this.hitCanvas.getContext('2d');
+    this._hitShapeRenderer = new CanvasHitShapeRenderer(this._hitContext, this.pixelRatio, this._hitCanvas);
   }
 
-  get width () {
-    return this.canvas.width;
+  get canvas () {
+    return this._canvas.canvas;
   }
 
-  get height () {
-    return this.canvas.height;
+  get context () {
+    return this._context;
   }
 
-  getZoom () {
-    return this.viewportTransform[0];
+  get hitCanvas () {
+    return this._hitCanvas.canvas;
   }
 
-  setViewportTransform (vpt) {
-    this.viewportTransform = vpt;
+  get hitContext () {
+    return this._hitContext;
   }
 
-  resetTransform () {
-    this.setViewportTransform(iMatrix);
+  render (bodies) {
+    const { context, hitContext, pixelRatio, app } = this;
+    let vpt = this._canvas.viewportTransform;
+
+    this.renderContext(context, vpt, pixelRatio, bodies);
+
+    // render hit context
+    // this.renderContext(hitContext, vpt, pixelRatio, bodies, true);
+
+    app.trigger.fire('rendered', this.context);
   }
 
-  zoomToPoint (point, value) {
-    let relativePoint = {
-      x: point.x * this.pixelRatio,
-      y: point.y * this.pixelRatio
-    }
-    let before = relativePoint, vpt = this.viewportTransform.slice(0);
-    relativePoint = _transformPoint(relativePoint, _invertTransform(this.viewportTransform));
-    vpt[0] = value;
-    vpt[3] = value;
-    let after = _transformPoint(relativePoint, vpt);
-    vpt[4] += before.x - after.x;
-    vpt[5] += before.y - after.y;
-
-    this.setViewportTransform(vpt);
-  }
-
-  translate (offset) {
-    let vpt = this.viewportTransform.slice(0);
-
-    vpt[4] += offset.x * this.pixelRatio;
-    vpt[5] += offset.y * this.pixelRatio;
-
-    this.setViewportTransform(vpt);
-  }
-
-  render (objects) {
-    const { context, pixelRatio, app } = this;
-    let vpt = this.viewportTransform;
+  renderContext (context, vpt, pixelRatio, bodies, isHit) {
     context.save();
     context.transform(
       vpt[0] * pixelRatio,
@@ -83,84 +54,59 @@ export default class CanvasRenderer {
       vpt[4],
       vpt[5]
     );
-    _renderObjects.call(this, this.context, objects);
+    _renderBodies.call(this, context, bodies, isHit);
     context.restore();
-    app.trigger.fire('rendered', this.context);
   }
 
   clear () {
-    this.context.clearRect(0, 0, this.width, this.height);
+    this._canvas.clear();
+    this._hitCanvas && this._hitCanvas.clear();
   }
-}
-
-function _createCanvas () {
-  let canvas = document.createElement('canvas');
-  canvas.getPixelRatio = _getPixelRatio.bind(null, canvas);
-  return canvas;
-}
-
-/**
- * Gets the pixel ratio of the canvas.
- */
-function _getPixelRatio (canvas) {
-  let context = canvas.getContext('2d'),
-    devicePixelRatio = window.devicePixelRatio || 1,
-    backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio ||
-    context.msBackingStorePixelRatio ||
-    context.oBackingStorePixelRatio ||
-    context.backingStorePixelRatio || 1;
-
-  return devicePixelRatio / backingStorePixelRatio;
 }
 
 /**
  * Render several types of graphics in canvas
  */
-function _renderObjects (context, objects) {
-  objects = objects || [];
+function _renderBodies (context, bodies, isHit) {
+  bodies = bodies || [];
 
-  objects.forEach(object => {
-    const transform = object.transform;
+  bodies.forEach(body => {
+    const transform = body.transform;
     const { scaleX = 1, skewX = 0, skewY = 0, scaleY = 1} = transform;
     const { x: posX, y: posY } = transform.position;
 
     context.save();
     context.transform(scaleX, skewX, skewY, scaleY, posX, posY);
 
-    if (object.shape instanceof ShapesGroup) {
-      object.shape.shapes.forEach(shape => {
-        _renderShape.call(this, shape);
+    if (body.shape instanceof ShapesGroup) {
+      body.shape.shapes.forEach(shape => {
+        shape.hitFill = body.hitFill;
+        _renderShape.call(this, shape, isHit);
+        if (!isHit) {
+          this.app.trigger.fire('shape_rendered', shape);
+        }
       })
     } else {
-      _renderShape.call(this, object.shape);
+      body.shape.hitFill = body.hitFill;
+      _renderShape.call(this, body.shape, isHit);
+
+      if (!isHit) {
+        this.app.trigger.fire('shape_rendered', body.shape);
+      }
     }
 
     context.restore();
   })
 }
 
-function _renderShape (shape) {
-  this.shapeRenderer.render(shape);
-}
+function _renderShape (shape, isHit) {
+  let shapeRenderer;
 
-function _transformPoint (p, t, ignoreOffset) {
-  if (ignoreOffset) {
-    return new Point(
-      t[0] * p.x + t[2] * p.y,
-      t[1] * p.x + t[3] * p.y
-    );
+  if (isHit) {
+    shapeRenderer = this._hitShapeRenderer;
+  } else {
+    shapeRenderer = this._shapeRenderer;
   }
-  return new Point(
-    t[0] * p.x + t[2] * p.y + t[4],
-    t[1] * p.x + t[3] * p.y + t[5]
-  );
-}
 
-function _invertTransform (t) {
-  let a = 1 / (t[0] * t[3] - t[1] * t[2]),
-    r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
-    o = _transformPoint({ x: t[4], y: t[5] }, r, true);
-  r[4] = -o.x;
-  r[5] = -o.y;
-  return r;
+  shapeRenderer.render(shape);
 }

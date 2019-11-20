@@ -44,7 +44,7 @@ export default class Camera {
         this.position = addPos(this.position, this.offset);
         lastMousePosition.x = mouse.position.x;
         lastMousePosition.y = mouse.position.y;
-        app.renderer.translate(this.offset);
+        app.renderer._canvas.translate(this.offset);
       }
     });
   
@@ -65,7 +65,7 @@ export default class Camera {
   
     app.mouse.on('mousewheel', mouse => {
       this.scale *= (1 + mouse.wheelDelta * 0.03);
-      app.renderer.zoomToPoint(mouse.position, this.scale);
+      app.renderer._canvas.zoomToPoint(mouse.position, this.scale);
     });
   }
 }

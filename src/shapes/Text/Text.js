@@ -16,7 +16,7 @@ class Text extends Shape {
 
     this.localStyleID = -1;
     this.measured = {};
-    console.log('new Text:', this);
+    // console.log('new Text:', this);
   }
 
   get style () {

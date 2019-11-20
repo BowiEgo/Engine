@@ -216,8 +216,6 @@ myGame.scene.addBody(player);
 myGame.scene.addBody(arrow);
 myGame.scene.addBody(pie);
 
-myGame.start();
-
 startBtn.addEventListener('click', () => {
   myGame.restart();
 })
@@ -255,73 +253,81 @@ const myGraph = Engine.create(
 
 let direction = -1;
 
-let textNode = new Body({
-  shape: [
-    new Shape.Rectangle({
-      width: 120,
-      height: 56,
-      rx: 2,
-      ry: 2,
-      fill: 'white',
-      stroke: 'grey',
-      strokeWidth: 2
-    }),
-    new Shape.Text('深圳市腾讯信息技术有限公司', {
-      align: 'left',
-      lineHeight: 16,
-      fill: '#333',
-      fontSize: 10,
-      fontFamily: 'Avenir',
-      letterSpacing: 1,
-      wordWrap: true,
-      wordWrapWidth: 100,
-      breakWords: true
-    }).translate(10, 6),
-    new Shape.Text('2.60%', {
-      align: 'left',
-      lineHeight: 16,
-      fill: '#333',
-      fontSize: 10,
-      fontFamily: 'Avenir',
-      letterSpacing: 1,
-      wordWrap: true,
-      wordWrapWidth: 100,
-      breakWords: true
-    }).translate(10, 38),
-    new Shape.Path('M120,20C140,20,160,60,180,60',
-    {
-      stroke: 'grey',
-      strokeWidth: 2
-    })
-  ],
-  transform: {
-    position: {
-      x: 240,
-      y: 120
+function createTextNode (index) {
+  const posY = 120 + index * 70;
+
+  return new Body({
+    shape: [
+      new Shape.Rectangle({
+        width: 120,
+        height: 56,
+        rx: 2,
+        ry: 2,
+        fill: 'white',
+        stroke: 'grey',
+        strokeWidth: 2
+      }),
+      new Shape.Text('深圳市腾讯信息技术有限公司', {
+        align: 'left',
+        lineHeight: 16,
+        fill: '#333',
+        fontSize: 10,
+        fontFamily: 'Avenir',
+        letterSpacing: 1,
+        wordWrap: true,
+        wordWrapWidth: 100,
+        breakWords: true
+      }).translate(10, 6),
+      new Shape.Text('2.60%', {
+        align: 'left',
+        lineHeight: 16,
+        fill: '#333',
+        fontSize: 10,
+        fontFamily: 'Avenir',
+        letterSpacing: 1,
+        wordWrap: true,
+        wordWrapWidth: 100,
+        breakWords: true
+      }).translate(10, 38),
+      new Shape.Path('M120,20C140,20,160,60,180,60',
+      {
+        stroke: 'grey',
+        strokeWidth: 2
+      })
+    ],
+    transform: {
+      position: {
+        x: 240,
+        y: posY
+      }
+    },
+    start: function () {
+    },
+    update: function () {
+      let { transform } = this;
+      let { time, camera } = myGraph;
+  
+      let startPointX = 120;
+      let startPointY = 20;
+
+      let endPointX = 180 - camera.position.x;
+      let endPointY = 180 - camera.position.y - posY;
+
+      let spaceX = endPointX - startPointX;
+  
+      this.shapes[3].update(`M${startPointX},${startPointY}C${startPointX + spaceX / 2},20,${endPointX - spaceX / 2},${endPointY},${endPointX},${endPointY}`);
     }
-  },
-  start: function () {
-  },
-  update: function () {
-    let { transform } = this;
-    let { time, camera } = myGraph;
+  });
+}
 
-    // const speed = 200;
-    // if (transform.position.y <= 0 && direction === -1) {
-    //   direction = 1;
-    // }
-    // if (transform.position.y >= 300 && direction === 1) {
-    //   direction = -1;
-    // }
+const textNodes = [];
 
-    let endPointX = 180 - camera.position.x;
-    let endPointY = 60 - camera.position.y;
-
-    // transform.position.y += speed * Time.deltaTime * direction;
-
-    this.shapes[3].update(`M120,20C140,20,${endPointX - 20},${endPointY},${endPointX},${endPointY}`);
-  }
-});
+for (let i = 0; i < 20; i++) {
+  let textNode = createTextNode(i);
+  textNodes.push(textNode);
+  myGraph.scene.addBody(textNode);
+}
+console.log(textNodes);
 
 let branch = new Body({
   shape: new Shape.Rectangle({
@@ -350,8 +356,9 @@ let branch = new Body({
   }
 })
 
-myGraph.scene.addBody(textNode);
 myGraph.scene.addBody(branch);
+
+// myGame.start();
 
 console.log('myGame', myGame);
 console.log('myGraph', myGraph);
