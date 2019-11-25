@@ -1,4 +1,5 @@
 import Point from '../geometry/Vertice';
+import { transformPoint, invertTransform } from '../utils/misc';
 
 const iMatrix = [1, 0, 0, 1, 0, 0];
 
@@ -47,10 +48,10 @@ export default class Canvas {
       y: point.y * this.pixelRatio
     }
     let before = relativePoint, vpt = this.viewportTransform.slice(0);
-    relativePoint = _transformPoint(relativePoint, _invertTransform(this.viewportTransform));
+    relativePoint = transformPoint(relativePoint, invertTransform(this.viewportTransform));
     vpt[0] = value;
     vpt[3] = value;
-    let after = _transformPoint(relativePoint, vpt);
+    let after = transformPoint(relativePoint, vpt);
     vpt[4] += before.x - after.x;
     vpt[5] += before.y - after.y;
 
@@ -90,26 +91,4 @@ function _getPixelRatio (canvas) {
     context.backingStorePixelRatio || 1;
 
   return devicePixelRatio / backingStorePixelRatio;
-}
-
-function _transformPoint (p, t, ignoreOffset) {
-  if (ignoreOffset) {
-    return new Point(
-      t[0] * p.x + t[2] * p.y,
-      t[1] * p.x + t[3] * p.y
-    );
-  }
-  return new Point(
-    t[0] * p.x + t[2] * p.y + t[4],
-    t[1] * p.x + t[3] * p.y + t[5]
-  );
-}
-
-function _invertTransform (t) {
-  let a = 1 / (t[0] * t[3] - t[1] * t[2]),
-    r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
-    o = _transformPoint({ x: t[4], y: t[5] }, r, true);
-  r[4] = -o.x;
-  r[5] = -o.y;
-  return r;
 }

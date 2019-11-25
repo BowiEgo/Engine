@@ -24,7 +24,7 @@ export default class Hit {
 
   static bindMouseEvents (hit) {
     hit.app.mouse.on('mousedown', mouse => {
-      hit.findTarget(mouse.position);
+      hit.app.hitTarget = hit.findTarget(mouse.position);
     });
   }
 
@@ -49,7 +49,6 @@ export default class Hit {
   findTarget (pointer) {
     // console.log('findTarget', pointer);
     const hasHitCanvas = false;
-
     const pixelRatio = this.app.renderer.pixelRatio;
 
     if (hasHitCanvas) {
@@ -67,10 +66,12 @@ export default class Hit {
         }
       }
 
-      // if (body.containsPoint(pointer)) {
-      //   // console.log(body);
-      //   return body;
-      // }
+      if (body.containsPoint(pointer)) {
+        // console.log(body);
+        console.log(pointer);
+        this.app.scene.selectBody(body);
+        return body;
+      }
     }
 
     return [];

@@ -304,6 +304,7 @@ function createTextNode (index) {
     start: function () {
     },
     update: function () {
+      if (index !== 0 || myGraph.hitTarget !== this) return;
       let { transform } = this;
       let { time, camera } = myGraph;
   
@@ -323,9 +324,17 @@ function createTextNode (index) {
 const textNodes = [];
 
 for (let i = 0; i < 20; i++) {
+  const pixelRatio = myGraph.renderer._canvas.pixelRatio;
   let textNode = createTextNode(i);
   textNodes.push(textNode);
   myGraph.scene.addBody(textNode);
+
+  myGraph.hitTarget = myGraph.hitTarget || [];
+  myGraph.trigger.on('drag', offset => {
+    if(myGraph.hitTarget === textNode) {
+      textNode.translate(offset.x, offset.y);
+    }
+  })
 }
 console.log(textNodes);
 
@@ -346,13 +355,13 @@ let branch = new Body({
     }
   },
   update: function () {
-    let { transform } = this;
-    let { Time, camera } = myGraph;
+    // let { transform } = this;
+    // let { Time, camera } = myGraph;
 
-    this.shape.transform.position = {
-      x: -camera.position.x,
-      y: -camera.position.y
-    }
+    // this.shape.transform.position = {
+    //   x: -camera.position.x,
+    //   y: -camera.position.y
+    // }
   }
 })
 

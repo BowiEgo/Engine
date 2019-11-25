@@ -5,6 +5,8 @@ class Cirlce extends Shape {
     super(opts);
     this.type = 'circle';
     this.radius = radius;
+
+    this.dimensions = this.calcDimensions();
   }
 
   getAxes () {
@@ -14,6 +16,15 @@ class Cirlce extends Shape {
   }
 
   addPoint (x, y) {
+  }
+
+  calcDimensions () {
+    return {
+      left: 0,
+      top: 0,
+      width: 100,
+      height: 20
+    };
   }
 
   move (dx, dy) {

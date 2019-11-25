@@ -44,7 +44,11 @@ export default class Camera {
         this.position = addPos(this.position, this.offset);
         lastMousePosition.x = mouse.position.x;
         lastMousePosition.y = mouse.position.y;
-        app.renderer._canvas.translate(this.offset);
+
+        if (app.hitTarget.length === 0) {
+          app.renderer._canvas.translate(this.offset);
+        }
+        app.trigger.fire('drag', this.offset);
       }
     });
   

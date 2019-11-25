@@ -9,8 +9,17 @@ export default class Scene {
   }
 
   addBody (body) {
+    body.app = this.app;
     this.bodies.push(body);
     this.app.renderer.render([body]);
+  }
+
+  selectBody (body) {
+    if (this.selectedBody) {
+      this.selectedBody.isSelected = false;
+    }
+    this.selectedBody = body;
+    body.isSelected = true;
   }
 
   reset () {

@@ -6,7 +6,7 @@ export default class Renderer {
 
     app.el.append(renderer.canvas);
 
-    // app.el.append(renderer.hitCanvas);
+    app.el.append(renderer.hitCanvas);
 
     app.view = renderer.canvas;
 

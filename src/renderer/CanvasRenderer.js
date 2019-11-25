@@ -2,6 +2,8 @@ import Canvas from './Canvas';
 import { CanvasShapeRenderer, CanvasHitShapeRenderer } from './ShapeRenderer';
 import ShapesGroup from '../shapes/ShapesGroup';
 
+const HANDLER_WIDTH = 8;
+
 export default class CanvasRenderer {
   constructor (app) {
     this.app = app;
@@ -39,7 +41,7 @@ export default class CanvasRenderer {
     this.renderContext(context, vpt, pixelRatio, bodies);
 
     // render hit context
-    // this.renderContext(hitContext, vpt, pixelRatio, bodies, true);
+    this.renderContext(hitContext, vpt, pixelRatio, bodies, true);
 
     app.trigger.fire('rendered', this.context);
   }
@@ -68,6 +70,8 @@ export default class CanvasRenderer {
  * Render several types of graphics in canvas
  */
 function _renderBodies (context, bodies, isHit) {
+  let vpt = this._canvas.viewportTransform;
+
   bodies = bodies || [];
 
   bodies.forEach(body => {
@@ -96,6 +100,10 @@ function _renderBodies (context, bodies, isHit) {
     }
 
     context.restore();
+
+    if (body.isSelected && !isHit) {
+      _renderSelection(context, body, vpt);
+    }
   })
 }
 
@@ -109,4 +117,55 @@ function _renderShape (shape, isHit) {
   }
 
   shapeRenderer.render(shape);
+}
+
+function _renderSelection (context, body, vpt) {
+  // console.log(body.coords);
+  const coords = body.coords;
+
+  const dim = {
+    left: body.transform.position.x,
+    top: body.transform.position.y,
+    width: body.shape.dimensions.width,
+    height: body.shape.dimensions.height
+  }
+
+  _renderSelectionBounds(dim, context);
+
+  Object.keys(coords).forEach(key => {
+    let handlerPoint = {
+      x: coords[key].x,
+      y: coords[key].y
+    };
+    if (key.indexOf('t') > -1) {
+      handlerPoint.y -= HANDLER_WIDTH / vpt[0];
+    }
+
+    if (key.indexOf('l') > -1) {
+      handlerPoint.x -= HANDLER_WIDTH / vpt[0];
+    }
+
+    _renderHandler(handlerPoint, context, vpt);
+  })
+}
+
+function _renderSelectionBounds (dim, context) {
+  context.save();
+  context.transform(1, 0, 0, 1, 0, 0);
+  context.strokeStyle = '#3f51b5';
+  context.strokeRect(dim.left, dim.top, dim.width, dim.height);
+  context.restore();
+}
+
+function _renderHandler (point, context, vpt) {
+  const width = HANDLER_WIDTH / vpt[0];
+  // console.log('_renderHandler', point);
+  context.save();
+  context.transform(1, 0, 0, 1, point.x, point.y);
+  context.strokeStyle = '#3f51b5';
+  context.lineWidth = 2 / vpt[0];
+  context.fillStyle = '#fff';
+  context.fillRect(0, 0, width, width);
+  context.strokeRect(0, 0, width, width);
+  context.restore();
 }

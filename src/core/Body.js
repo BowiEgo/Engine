@@ -1,4 +1,5 @@
 import { isArray, isFunction } from '../utils/common';
+import { transformPoint, invertTransform } from '../utils/misc';
 import ShapesGroup from '../shapes/ShapesGroup';
 
 function getRandomColor () {
@@ -31,6 +32,7 @@ export default class Body {
 
     this.hitFill = getRandomColor();
     this.reset();
+    this.calcCoords();
   }
 
   get shapes () {
@@ -39,6 +41,13 @@ export default class Body {
 
   get bound () {
     return null;
+  }
+
+  translate (dx, dy) {
+    this.transform.position.x += dx;
+    this.transform.position.y += dy;
+
+    this.calcCoords();
   }
 
   start () {
@@ -51,11 +60,60 @@ export default class Body {
     this.transform = JSON.parse(JSON.stringify(this.transform0));
   }
 
-  containsPoint (point) {
-    return true;
-    let lines = this._getImageLines(),
-      xPoints = this._findCrossPoints(point, lines);
+  calcCoords () {
+    const posX = this.transform.position.x;
+    const posY = this.transform.position.y;
+    const dim = this.shape.dimensions;
 
+    let tl = {
+      x: posX + dim.left,
+      y: posY + dim.top
+    }
+
+    let tr = {
+      x: tl.x + dim.width,
+      y: tl.y
+    }
+
+    let bl = {
+      x: tl.x,
+      y: tr.y + dim.height
+    }
+
+    let br = {
+      x: tr.x,
+      y: bl.y
+    }
+
+    let coords = {
+      tl: tl,
+      tr: tr,
+      bl: bl,
+      br: br
+    }
+
+    this.coords = coords;
+
+    return this.coords;
+  }
+
+  containsPoint (point) {
+    let _canvas = this.app.renderer._canvas;
+    let vpt = _canvas.viewportTransform;
+    let pixelRatio = _canvas.pixelRatio;
+    // let relativeVpt = invertTransform(vpt);
+    let coords = this.calcCoords();
+    let oCoords = {
+      tl: transformPoint(coords.tl, vpt),
+      tr: transformPoint(coords.tr, vpt),
+      bl: transformPoint(coords.bl, vpt),
+      br: transformPoint(coords.br, vpt)
+    }
+    let lines = this._getImageLines(oCoords),
+    xPoints = this._findCrossPoints(point, lines);
+    
+
+    console.log('lines', coords, lines, xPoints, vpt);
     return (xPoints !== 0 && xPoints % 2 === 1);
   }
 
@@ -86,6 +144,44 @@ export default class Body {
   }
 
   _findCrossPoints (point, lines) {
+    let b1, b2, a1, a2, xi, // yi,
+      xcount = 0,
+      iLine;
 
+    for (let lineKey in lines) {
+      iLine = lines[lineKey];
+      // optimisation 1: line below point. no cross
+      if ((iLine.o.y < point.y) && (iLine.d.y < point.y)) {
+        continue;
+      }
+      // optimisation 2: line above point. no cross
+      if ((iLine.o.y >= point.y) && (iLine.d.y >= point.y)) {
+        continue;
+      }
+      // optimisation 3: vertical line case
+      if ((iLine.o.x === iLine.d.x) && (iLine.o.x >= point.x)) {
+        xi = iLine.o.x;
+        // yi = point.y;
+      }
+      // calculate the intersection point
+      else {
+        b1 = 0;
+        b2 = (iLine.d.y - iLine.o.y) / (iLine.d.x - iLine.o.x);
+        a1 = point.y - b1 * point.x;
+        a2 = iLine.o.y - b2 * iLine.o.x;
+
+        xi = -(a1 - a2) / (b1 - b2);
+        // yi = a1 + b1 * xi;
+      }
+      // dont count xi < point.x cases
+      if (xi >= point.x) {
+        xcount += 1;
+      }
+      // optimisation 4: specific for square images
+      if (xcount === 2) {
+        break;
+      }
+    }
+    return xcount;
   }
 }
