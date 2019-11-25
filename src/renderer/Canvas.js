@@ -1,4 +1,3 @@
-import Point from '../geometry/Vertice';
 import { transformPoint, invertTransform } from '../utils/misc';
 
 const iMatrix = [1, 0, 0, 1, 0, 0];
@@ -84,11 +83,11 @@ function _createCanvas () {
  */
 function _getPixelRatio (canvas) {
   let context = canvas.getContext('2d'),
-    devicePixelRatio = window.devicePixelRatio || 1,
-    backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio ||
-    context.msBackingStorePixelRatio ||
-    context.oBackingStorePixelRatio ||
-    context.backingStorePixelRatio || 1;
+      devicePixelRatio = window.devicePixelRatio || 1,
+      backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio ||
+      context.msBackingStorePixelRatio ||
+      context.oBackingStorePixelRatio ||
+      context.backingStorePixelRatio || 1;
 
   return devicePixelRatio / backingStorePixelRatio;
 }

@@ -8,12 +8,12 @@ export default class ShapesGroup {
 
   calcDimensions () {
     let shapes = this.shapes,
-      minX = min(shapes, 'dimensions.left') || 0,
-      minY = min(shapes, 'dimensions.top') || 0,
-      maxX = max(shapes, 'dimensions.left') || 0,
-      maxY = max(shapes, 'dimensions.top') || 0,
-      width = max(shapes, 'dimensions.width'),
-      height = max(shapes, 'dimensions.height');
+        minX = min(shapes, 'dimensions.left') || 0,
+        minY = min(shapes, 'dimensions.top') || 0,
+        maxX = max(shapes, 'dimensions.left') || 0,
+        maxY = max(shapes, 'dimensions.top') || 0,
+        width = max(shapes, 'dimensions.width'),
+        height = max(shapes, 'dimensions.height');
 
     return {
       left: minX,

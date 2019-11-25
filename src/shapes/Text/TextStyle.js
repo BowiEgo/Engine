@@ -415,8 +415,8 @@ export class TextStyle {
 
   set padding (padding) {
     if (this._padding !== padding) {
-        this._padding = padding;
-        this.styleID++;
+      this._padding = padding;
+      this.styleID++;
     }
   }
 
@@ -546,7 +546,7 @@ export class TextStyle {
     }
 
     for (let i = fontFamilies.length - 1; i >= 0; i--) {
-        // Trim any extra white-space
+      // Trim any extra white-space
       let fontFamily = fontFamilies[i].trim();
 
       // Check if font already contains strings

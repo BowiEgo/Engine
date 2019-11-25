@@ -1,12 +1,11 @@
 import { insertAfter } from '../../utils/dom';
 
 export default class Performance {
-  static create (game, opts) {
+  static create (game) {
     console.log('create-Performance', game);
     let performance = {};
     let viewBC = game.view.getBoundingClientRect();
 
-    opts = opts || {};
     performance.el = document.createElement('div');
     performance.el.className = 'performance-widget';
     performance.el.style.position = 'absolute';

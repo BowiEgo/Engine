@@ -16,9 +16,9 @@ class Polygon extends Shape {
     const { x: posX, y: posY } = this.transform.position;
 
     let v1 = new Vector(),
-      v2 = new Vector(),
-      axes = [],
-      pointNum = this.vertices.length;
+        v2 = new Vector(),
+        axes = [],
+        pointNum = this.vertices.length;
 
   
     for (let i = 0; i < pointNum - 1; i++) {
@@ -46,7 +46,7 @@ class Polygon extends Shape {
     const { x: posX, y: posY } = this.transform.position;
 
     let scalars = [],
-      v = new Vector();
+        v = new Vector();
 
     this.vertices.forEach(point => {
       v.x = point.x + posX;
@@ -63,12 +63,12 @@ class Polygon extends Shape {
 
   calcDimensions () {
     let vertices = this.vertices,
-      minX = min(vertices, 'x') || 0,
-      minY = min(vertices, 'y') || 0,
-      maxX = max(vertices, 'x') || 0,
-      maxY = max(vertices, 'y') || 0,
-      width = (maxX - minX),
-      height = (maxY - minY);
+        minX = min(vertices, 'x') || 0,
+        minY = min(vertices, 'y') || 0,
+        maxX = max(vertices, 'x') || 0,
+        maxY = max(vertices, 'y') || 0,
+        width = (maxX - minX),
+        height = (maxY - minY);
 
     return {
       left: minX,

@@ -114,7 +114,7 @@ export default class Body {
     }
 
     let lines = this._getImageLines(coordsTransformed),
-      xPoints = this._findCrossPoints(point, lines);
+        xPoints = this._findCrossPoints(point, lines);
 
     return (xPoints !== 0 && xPoints % 2 === 1);
   }
@@ -147,8 +147,8 @@ export default class Body {
 
   _findCrossPoints (point, lines) {
     let b1, b2, a1, a2, xi, // yi,
-      xcount = 0,
-      iLine;
+        xcount = 0,
+        iLine;
 
     for (let lineKey in lines) {
       iLine = lines[lineKey];

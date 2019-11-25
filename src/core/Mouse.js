@@ -51,11 +51,11 @@ export default class Mouse {
 
   static _getRelativeMousePosition (event, element, pixelRatio) {
     let elementBounds = element.getBoundingClientRect(),
-      rootNode = (document.documentElement || document.body.parentNode || document.body),
-      scrollX = (window.pageXOffset !== undefined) ? window.pageXOffset : rootNode.scrollLeft,
-      scrollY = (window.pageYOffset !== undefined) ? window.pageYOffset : rootNode.scrollTop,
-      touches = event.changedTouches,
-      x, y;
+        rootNode = (document.documentElement || document.body.parentNode || document.body),
+        scrollX = (window.pageXOffset !== undefined) ? window.pageXOffset : rootNode.scrollLeft,
+        scrollY = (window.pageYOffset !== undefined) ? window.pageYOffset : rootNode.scrollTop,
+        touches = event.changedTouches,
+        x, y;
     
     if (touches) {
       x = touches[0].pageX - elementBounds.left - scrollX;
@@ -73,7 +73,7 @@ export default class Mouse {
 
   mousemove (event) {
     let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
-      touches = event.changedTouches;
+        touches = event.changedTouches;
 
     if (touches) {
       this.button = 0;
@@ -91,7 +91,7 @@ export default class Mouse {
 
   mousedown (event) {
     let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
-      touches = event.changedTouches;
+        touches = event.changedTouches;
     
     if (touches) {
       this.button = 0;
@@ -113,7 +113,7 @@ export default class Mouse {
 
   mouseup (event) {
     let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
-      touches = event.changedTouches;
+        touches = event.changedTouches;
     
     if (touches) {
       event.preventDefault();

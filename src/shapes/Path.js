@@ -13,8 +13,7 @@ const commandLengths = {
   q: 4,
   t: 2,
   a: 7
-}, 
-repeatedCommands = {
+}, repeatedCommands = {
   m: 'l',
   M: 'L'
 };
@@ -34,12 +33,12 @@ class Path extends Shape {
 
   static parsePath (path) {
     let result = [],
-      coords = [],
-      currentPath,
-      parsed,
-      re = /([-+]?((\d+\.\d+)|((\d+)|(\.\d+)))(?:e[-+]?\d+)?)/ig,
-      match,
-      coordsStr;
+        coords = [],
+        currentPath,
+        parsed,
+        re = /([-+]?((\d+\.\d+)|((\d+)|(\.\d+)))(?:e[-+]?\d+)?)/ig,
+        match,
+        coordsStr;
 
     for (let i = 0, coordsParsed, len = path.length; i < len; i++) {
       currentPath = path[i];
@@ -85,21 +84,21 @@ class Path extends Shape {
   }
 
   calcDimensions () {
-    var aX = [],
-      aY = [],
-      current, // current instruction
-      previous = null,
-      subpathStartX = 0,
-      subpathStartY = 0,
-      x = 0, // current x
-      y = 0, // current y
-      controlX = 0, // current control point x
-      controlY = 0, // current control point y
-      tempX,
-      tempY,
-      bounds;
+    let aX = [],
+        aY = [],
+        current, // current instruction
+        previous = null,
+        subpathStartX = 0,
+        subpathStartY = 0,
+        x = 0, // current x
+        y = 0, // current y
+        controlX = 0, // current control point x
+        controlY = 0, // current control point y
+        tempX,
+        tempY,
+        bounds;
 
-    for (var i = 0, len = this.path.length; i < len; ++i) {
+    for (let i = 0, len = this.path.length; i < len; ++i) {
       current = this.path[i];
 
       switch (current[0]) { // first letter
@@ -386,12 +385,12 @@ class Path extends Shape {
       aY.push(y);
     }
 
-    var minX = min(aX) || 0,
-      minY = min(aY) || 0,
-      maxX = max(aX) || 0,
-      maxY = max(aY) || 0,
-      deltaX = maxX - minX,
-      deltaY = maxY - minY;
+    let minX = min(aX) || 0,
+        minY = min(aY) || 0,
+        maxX = max(aX) || 0,
+        maxY = max(aY) || 0,
+        deltaX = maxX - minX,
+        deltaY = maxY - minY;
 
     return {
       left: minX - this.strokeWidth / 2,

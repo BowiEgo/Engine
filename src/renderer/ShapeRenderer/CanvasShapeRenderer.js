@@ -38,7 +38,7 @@ export default class CanvasShapeRenderer {
 
     _setStrokeStyles(context, shape);
     _setFillStyles(context, shape);
-    _setDropShadowStyles(context, shape);
+    _setDropShadowStyles(context, shape, _canvas.getZoom());
     shape.strokeWidth > 0 && _renderStroke(context, shape);
     shape.fill && _renderFill(context, shape);
   }
@@ -77,12 +77,12 @@ function _renderFill (context) {
   context.restore();
 }
 
-function _setDropShadowStyles (context, shape) {
+function _setDropShadowStyles (context, shape, zoom) {
   if (shape.dropShadow) {
     context.shadowColor = shape.dropShadowColor;
     context.shadowBlur = shape.dropShadowBlur;
-    context.shadowOffsetX = Math.cos(shape.dropShadowAngle) * shape.dropShadowDistance * _canvas.getZoom();
-    context.shadowOffsetY = (Math.sin(shape.dropShadowAngle) * shape.dropShadowDistance) * _canvas.getZoom();
+    context.shadowOffsetX = Math.cos(shape.dropShadowAngle) * shape.dropShadowDistance * zoom;
+    context.shadowOffsetY = (Math.sin(shape.dropShadowAngle) * shape.dropShadowDistance) * zoom;
   } else {
     context.shadowColor = 'black';
     context.shadowBlur = 0;
@@ -93,7 +93,7 @@ function _setDropShadowStyles (context, shape) {
 
 function _pathPolygon(context, shape) {
   let points = shape.vertices,
-    point;
+      point;
   let len = points.length;
 
   if (!len || len === 0 || isNaN(points[len - 1].y)) {
@@ -119,12 +119,12 @@ function _pathRectangle(context, shape) {
   const shapePosition = transform.position;
 
   let rx = shape.rx ? Math.min(shape.rx, shape.width / 2) : 0,
-    ry = shape.ry ? Math.min(shape.ry, shape.height / 2) : 0,
-    w = shape.width,
-    h = shape.height,
-    isRounded = rx !== 0 || ry !== 0,
-    /* "magic number" for bezier approximations of arcs (http://itc.ktu.lt/itc354/Riskus354.pdf) */
-    k = 1 - 0.5522847498;
+      ry = shape.ry ? Math.min(shape.ry, shape.height / 2) : 0,
+      w = shape.width,
+      h = shape.height,
+      isRounded = rx !== 0 || ry !== 0,
+      /* "magic number" for bezier approximations of arcs (http://itc.ktu.lt/itc354/Riskus354.pdf) */
+      k = 1 - 0.5522847498;
 
   context.beginPath();
   context.moveTo(rx + shapePosition.x, shapePosition.y);
@@ -153,15 +153,15 @@ function _pathCircle(context, shape) {
 function _execPathCommands(context, shape) {
   const { path } = shape;
   let current,
-    previous,
-    subpathStartX = 0,
-    subpathStartY = 0,
-    x = 0,
-    y = 0,
-    controlX = 0,
-    controlY = 0,
-    tempX,
-    tempY
+      previous,
+      subpathStartX = 0,
+      subpathStartY = 0,
+      x = 0,
+      y = 0,
+      controlX = 0,
+      controlY = 0,
+      tempX,
+      tempY
 
   context.beginPath();
 

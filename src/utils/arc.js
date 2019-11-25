@@ -1,7 +1,6 @@
 import { cos, sin } from './misc';
 
 let arcToSegmentsCache = {};
-let _join = Array.prototype.join;
 
 export function arcToSegments(toX, toY, rx, ry, large, sweep, rotateX) {
   let argsString = Array.prototype.join.call(arguments);
@@ -10,18 +9,18 @@ export function arcToSegments(toX, toY, rx, ry, large, sweep, rotateX) {
   }
 
   let PI = Math.PI, th = rotateX * PI / 180,
-    sinTh = sin(th),
-    cosTh = cos(th),
-    fromX = 0, fromY = 0;
+      sinTh = sin(th),
+      cosTh = cos(th),
+      fromX = 0, fromY = 0;
 
   rx = Math.abs(rx);
   ry = Math.abs(ry);
 
   let px = -cosTh * toX * 0.5 - sinTh * toY * 0.5,
-    py = -cosTh * toY * 0.5 + sinTh * toX * 0.5,
-    rx2 = rx * rx, ry2 = ry * ry, py2 = py * py, px2 = px * px,
-    pl = rx2 * ry2 - rx2 * py2 - ry2 * px2,
-    root = 0;
+      py = -cosTh * toY * 0.5 + sinTh * toX * 0.5,
+      rx2 = rx * rx, ry2 = ry * ry, py2 = py * py, px2 = px * px,
+      pl = rx2 * ry2 - rx2 * py2 - ry2 * px2,
+      root = 0;
 
   if (pl < 0) {
     let s = Math.sqrt(1 - pl / (rx2 * ry2));
@@ -34,11 +33,11 @@ export function arcToSegments(toX, toY, rx, ry, large, sweep, rotateX) {
   }
 
   let cx = root * rx * py / ry,
-    cy = -root * ry * px / rx,
-    cx1 = cosTh * cx - sinTh * cy + toX * 0.5,
-    cy1 = sinTh * cx + cosTh * cy + toY * 0.5,
-    mTheta = calcVectorAngle(1, 0, (px - cx) / rx, (py - cy) / ry),
-    dtheta = calcVectorAngle((px - cx) / rx, (py - cy) / ry, (-px - cx) / rx, (-py - cy) / ry);
+      cy = -root * ry * px / rx,
+      cx1 = cosTh * cx - sinTh * cy + toX * 0.5,
+      cy1 = sinTh * cx + cosTh * cy + toY * 0.5,
+      mTheta = calcVectorAngle(1, 0, (px - cx) / rx, (py - cy) / ry),
+      dtheta = calcVectorAngle((px - cx) / rx, (py - cy) / ry, (-px - cx) / rx, (-py - cy) / ry);
 
   if (sweep === 0 && dtheta > 0) {
     dtheta -= 2 * PI;
@@ -49,9 +48,9 @@ export function arcToSegments(toX, toY, rx, ry, large, sweep, rotateX) {
 
   // Convert into cubic bezier segments <= 90deg
   let segments = Math.ceil(Math.abs(dtheta / PI * 2)),
-    result = [], mDelta = dtheta / segments,
-    mT = 8 / 3 * Math.sin(mDelta / 4) * Math.sin(mDelta / 4) / Math.sin(mDelta / 2),
-    th3 = mTheta + mDelta;
+      result = [], mDelta = dtheta / segments,
+      mT = 8 / 3 * Math.sin(mDelta / 4) * Math.sin(mDelta / 4) / Math.sin(mDelta / 2),
+      th3 = mTheta + mDelta;
 
   for (let i = 0; i < segments; i++) {
     result[i] = segmentToBezier(mTheta, th3, cosTh, sinTh, rx, ry, cx1, cy1, mT, fromX, fromY);
@@ -66,15 +65,15 @@ export function arcToSegments(toX, toY, rx, ry, large, sweep, rotateX) {
 
 function segmentToBezier(th2, th3, cosTh, sinTh, rx, ry, cx1, cy1, mT, fromX, fromY) {
   let costh2 = cos(th2),
-    sinth2 = sin(th2),
-    costh3 = cos(th3),
-    sinth3 = sin(th3),
-    toX = cosTh * rx * costh3 - sinTh * ry * sinth3 + cx1,
-    toY = sinTh * rx * costh3 + cosTh * ry * sinth3 + cy1,
-    cp1X = fromX + mT * ( -cosTh * rx * sinth2 - sinTh * ry * costh2),
-    cp1Y = fromY + mT * ( -sinTh * rx * sinth2 + cosTh * ry * costh2),
-    cp2X = toX + mT * ( cosTh * rx * sinth3 + sinTh * ry * costh3),
-    cp2Y = toY + mT * ( sinTh * rx * sinth3 - cosTh * ry * costh3);
+      sinth2 = sin(th2),
+      costh3 = cos(th3),
+      sinth3 = sin(th3),
+      toX = cosTh * rx * costh3 - sinTh * ry * sinth3 + cx1,
+      toY = sinTh * rx * costh3 + cosTh * ry * sinth3 + cy1,
+      cp1X = fromX + mT * ( -cosTh * rx * sinth2 - sinTh * ry * costh2),
+      cp1Y = fromY + mT * ( -sinTh * rx * sinth2 + cosTh * ry * costh2),
+      cp2X = toX + mT * ( cosTh * rx * sinth3 + sinTh * ry * costh3),
+      cp2Y = toY + mT * ( sinTh * rx * sinth3 - cosTh * ry * costh3);
 
   return [
     cp1X, cp1Y,
@@ -85,7 +84,7 @@ function segmentToBezier(th2, th3, cosTh, sinTh, rx, ry, cx1, cy1, mT, fromX, fr
 
 function calcVectorAngle(ux, uy, vx, vy) {
   let ta = Math.atan2(uy, ux),
-    tb = Math.atan2(vy, vx);
+      tb = Math.atan2(vy, vx);
   if (tb >= ta) {
     return tb - ta;
   }
@@ -95,10 +94,10 @@ function calcVectorAngle(ux, uy, vx, vy) {
 }
 
 export function getBoundsOfArc (fx, fy, rx, ry, rot, large, sweep, tx, ty) {
-  var fromX = 0, fromY = 0, bound, bounds = [],
+  let fromX = 0, fromY = 0, bound, bounds = [],
       segs = arcToSegments(tx - fx, ty - fy, rx, ry, large, sweep, rot);
 
-  for (var i = 0, len = segs.length; i < len; i++) {
+  for (let i = 0, len = segs.length; i < len; i++) {
     bound = getBoundsOfCurve(fromX, fromY, segs[i][0], segs[i][1], segs[i][2], segs[i][3], segs[i][4], segs[i][5]);
     bounds.push({ x: bound[0].x + fx, y: bound[0].y + fy });
     bounds.push({ x: bound[1].x + fx, y: bound[1].y + fy });
@@ -106,12 +105,10 @@ export function getBoundsOfArc (fx, fy, rx, ry, rot, large, sweep, tx, ty) {
     fromY = segs[i][5];
   }
   return bounds;
-};
+}
 
 export function getBoundsOfCurve(x0, y0, x1, y1, x2, y2, x3, y3) {
-  var argsString;
-
-  var sqrt = Math.sqrt,
+  let sqrt = Math.sqrt,
       min = Math.min, max = Math.max,
       abs = Math.abs, tvalues = [],
       bounds = [[], []],
@@ -121,7 +118,7 @@ export function getBoundsOfCurve(x0, y0, x1, y1, x2, y2, x3, y3) {
   a = -3 * x0 + 9 * x1 - 9 * x2 + 3 * x3;
   c = 3 * x1 - 3 * x0;
 
-  for (var i = 0; i < 2; ++i) {
+  for (let i = 0; i < 2; ++i) {
     if (i > 0) {
       b = 6 * y0 - 12 * y1 + 6 * y2;
       a = -3 * y0 + 9 * y1 - 9 * y2 + 3 * y3;
@@ -153,7 +150,7 @@ export function getBoundsOfCurve(x0, y0, x1, y1, x2, y2, x3, y3) {
     }
   }
 
-  var x, y, j = tvalues.length, jlen = j, mt;
+  let x, y, j = tvalues.length, jlen = j, mt;
   while (j--) {
     t = tvalues[j];
     mt = 1 - t;
@@ -168,7 +165,7 @@ export function getBoundsOfCurve(x0, y0, x1, y1, x2, y2, x3, y3) {
   bounds[1][jlen] = y0;
   bounds[0][jlen + 1] = x3;
   bounds[1][jlen + 1] = y3;
-  var result = [
+  let result = [
     {
       x: min.apply(null, bounds[0]),
       y: min.apply(null, bounds[1])

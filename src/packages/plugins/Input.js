@@ -1,4 +1,4 @@
-let keyCodeArray = []
+let keyCodeArray = [];
 
 document.onkeydown = (event) => {
   const { keyCode } = event;
@@ -10,7 +10,7 @@ document.onkeydown = (event) => {
 }
 
 document.onkeyup = (event) => {
-  const { keyCode } = event;a
+  const { keyCode } = event;
   let idx = keyCodeArray.indexOf(keyCode);
   if (idx > -1) {
     keyCodeArray.splice(idx, 1);

@@ -348,7 +348,7 @@ export class TextMetrics {
    * @return {boolean}  should collapse
    */
   static collapseSpaces (whiteSpace) {
-      return (whiteSpace === 'normal' || whiteSpace === 'pre-line');
+    return (whiteSpace === 'normal' || whiteSpace === 'pre-line');
   }
 
   /**
@@ -430,7 +430,7 @@ export class TextMetrics {
    */
   static canBreakChars(char, nextChar, token, index, breakWords) // eslint-disable-line no-unused-vars
   {
-      return true;
+    return true;
   }
 
   /**

@@ -31,7 +31,7 @@ export function find(array, byProperty, condition) {
     return;
   }
 
-  var i = array.length - 1,
+  let i = array.length - 1,
       result = byProperty ? getValue(array[i], byProperty) : array[i];
   if (byProperty) {
     while (i--) {

@@ -13,7 +13,7 @@ export default class Trigger {
   on (eventNames, callback) {
     let app = this.app;
     let names = eventNames.split(' '),
-      name;
+        name;
 
     for (let i = 0; i < names.length; i++) {
       name = names[i];
@@ -41,7 +41,7 @@ export default class Trigger {
   
     for (let i = 0; i < names.length; i++) {
       let callbacks = app._eventPool[names[i]],
-        newCallbacks = [];
+          newCallbacks = [];
   
       if (callback && callbacks) {
         for (let j = 0; j < callbacks.length; j++) {
@@ -56,9 +56,9 @@ export default class Trigger {
 
   fire (eventNames, event) {
     let names,
-      name,
-      callbacks,
-      eventClone;
+        name,
+        callbacks,
+        eventClone;
 
     let app = this.app;
 

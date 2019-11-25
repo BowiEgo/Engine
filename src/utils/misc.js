@@ -15,7 +15,7 @@ export function cos (angle) {
     // cos(a) = cos(-a)
     angle = -angle;
   }
-  var angleSlice = angle / PiBy2;
+  let angleSlice = angle / PiBy2;
   switch (angleSlice) {
     case 1: case 3: return 0;
     case 2: return -1;
@@ -32,7 +32,7 @@ export function cos (angle) {
  */
 export function sin (angle) {
   if (angle === 0) { return 0; }
-  var angleSlice = angle / PiBy2, sign = 1;
+  let angleSlice = angle / PiBy2, sign = 1;
   if (angle < 0) {
     // sin(-a) = -sin(a)
     sign = -1;
@@ -60,8 +60,9 @@ export function transformPoint (p, t, ignoreOffset) {
 
 export function invertTransform (t) {
   let a = 1 / (t[0] * t[3] - t[1] * t[2]),
-    r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
-    o = transformPoint({ x: t[4], y: t[5] }, r, true);
+      r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
+      o = transformPoint({ x: t[4], y: t[5] }, r, true);
+
   r[4] = -o.x;
   r[5] = -o.y;
   return r;

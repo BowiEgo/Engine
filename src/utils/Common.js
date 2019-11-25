@@ -1,6 +1,6 @@
 export function extend (obj, deep) {
-  var argsStart,
-    deepClone;
+  let argsStart,
+      deepClone;
 
   if (typeof deep === 'boolean') {
     argsStart = 2;
@@ -10,11 +10,11 @@ export function extend (obj, deep) {
     deepClone = true;
   }
 
-  for (var i = argsStart; i < arguments.length; i++) {
-    var source = arguments[i];
+  for (let i = argsStart; i < arguments.length; i++) {
+    let source = arguments[i];
 
     if (source) {
-      for (var prop in source) {
+      for (let prop in source) {
         if (deepClone && source[prop] && source[prop].constructor === Object) {
           if (!obj[prop] || obj[prop].constructor === Object) {
             obj[prop] = obj[prop] || {};
@@ -41,8 +41,8 @@ export function keys (obj) {
     return Object.keys(obj);
 
   // avoid hasOwnProperty for performance
-  var keys = [];
-  for (var key in obj)
+  let keys = [];
+  for (let key in obj)
     keys.push(key);
   return keys;
 }

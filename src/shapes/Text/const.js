@@ -8,6 +8,6 @@
  * @property {number} LINEAR_HORIZONTAL Linear gradient
  */
 export const TEXT_GRADIENT = {
-    LINEAR_VERTICAL: 0,
-    LINEAR_HORIZONTAL: 1,
+  LINEAR_VERTICAL: 0,
+  LINEAR_HORIZONTAL: 1,
 };
