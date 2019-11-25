@@ -124,35 +124,31 @@ function _renderSelection (context, body, vpt) {
   const coords = body.coords;
 
   const dim = {
-    left: body.transform.position.x,
-    top: body.transform.position.y,
+    left: body.transform.position.x + body.shape.dimensions.left,
+    top: body.transform.position.y + body.shape.dimensions.top,
     width: body.shape.dimensions.width,
     height: body.shape.dimensions.height
   }
 
-  _renderSelectionBounds(dim, context);
+  _renderSelectionBounds(dim, context, vpt);
 
   Object.keys(coords).forEach(key => {
     let handlerPoint = {
       x: coords[key].x,
       y: coords[key].y
     };
-    if (key.indexOf('t') > -1) {
-      handlerPoint.y -= HANDLER_WIDTH / vpt[0];
-    }
-
-    if (key.indexOf('l') > -1) {
-      handlerPoint.x -= HANDLER_WIDTH / vpt[0];
-    }
+    handlerPoint.y -= HANDLER_WIDTH / 2 / vpt[0];
+    handlerPoint.x -= HANDLER_WIDTH / 2 / vpt[0];
 
     _renderHandler(handlerPoint, context, vpt);
   })
 }
 
-function _renderSelectionBounds (dim, context) {
+function _renderSelectionBounds (dim, context, vpt) {
   context.save();
   context.transform(1, 0, 0, 1, 0, 0);
   context.strokeStyle = '#3f51b5';
+  context.lineWidth = 2 / vpt[0];
   context.strokeRect(dim.left, dim.top, dim.width, dim.height);
   context.restore();
 }

@@ -19,7 +19,9 @@ export default class Scene {
       this.selectedBody.isSelected = false;
     }
     this.selectedBody = body;
-    body.isSelected = true;
+    if (body) {
+      body.isSelected = true;
+    }
   }
 
   reset () {

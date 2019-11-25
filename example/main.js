@@ -324,7 +324,6 @@ function createTextNode (index) {
 const textNodes = [];
 
 for (let i = 0; i < 20; i++) {
-  const pixelRatio = myGraph.renderer._canvas.pixelRatio;
   let textNode = createTextNode(i);
   textNodes.push(textNode);
   myGraph.scene.addBody(textNode);
@@ -332,7 +331,8 @@ for (let i = 0; i < 20; i++) {
   myGraph.hitTarget = myGraph.hitTarget || [];
   myGraph.trigger.on('drag', offset => {
     if(myGraph.hitTarget === textNode) {
-      textNode.translate(offset.x, offset.y);
+      const vpt = myGraph.renderer._canvas.viewportTransform;
+      textNode.translate(offset.x / vpt[0], offset.y / vpt[0]);
     }
   })
 }

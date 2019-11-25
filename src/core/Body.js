@@ -1,5 +1,5 @@
-import { isArray, isFunction } from '../utils/common';
-import { transformPoint, invertTransform } from '../utils/misc';
+import { isArray, isFunction, clone } from '../utils/common';
+import { transformPoint } from '../utils/misc';
 import ShapesGroup from '../shapes/ShapesGroup';
 
 function getRandomColor () {
@@ -98,22 +98,24 @@ export default class Body {
   }
 
   containsPoint (point) {
-    let _canvas = this.app.renderer._canvas;
-    let vpt = _canvas.viewportTransform;
-    let pixelRatio = _canvas.pixelRatio;
-    // let relativeVpt = invertTransform(vpt);
-    let coords = this.calcCoords();
-    let oCoords = {
+    const _canvas = this.app.renderer._canvas;
+    const pixelRatio = _canvas.pixelRatio;
+    const coords = this.calcCoords();
+    let vpt = clone(_canvas.viewportTransform);
+
+    vpt[4] /= pixelRatio;
+    vpt[5] /= pixelRatio;
+
+    let coordsTransformed = {
       tl: transformPoint(coords.tl, vpt),
       tr: transformPoint(coords.tr, vpt),
       bl: transformPoint(coords.bl, vpt),
       br: transformPoint(coords.br, vpt)
     }
-    let lines = this._getImageLines(oCoords),
-    xPoints = this._findCrossPoints(point, lines);
-    
 
-    console.log('lines', coords, lines, xPoints, vpt);
+    let lines = this._getImageLines(coordsTransformed),
+      xPoints = this._findCrossPoints(point, lines);
+
     return (xPoints !== 0 && xPoints % 2 === 1);
   }
 

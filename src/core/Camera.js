@@ -16,9 +16,9 @@ export default class Camera {
 
   recover () {
     let { renderer } = this.app;
-    renderer.clear(camera.scale);
-    renderer.context.translate(-camera.position.x, -camera.position.y);
-    renderer.context.scale(1 / camera.scale, 1 / camera.scale);
+    renderer.clear(this.scale);
+    renderer.context.translate(-this.position.x, -this.position.y);
+    renderer.context.scale(1 / this.scale, 1 / this.scale);
     this.scale = 1;
     this.offset = { x: 0, y: 0 };
     this.position = { x: 0, y: 0 };
@@ -52,7 +52,7 @@ export default class Camera {
       }
     });
   
-    app.mouse.on('mouseout', mouse => {
+    app.mouse.on('mouseout', () => {
       isDragging = false;
     });
   
@@ -62,7 +62,7 @@ export default class Camera {
       lastMousePosition.y = mouse.mousedownPosition.y;
     });
   
-    app.mouse.on('mouseup', mouse => {
+    app.mouse.on('mouseup', () => {
       this.offset = { x: 0, y: 0 };
       isDragging = false;
     });

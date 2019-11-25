@@ -7,7 +7,7 @@ import { getValue } from './object';
  * @param {String} byProperty
  * @return {*}
  */
-export function max(array, byProperty) {
+export function max (array, byProperty) {
   return find(array, byProperty, function(value1, value2) {
     return value1 >= value2;
   });
@@ -20,7 +20,7 @@ export function max(array, byProperty) {
  * @param {String} byProperty
  * @return {*}
  */
-export function min(array, byProperty) {
+export function min (array, byProperty) {
   return find(array, byProperty, function(value1, value2) {
     return value1 < value2;
   });

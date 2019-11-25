@@ -51,6 +51,10 @@ export function isArray (obj) {
   return Object.prototype.toString.call(obj) === '[object Array]';
 }
 
+export function isPlainObject (obj) {
+  return !!obj && obj.constructor === Object;
+}
+
 export function isFunction (obj) {
   return typeof obj === 'function';
 }

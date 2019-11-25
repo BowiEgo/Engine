@@ -3,6 +3,7 @@ import Shape from './Shape';
 class Rectangle extends Shape {
   constructor (opts) {
     super(opts);
+    console.log('rect', opts)
     this.type = 'rectangle';
     this.width = opts.width || 0;
     this.height = opts.height || 0;
@@ -24,10 +25,10 @@ class Rectangle extends Shape {
 
   calcDimensions () {
     return {
-      left: 0,
-      top: 0,
-      width: this.width,
-      height: this.height
+      left: -this.strokeWidth / 2,
+      top: -this.strokeWidth / 2,
+      width: this.width + this.strokeWidth,
+      height: this.height + this.strokeWidth
     };
   }
 

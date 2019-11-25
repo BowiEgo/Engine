@@ -47,6 +47,8 @@ export default class Hit {
   }
 
   findTarget (pointer) {
+    console.log(pointer);
+
     // console.log('findTarget', pointer);
     const hasHitCanvas = false;
     const pixelRatio = this.app.renderer.pixelRatio;
@@ -68,11 +70,12 @@ export default class Hit {
 
       if (body.containsPoint(pointer)) {
         // console.log(body);
-        console.log(pointer);
         this.app.scene.selectBody(body);
         return body;
       }
     }
+
+    this.app.scene.selectBody(null);
 
     return [];
   }
