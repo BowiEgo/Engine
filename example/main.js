@@ -138,7 +138,7 @@ function createGame () {
     ],
     transform: {
       position: {
-        x: 240,
+        x: 540,
         y: 220
       }
     },
@@ -183,7 +183,7 @@ function createGame () {
     ],
     transform: {
       position: {
-        x: 360,
+        x: 660,
         y: 40
       },
       scale: 1
@@ -204,8 +204,8 @@ function createGame () {
     ],
     transform: {
       position: {
-        x: 0,
-        y: 160
+        x: 900,
+        y: 260
       },
       scale: 1
     }
@@ -226,8 +226,8 @@ function createGame () {
     ],
     transform: {
       position: {
-        x: -100,
-        y: 40
+        x: 100,
+        y: 240
       }
     }
   })
