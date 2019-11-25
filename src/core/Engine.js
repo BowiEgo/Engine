@@ -70,7 +70,7 @@ class Engine {
     if (app.frameReq) {
       app.stop();
     }
-  
+
     app.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
   
     function tick (timeStamp) {

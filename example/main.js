@@ -134,7 +134,7 @@ function createGame () {
         letterSpacing: 4,
         fill: '#03a9f4',
         wordWrap: true
-      })
+      }).translate(-50, 6)
     ],
     transform: {
       position: {

@@ -37,6 +37,7 @@ class Shape {
   translate (dx, dy) {
     this.transform.position.x += dx;
     this.transform.position.y += dy;
+    this.dimensions = this.calcDimensions();
     return this;
   }
 }

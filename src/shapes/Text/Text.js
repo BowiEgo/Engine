@@ -67,9 +67,10 @@ class Text extends Shape {
   }
 
   calcDimensions () {
+    console.log(this.transform.position)
     return {
-      left: 0,
-      top: 0,
+      left: this.transform.position.x,
+      top: this.transform.position.y,
       width: this.measured.width,
       height: this.measured.height
     };
