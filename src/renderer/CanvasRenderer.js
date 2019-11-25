@@ -147,7 +147,7 @@ function _renderSelection (context, body, vpt) {
 function _renderSelectionBounds (dim, context, vpt) {
   context.save();
   context.transform(1, 0, 0, 1, 0, 0);
-  context.strokeStyle = '#3f51b5';
+  context.strokeStyle = '#00bcd4';
   context.lineWidth = 2 / vpt[0];
   context.strokeRect(dim.left, dim.top, dim.width, dim.height);
   context.restore();
@@ -158,7 +158,7 @@ function _renderHandler (point, context, vpt) {
   // console.log('_renderHandler', point);
   context.save();
   context.transform(1, 0, 0, 1, point.x, point.y);
-  context.strokeStyle = '#3f51b5';
+  context.strokeStyle = '#00bcd4';
   context.lineWidth = 2 / vpt[0];
   context.fillStyle = '#fff';
   context.fillRect(0, 0, width, width);
