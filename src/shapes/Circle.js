@@ -22,8 +22,8 @@ class Cirlce extends Shape {
     return {
       left: 0,
       top: 0,
-      width: 100,
-      height: 20
+      width: this.radius * 2,
+      height: this.radius * 2
     };
   }
 

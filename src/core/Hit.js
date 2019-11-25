@@ -67,9 +67,12 @@ export default class Hit {
           console.log('hit:', color, body);
         }
       }
+      if (body.shape.type === 'text') {
+        console.log(body);
+      }
 
       if (body.containsPoint(pointer)) {
-        // console.log(body);
+        console.log(body);
         this.app.scene.selectBody(body);
         return body;
       }

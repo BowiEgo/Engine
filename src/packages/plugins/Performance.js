@@ -2,6 +2,7 @@ import { insertAfter } from '../../utils/dom';
 
 export default class Performance {
   static create (game, opts) {
+    console.log('create-Performance', game);
     let performance = {};
     let viewBC = game.view.getBoundingClientRect();
 
@@ -16,7 +17,7 @@ export default class Performance {
     
     this._addFPS(performance);
     insertAfter(performance.el, game.view);
-    
+
     game.trigger.on('tick', () => {
       this._update(game);
     });

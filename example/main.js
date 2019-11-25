@@ -168,6 +168,27 @@ let arrow = new Body({
       stroke: 'green',
       strokeWidth: 2
     }),
+    // new Shape.Path('M-200,200 l 50,-25\
+    // a25,25 -30 0,1 50,-25 l 50,-25\
+    // a25,50 -30 0,1 50,-25 l 50,-25\
+    // a25,75 -30 0,1 50,-25 l 50,-25\
+    // a25,100 -30 0,1 50,-25 l 50,-25',
+    // {
+    //   stroke: '#3f51b5',
+    //   strokeWidth: 5
+    // })
+  ],
+  transform: {
+    position: {
+      x: 360,
+      y: 40
+    },
+    scale: 1
+  }
+})
+
+let boundingCurve = new Body({
+  shape: [
     new Shape.Path('M-200,200 l 50,-25\
     a25,25 -30 0,1 50,-25 l 50,-25\
     a25,50 -30 0,1 50,-25 l 50,-25\
@@ -180,8 +201,8 @@ let arrow = new Body({
   ],
   transform: {
     position: {
-      x: 360,
-      y: 40
+      x: 0,
+      y: 160
     },
     scale: 1
   }
@@ -214,7 +235,8 @@ myGame.scene.addBody(circle);
 myGame.scene.addBody(title);
 myGame.scene.addBody(player);
 myGame.scene.addBody(arrow);
-myGame.scene.addBody(pie);
+myGame.scene.addBody(boundingCurve);
+// myGame.scene.addBody(pie);
 
 startBtn.addEventListener('click', () => {
   myGame.restart();
@@ -247,7 +269,7 @@ const myGraph = Engine.create(
     width: 600,
     height: 800,
     autoStart: true,
-    plugins: [ Performance ]
+    plugins: [ Performance, Input ]
   },
 );
 
@@ -267,7 +289,7 @@ function createTextNode (index) {
         stroke: 'grey',
         strokeWidth: 2
       }),
-      new Shape.Text('深圳市腾讯信息技术有限公司', {
+      new Shape.Text('巴啦啦小魔仙之奇迹舞步', {
         align: 'left',
         lineHeight: 16,
         fill: '#333',
@@ -278,7 +300,7 @@ function createTextNode (index) {
         wordWrapWidth: 100,
         breakWords: true
       }).translate(10, 6),
-      new Shape.Text('2.60%', {
+      new Shape.Text('power: 100%', {
         align: 'left',
         lineHeight: 16,
         fill: '#333',
@@ -327,14 +349,6 @@ for (let i = 0; i < 20; i++) {
   let textNode = createTextNode(i);
   textNodes.push(textNode);
   myGraph.scene.addBody(textNode);
-
-  myGraph.hitTarget = myGraph.hitTarget || [];
-  myGraph.trigger.on('drag', offset => {
-    if(myGraph.hitTarget === textNode) {
-      const vpt = myGraph.renderer._canvas.viewportTransform;
-      textNode.translate(offset.x / vpt[0], offset.y / vpt[0]);
-    }
-  })
 }
 console.log(textNodes);
 
@@ -367,7 +381,7 @@ let branch = new Body({
 
 myGraph.scene.addBody(branch);
 
-// myGame.start();
+myGame.start();
 
 console.log('myGame', myGame);
 console.log('myGraph', myGraph);

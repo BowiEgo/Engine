@@ -146,7 +146,7 @@ function _pathRectangle(context, shape) {
 
 function _pathCircle(context, shape) {
   context.beginPath();
-  context.arc(0, 0, shape.radius, 0, 2 * Math.PI);
+  context.arc(shape.radius, shape.radius, shape.radius, 0, 2 * Math.PI);
   context.closePath();
 }
 

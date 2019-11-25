@@ -12,10 +12,14 @@ class Text extends Shape {
 
     this._font = '18px verdana';
     this.fill = '#333';
-    this.dimensions = this.calcDimensions();
-
+    
     this.localStyleID = -1;
-    this.measured = {};
+    this.measured = {
+      width: 0,
+      height: 0
+    };
+    this.updateText();
+    this.dimensions = this.calcDimensions();
     // console.log('new Text:', this);
   }
 
@@ -47,6 +51,7 @@ class Text extends Shape {
     }
 
     this.measured = TextMetrics.measureText(this.text || ' ', style, style.wordWrap);
+    console.log(this.measured);
     this._font = this.style.toFontString();
 
     this.dirty = false;
@@ -65,8 +70,8 @@ class Text extends Shape {
     return {
       left: 0,
       top: 0,
-      width: 100,
-      height: 20
+      width: this.measured.width,
+      height: this.measured.height
     };
   }
 
