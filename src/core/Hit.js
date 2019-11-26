@@ -1,10 +1,3 @@
-function getRandomColor() {
-  const r = Math.round(Math.random() * 255);
-  const g = Math.round(Math.random() * 255);
-  const b = Math.round(Math.random() * 255);
-  return `rgb(${r},${g},${b})`;
-}
-
 export default class Hit {
   constructor (app) {
     this.app = app;
@@ -43,24 +36,22 @@ export default class Hit {
   // }
 
   renderHitShape (shape) {
-
   }
 
   findTarget (pointer) {
-    console.log(pointer);
-
-    // console.log('findTarget', pointer);
-    const hasHitCanvas = false;
-    const pixelRatio = this.app.renderer.pixelRatio;
+    console.log('findTarget', pointer);
+    const hasHitCanvas = false,
+          pixelRatio = this.app.renderer.pixelRatio;
+    let pixel;
 
     if (hasHitCanvas) {
-      const pixel = this.hitContext.getImageData(pointer.x * pixelRatio, pointer.y * pixelRatio, 1, 1).data;
+      pixel = this.hitContext.getImageData(pointer.x * pixelRatio, pointer.y * pixelRatio, 1, 1).data;
     }
 
     for (let i = 0, len = this.bodies.length; i< len; i++) {
       let body = this.bodies[i];
 
-      if (hasHitCanvas) {
+      if (hasHitCanvas && pixel !== null) {
         const color = `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
         // console.log(color, body)
         if (body.hitFill == color) {
