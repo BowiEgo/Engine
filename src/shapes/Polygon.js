@@ -1,7 +1,8 @@
-import Projection from '../geometry/Projection';
 import Shape from './Shape';
+import Projection from '../geometry/Projection';
 import Vector from '../geometry/Vector';
 import Vertice from '../geometry/Vertice';
+import Dimensions from '../geometry/Dimensions';
 import { min, max } from '../utils/array';
 
 class Polygon extends Shape {
@@ -70,12 +71,7 @@ class Polygon extends Shape {
         width = (maxX - minX),
         height = (maxY - minY);
 
-    return {
-      left: minX,
-      top: minY,
-      width: width,
-      height: height
-    };
+    return new Dimensions(minX, minY, width, height);
   }
 
   move (dx, dy) {

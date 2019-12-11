@@ -1,4 +1,5 @@
 import Shape from '../Shape';
+import Dimensions from '../../geometry/Dimensions';
 import { TextStyle } from './TextStyle';
 import { TextMetrics } from './TextMetrics';
 
@@ -67,13 +68,13 @@ class Text extends Shape {
   }
 
   calcDimensions () {
-    console.log(this.transform.position)
-    return {
-      left: this.transform.position.x,
-      top: this.transform.position.y,
-      width: this.measured.width,
-      height: this.measured.height
-    };
+    // console.log(this.transform.position)
+    return new Dimensions(
+      this.transform.position.x,
+      this.transform.position.y,
+      this.measured.width,
+      this.measured.height
+    )
   }
 
   update () {

@@ -1,4 +1,5 @@
 import Shape from './Shape';
+import Dimensions from '../geometry/Dimensions';
 
 class Rectangle extends Shape {
   constructor (opts) {
@@ -24,12 +25,12 @@ class Rectangle extends Shape {
   }
 
   calcDimensions () {
-    return {
-      left: -this.strokeWidth / 2,
-      top: -this.strokeWidth / 2,
-      width: this.width + this.strokeWidth,
-      height: this.height + this.strokeWidth
-    };
+    return new Dimensions(
+      -this.strokeWidth / 2,
+      -this.strokeWidth / 2,
+      this.width + this.strokeWidth,
+      this.height + this.strokeWidth
+    );
   }
 
   move (dx, dy) {

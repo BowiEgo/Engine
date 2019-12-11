@@ -1,4 +1,5 @@
 import Shape from './Shape';
+import Dimensions from '../geometry/Dimensions';
 
 class Sprite extends Shape {
   constructor (opts) {
@@ -16,12 +17,7 @@ class Sprite extends Shape {
   }
 
   calcDimensions () {
-    return {
-      left: 0,
-      top: 0,
-      width: 100,
-      height: 20
-    };
+    return new Dimensions(0, 0, 100, 20);
   }
 
   move (dx, dy) {

@@ -1,3 +1,5 @@
+import Dimensions from '../geometry/Dimensions';
+
 class Line {
   constructor (opts) {
     opts = opts || {};
@@ -14,12 +16,7 @@ class Line {
   }
 
   calcDimensions () {
-    return {
-      left: 0,
-      top: 0,
-      width: 100,
-      height: 20
-    };
+    return new Dimensions(0, 0, 100, 20);
   }
 
   move (dx, dy) {

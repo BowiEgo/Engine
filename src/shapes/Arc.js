@@ -1,4 +1,5 @@
 import Line from './Line';
+import Dimensions from '../geometry/Dimensions';
 
 class Arc extends Line {
   constructor (opts) {
@@ -7,12 +8,12 @@ class Arc extends Line {
   }
 
   calcDimensions () {
-    return {
-      left: 0,
-      top: 0,
-      width: 100,
-      height: 20
-    };
+    return new Dimensions(
+      0,
+      0,
+      100,
+      20
+    );
   }
 
   move (dx, dy) {

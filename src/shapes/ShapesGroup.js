@@ -1,4 +1,5 @@
 import { min, max } from '../utils/array';
+import Dimensions from '../geometry/Dimensions';
 
 export default class ShapesGroup {
   constructor (shapes) {
@@ -10,17 +11,12 @@ export default class ShapesGroup {
     let shapes = this.shapes,
         minX = min(shapes, 'dimensions.left') || 0,
         minY = min(shapes, 'dimensions.top') || 0,
-        maxX = max(shapes, 'dimensions.left') || 0,
-        maxY = max(shapes, 'dimensions.top') || 0,
-        width = max(shapes, 'dimensions.width'),
-        height = max(shapes, 'dimensions.height');
+        maxX = max(shapes, 'dimensions.right') || 0,
+        maxY = max(shapes, 'dimensions.bottom') || 0,
+        width = maxX - minX,
+        height = maxY - minY
 
-    return {
-      left: minX,
-      top: minY,
-      width: width,
-      height: height
-    };
+    return new Dimensions(minX, minY, width, height);
   }
 
   collidesWith (otherShape) {

@@ -1,6 +1,6 @@
 import Shape from './Shape';
+import Dimensions from '../geometry/Dimensions';
 import { min, max } from '../utils/array';
-
 import { getBoundsOfCurve, getBoundsOfArc } from '../utils/arc';
 
 const commandLengths = {
@@ -392,12 +392,12 @@ class Path extends Shape {
         deltaX = maxX - minX,
         deltaY = maxY - minY;
 
-    return {
-      left: minX - this.strokeWidth / 2,
-      top: minY - this.strokeWidth / 2,
-      width: deltaX + this.strokeWidth,
-      height: deltaY + this.strokeWidth
-    };
+    return new Dimensions(
+      minX - this.strokeWidth / 2,
+      minY - this.strokeWidth / 2,
+      deltaX + this.strokeWidth,
+      deltaY + this.strokeWidth
+    )
   }
 }
 
