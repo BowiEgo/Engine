@@ -5,6 +5,7 @@ export default class Grid {
     this.stepx = 10;
     this.stepy = 10;
     this.zoom = this.app.renderer._canvas.zoom;
+    this.visible = false;
   }
 
   static create (app) {
@@ -13,12 +14,22 @@ export default class Grid {
 
   installed () {
     this.app.trigger.on('beforeCtxRendered', () => {
-      this.drawGrid();
+      if (this.visible) {
+        this.drawGrid();
+      }
     });
   }
 
   destroy () {
     this.app.trigger.off('beforeCtxRendered');
+  }
+
+  show () {
+    this.visible = true;
+  }
+
+  hide () {
+    this.visible = false;
   }
 
   drawGrid () {
@@ -42,6 +53,7 @@ export default class Grid {
     context.strokeStyle = 'skyblue';
     context.save();
 
+    // console.log(w, h);
     // console.log(zoom, this.zoom)
     // this.stepx = 10 / zoom;
     // this.stepy = 10 / zoom;
@@ -105,7 +117,7 @@ export default class Grid {
         }
         let end = {
           x: currentX,
-          y: wByZoom - yByZoom
+          y: hByZoom - yByZoom
         }
         _drawLine(start, end, context, i, zoom);
         i--;
@@ -122,7 +134,7 @@ export default class Grid {
       }
       let end = {
         x: currentX,
-        y: wByZoom - yByZoom
+        y: hByZoom - yByZoom
       }
       _drawLine(start, end, context, i, zoom);
       i++;
@@ -137,6 +149,10 @@ function _drawLine (start, end, context, i, zoom) {
     context.lineWidth = 1 / zoom;
   } else {
     context.lineWidth = 0.5 / zoom;
+  }
+
+  if (i === 0) {
+    context.lineWidth = 2 / zoom;
   }
 
   context.beginPath();

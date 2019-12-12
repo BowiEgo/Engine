@@ -136,7 +136,7 @@ function createGame () {
         letterSpacing: 4,
         fill: '#03a9f4',
         wordWrap: true
-      }).translate(-50, 0)
+      }).translate(10, 1)
     ],
     transform: {
       position: {
@@ -268,6 +268,7 @@ function createGame () {
   })
 
   myGame.start();
+  myGame.plugins.grid.show();
   console.log('myGame', myGame);
 }
 
@@ -279,7 +280,7 @@ function createGraph () {
       width: 600,
       height: 800,
       autoStart: true,
-      plugins: [ Performance, Input ]
+      plugins: [ Grid, Performance, Input ]
     },
   );
 
@@ -390,6 +391,7 @@ function createGraph () {
   })
 
   myGraph.scene.addBody(branch);
+  myGraph.plugins.grid.show();
   console.log('myGraph', myGraph);
 }
 
@@ -407,5 +409,16 @@ toggleBtn.addEventListener('click', function () {
     myGraph = null;
 
     createGame();
+  }
+})
+
+const gridBtn = document.getElementById('grid');
+
+gridBtn.addEventListener('click', function () {
+  let grid = myGame.plugins.grid;
+  if (!grid.visible) {
+    grid.show();
+  } else {
+    grid.hide();
   }
 })
