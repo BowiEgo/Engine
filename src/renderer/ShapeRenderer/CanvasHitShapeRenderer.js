@@ -437,8 +437,8 @@ function _drawText (context, shape, pixelRatio, _canvas) {
   if (style.dropShadow) {
     context.shadowColor = style.dropShadowColor;
     context.shadowBlur = style.dropShadowBlur;
-    context.shadowOffsetX = Math.cos(style.dropShadowAngle) * style.dropShadowDistance * _canvas.getZoom();
-    context.shadowOffsetY = (Math.sin(style.dropShadowAngle) * style.dropShadowDistance) * _canvas.getZoom();
+    context.shadowOffsetX = Math.cos(style.dropShadowAngle) * style.dropShadowDistance * _canvas.zoom;
+    context.shadowOffsetY = (Math.sin(style.dropShadowAngle) * style.dropShadowDistance) * _canvas.zoom;
   }
 
   for (let i = 0; i < lines.length; i++) {

@@ -1,12 +1,14 @@
 const { Body, Shape } = Engine;
 
+let myGame, myGraph;
+
 function createGame () {
-  const myGame = Engine.create(
+  myGame = Engine.create(
     document.getElementById('stage'),
     {
-      width: 1200,
-      height: 600,
-      plugins: [ Performance, Input ]
+      width: 1000,
+      height: 700,
+      plugins: [ Grid, Performance, Input ]
     },
   );
   const startBtn = document.getElementById('start');
@@ -146,7 +148,7 @@ function createGame () {
     },
     update: function () {
       let { transform } = this;
-      let { input } = myGame;
+      let { input } = myGame.plugins;
 
       const horizontalInput = input.getAxis('horizontal');
       const verticalInput = input.getAxis('vertical');
@@ -271,7 +273,7 @@ function createGame () {
 
 // graph
 function createGraph () {
-  const myGraph = Engine.create(
+  myGraph = Engine.create(
     document.getElementById('graph'),
     {
       width: 600,
@@ -391,5 +393,19 @@ function createGraph () {
   console.log('myGraph', myGraph);
 }
 
-// createGraph();
+const toggleBtn = document.getElementById('toggle');
 createGame();
+
+toggleBtn.addEventListener('click', function () {
+  if (myGame) {
+    myGame.destroy();
+    myGame = null;
+
+    createGraph();
+  } else if (myGraph) {
+    myGraph.destroy();
+    myGraph = null;
+
+    createGame();
+  }
+})

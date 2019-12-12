@@ -79,6 +79,7 @@ async function main () {
 
   packages = [
     { name: 'Performance', path: 'plugins/Performance.js' },
+    { name: 'Grid', path: 'plugins/Grid.js' },
     { name: 'Input', path: 'plugins/Input.js' },
   ];
   packages.forEach((pkg) => {

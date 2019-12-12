@@ -18,12 +18,21 @@ document.onkeyup = (event) => {
 }
 
 export default class Input {
-  constructor (game) {
-    this.game = game;
+  constructor (app) {
+    this.plugin_name = 'input';
+    this.app = app;
   }
 
-  static create (game) {
-    game.input = new Input();
+  static create (app) {
+    return new Input(app);
+  }
+
+  installed () {
+  }
+
+  destroy () {
+    document.onkeydown = null;
+    document.onkeyup = null;
   }
 
   getAxis (direction) {

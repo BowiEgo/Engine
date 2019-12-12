@@ -1,28 +1,25 @@
 import { insertAfter } from '../../utils/dom';
 
 export default class Performance {
-  static create (game) {
-    console.log('create-Performance', game);
-    let performance = {};
-    let viewBC = game.view.getBoundingClientRect();
+  constructor (app) {
+    let viewBC = app.view.getBoundingClientRect();
+    this.plugin_name = 'performance';
+    this.app = app;
 
-    performance.el = document.createElement('div');
-    performance.el.className = 'performance-widget';
-    performance.el.style.position = 'absolute';
-    performance.el.style.top = viewBC.top + 'px';
-    performance.el.style.left = viewBC.left + 'px';
-    performance.el.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
-    performance.el.style.padding = '4px 10px';
-    
-    this._addFPS(performance);
-    insertAfter(performance.el, game.view);
+    this.el = document.createElement('div');
+    this.el.className = 'performance-widget';
+    this.el.style.position = 'absolute';
+    this.el.style.top = viewBC.top + 'px';
+    this.el.style.left = viewBC.left + 'px';
+    this.el.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+    this.el.style.padding = '4px 10px';
 
-    game.trigger.on('tick', () => {
-      this._update(game);
-    });
+    Performance._addFPS(this);
+    insertAfter(this.el, app.view);
+  }
 
-    game.plugins = game.plugin || {};
-    game.plugins['performance'] = performance;
+  static create (app) {
+    return new Performance(app);
   }
 
   static _addFPS (performance) {
@@ -31,7 +28,18 @@ export default class Performance {
     performance.fpsEl.style.color = 'white';
   }
 
-  static _update (game) {
-    game.plugins.performance.fpsEl.innerText = game.time.fps.toFixed(2);
+  static _update (app) {
+    app.plugins.performance.fpsEl.innerText = app.time.fps.toFixed(2);
+  }
+
+  installed () {
+    this.app.trigger.on('tick', () => {
+      Performance._update(this.app);
+    });
+  }
+
+  destroy () {
+    this.app.el.removeChild(this.el);
+    delete this.app.plugins.performance;
   }
 }

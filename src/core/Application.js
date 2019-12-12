@@ -9,6 +9,7 @@ export default class Application {
     this.el = el;
     this.status = 'stop';
     this.PAUSE_TIMEOUT = 100;
+    this.plugins = {};
   }
 
   get trigger () {
@@ -37,6 +38,20 @@ export default class Application {
 
   get targetFinder () {
     return this._targetFinder;
+  }
+
+  install (plugin) {
+    let p = plugin.create(this);
+    this.plugins[p.plugin_name] = p;
+    p.installed();
+  }
+
+  destroy () {
+    this.stop();
+    Object.keys(this.plugins).forEach(key => {
+      this.plugins[key].destroy();
+    })
+    this.el.removeChild(this.view);
   }
 
   start () {

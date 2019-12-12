@@ -29,8 +29,15 @@ export default class Canvas {
     return this.canvas.height;
   }
 
-  getZoom () {
+  get zoom () {
     return this.viewportTransform[0];
+  }
+
+  get offset () {
+    return {
+      x: this.viewportTransform[4],
+      y: this.viewportTransform[5]
+    }
   }
 
   setViewportTransform (vpt) {

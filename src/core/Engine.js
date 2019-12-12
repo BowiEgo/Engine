@@ -44,7 +44,7 @@ class Engine {
     let plugins = opts.plugins || [];
 
     plugins.forEach(plugin => {
-      plugin.create(app);
+      app.install(plugin);
     });
 
     Engine.reset(app);

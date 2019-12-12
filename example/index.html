@@ -3,9 +3,32 @@
 	<meta name="viewport" content="width=device-width">
 	<title>tree-graph-d3</title>
 	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
 		#stage, #graph {
 			position: relative;
 			/* display: inline-block; */
+		}
+		button {
+			width: 80px;
+			height: 40px;
+			margin: 10px 3px;
+			background-color: #fff;
+			border: none;
+			border-radius: 3px;
+			background-color: skyblue;
+			color: #fff;
+			outline: none;
+		}
+		.button-group {
+			width: 270px;
+			height: 100%;
+			position: absolute;
+			top: 0;
+			right: 0;
+			background-color: rgba(0, 0, 0, 0.8);
 		}
 	</style>
 </head>
@@ -13,6 +36,7 @@
 	<div id="graph"></div>
 	<div id="stage"></div>
 	<div class="button-group">
+		<button id="toggle">toggle</button>
 		<button id="start">start</button>
 		<button id="stop">stop</button>
 		<button id="pause">pause</button>
@@ -20,6 +44,7 @@
 		<button id="recover">recover</button>
 	</div>
 <script src="./dist/engine.js"></script>
+<script src="./dist/plugins/Grid.js"></script>
 <script src="./dist/plugins/Performance.js"></script>
 <script src="./dist/plugins/Input.js"></script>
 <script src="./main.js"></script>

@@ -38,7 +38,7 @@ export default class CanvasShapeRenderer {
 
     _setStrokeStyles(context, shape);
     _setFillStyles(context, shape);
-    _setDropShadowStyles(context, shape, _canvas.getZoom());
+    _setDropShadowStyles(context, shape, _canvas.zoom);
     shape.strokeWidth > 0 && _renderStroke(context, shape);
     shape.fill && _renderFill(context, shape);
   }
@@ -475,8 +475,8 @@ function _drawText (context, shape, pixelRatio, _canvas) {
   if (style.dropShadow) {
     context.shadowColor = style.dropShadowColor;
     context.shadowBlur = style.dropShadowBlur;
-    context.shadowOffsetX = Math.cos(style.dropShadowAngle) * style.dropShadowDistance * _canvas.getZoom();
-    context.shadowOffsetY = (Math.sin(style.dropShadowAngle) * style.dropShadowDistance) * _canvas.getZoom();
+    context.shadowOffsetX = Math.cos(style.dropShadowAngle) * style.dropShadowDistance * _canvas.zoom;
+    context.shadowOffsetY = (Math.sin(style.dropShadowAngle) * style.dropShadowDistance) * _canvas.zoom;
   }
 
   for (let i = 0; i < lines.length; i++) {

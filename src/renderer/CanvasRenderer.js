@@ -47,6 +47,7 @@ export default class CanvasRenderer {
   }
 
   renderContext (context, vpt, pixelRatio, bodies, isHit) {
+    const { app } = this;
     context.save();
     context.transform(
       vpt[0] * pixelRatio,
@@ -56,7 +57,17 @@ export default class CanvasRenderer {
       vpt[4],
       vpt[5]
     );
+
+    if (!isHit) {
+      app.trigger.fire('beforeCtxRendered', context);
+    }
+
     _renderBodies.call(this, context, bodies, isHit);
+
+    if (!isHit) {
+      app.trigger.fire('afterCtxRendered', context);
+    }
+
     context.restore();
   }
 
@@ -147,7 +158,7 @@ function _renderSelection (context, body, vpt) {
 function _renderSelectionBounds (dim, context, vpt) {
   context.save();
   context.transform(1, 0, 0, 1, 0, 0);
-  context.strokeStyle = '#00bcd4';
+  context.strokeStyle = '#e91e6382';
   context.lineWidth = 2 / vpt[0];
   context.strokeRect(dim.left, dim.top, dim.width, dim.height);
   context.restore();
@@ -158,7 +169,7 @@ function _renderHandler (point, context, vpt) {
   // console.log('_renderHandler', point);
   context.save();
   context.transform(1, 0, 0, 1, point.x, point.y);
-  context.strokeStyle = '#00bcd4';
+  context.strokeStyle = '#e91e6382';
   context.lineWidth = 2 / vpt[0];
   context.fillStyle = '#fff';
   context.fillRect(0, 0, width, width);
