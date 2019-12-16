@@ -22,6 +22,7 @@
 		"quotes": [
 			"error",
 			"single"
-		]
+		],
+		"no-cond-assign": 2
 	}
 }

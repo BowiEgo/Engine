@@ -78,9 +78,10 @@ async function main () {
   //  { name: 'Sprite' }
 
   packages = [
-    { name: 'Performance', path: 'plugins/Performance.js' },
-    { name: 'Grid', path: 'plugins/Grid.js' },
-    { name: 'Input', path: 'plugins/Input.js' },
+    { name: 'hierarchy', path: 'modules/hierarchy/index.js', type: 'modules' },
+    { name: 'Performance', path: 'plugins/Performance.js', type: 'plugin' },
+    { name: 'Grid', path: 'plugins/Grid.js', type: 'plugin' },
+    { name: 'Input', path: 'plugins/Input.js', type: 'plugin' },
   ];
   packages.forEach((pkg) => {
     let input = `src/packages/${pkg.path}`;
@@ -93,7 +94,7 @@ async function main () {
     results.push({
       input,
       output: {
-        file: `example/dist/plugins/${pkg.name}.js`,
+        file: `example/dist/${pkg.type}/${pkg.name}.js`,
         format: 'umd',
         banner,
         sourcemap: true,

@@ -52,7 +52,7 @@ class Text extends Shape {
     }
 
     this.measured = TextMetrics.measureText(this.text || ' ', style, style.wordWrap);
-    console.log(this.measured);
+    // console.log(this.measured);
     this._font = this.style.toFontString();
 
     this.dirty = false;
