@@ -1,28 +1,17 @@
 {
-	"env": {
-		"browser": true,
-		"commonjs": true,
-		"es6": true
-	},
-	"extends": "eslint:recommended",
-	"parserOptions": {
-		"ecmaVersion": 2015,
-		"sourceType": "module"
-	},
-	"rules": {
-		"indent": [
-            "error",
-            2,
-            {
-                "SwitchCase": 1,
-                "VariableDeclarator": "first"
-            }
-		],
-		"no-console": "off",
-		"quotes": [
-			"error",
-			"single"
-		],
-		"no-cond-assign": 2
-	}
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2015,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "off",
+    "quotes": ["error", "single"],
+    "no-cond-assign": 2
+  }
 }

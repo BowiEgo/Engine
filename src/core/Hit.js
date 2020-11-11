@@ -1,22 +1,22 @@
 export default class Hit {
-  constructor (app) {
+  constructor(app) {
     this.app = app;
 
     this.bodies = this.app.scene.bodies;
     // this._hitCanvas = this.app.renderer._hitCanvas;
     this.hitContext = this.app.renderer.hitContext;
 
-    console.log(this)
+    console.log(this);
     Hit.bindMouseEvents(this);
     // Hit.createHitCanvas(this)
   }
 
-  static create (app) {
+  static create(app) {
     app._hit = new Hit(app);
   }
 
-  static bindMouseEvents (hit) {
-    hit.app.mouse.on('mousedown', mouse => {
+  static bindMouseEvents(hit) {
+    hit.app.mouse.on('mousedown', (mouse) => {
       hit.app.hitTarget = hit.findTarget(mouse.position);
     });
   }
@@ -35,20 +35,24 @@ export default class Hit {
   //   hit.app.trigger.on('shape_rendered', shape => hit.renderHitShape(shape));
   // }
 
-  renderHitShape (shape) {
-  }
+  renderHitShape(shape) {}
 
-  findTarget (pointer) {
+  findTarget(pointer) {
     console.log('findTarget', pointer);
     const hasHitCanvas = false,
-          pixelRatio = this.app.renderer.pixelRatio;
+      pixelRatio = this.app.renderer.pixelRatio;
     let pixel;
 
     if (hasHitCanvas) {
-      pixel = this.hitContext.getImageData(pointer.x * pixelRatio, pointer.y * pixelRatio, 1, 1).data;
+      pixel = this.hitContext.getImageData(
+        pointer.x * pixelRatio,
+        pointer.y * pixelRatio,
+        1,
+        1
+      ).data;
     }
 
-    for (let i = 0, len = this.bodies.length; i< len; i++) {
+    for (let i = 0, len = this.bodies.length; i < len; i++) {
       let body = this.bodies[i];
 
       if (hasHitCanvas && pixel !== null) {

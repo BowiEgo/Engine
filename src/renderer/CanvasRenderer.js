@@ -5,36 +5,44 @@ import ShapesGroup from '../shapes/ShapesGroup';
 const HANDLER_WIDTH = 8;
 
 export default class CanvasRenderer {
-  constructor (app) {
+  constructor(app) {
     this.app = app;
 
     this._canvas = new Canvas(app.opts);
     this._context = this.canvas.getContext('2d');
     this.pixelRatio = this._canvas.pixelRatio;
-    this._shapeRenderer = new CanvasShapeRenderer(this._context, this.pixelRatio, this._canvas);
+    this._shapeRenderer = new CanvasShapeRenderer(
+      this._context,
+      this.pixelRatio,
+      this._canvas
+    );
 
     this._hitCanvas = new Canvas(app.opts);
     this._hitContext = this.hitCanvas.getContext('2d');
-    this._hitShapeRenderer = new CanvasHitShapeRenderer(this._hitContext, this.pixelRatio, this._hitCanvas);
+    this._hitShapeRenderer = new CanvasHitShapeRenderer(
+      this._hitContext,
+      this.pixelRatio,
+      this._hitCanvas
+    );
   }
 
-  get canvas () {
+  get canvas() {
     return this._canvas.canvas;
   }
 
-  get context () {
+  get context() {
     return this._context;
   }
 
-  get hitCanvas () {
+  get hitCanvas() {
     return this._hitCanvas.canvas;
   }
 
-  get hitContext () {
+  get hitContext() {
     return this._hitContext;
   }
 
-  render (bodies) {
+  render(bodies) {
     const { context, hitContext, pixelRatio, app } = this;
     let vpt = this._canvas.viewportTransform;
 
@@ -46,7 +54,7 @@ export default class CanvasRenderer {
     app.trigger.fire('rendered', this.context);
   }
 
-  renderContext (context, vpt, pixelRatio, bodies, isHit) {
+  renderContext(context, vpt, pixelRatio, bodies, isHit) {
     const { app } = this;
     context.save();
     context.transform(
@@ -71,7 +79,7 @@ export default class CanvasRenderer {
     context.restore();
   }
 
-  clear () {
+  clear() {
     this._canvas.clear();
     this._hitCanvas && this._hitCanvas.clear();
   }
@@ -80,27 +88,27 @@ export default class CanvasRenderer {
 /**
  * Render several types of graphics in canvas
  */
-function _renderBodies (context, bodies, isHit) {
+function _renderBodies(context, bodies, isHit) {
   let vpt = this._canvas.viewportTransform;
 
   bodies = bodies || [];
 
-  bodies.forEach(body => {
+  bodies.forEach((body) => {
     const transform = body.transform;
-    const { scaleX = 1, skewX = 0, skewY = 0, scaleY = 1} = transform;
+    const { scaleX = 1, skewX = 0, skewY = 0, scaleY = 1 } = transform;
     const { x: posX, y: posY } = transform.position;
 
     context.save();
     context.transform(scaleX, skewX, skewY, scaleY, posX, posY);
 
     if (body.shape instanceof ShapesGroup) {
-      body.shape.shapes.forEach(shape => {
+      body.shape.shapes.forEach((shape) => {
         shape.hitFill = body.hitFill;
         _renderShape.call(this, shape, isHit);
         if (!isHit) {
           this.app.trigger.fire('shape_rendered', shape);
         }
-      })
+      });
     } else {
       body.shape.hitFill = body.hitFill;
       _renderShape.call(this, body.shape, isHit);
@@ -113,12 +121,12 @@ function _renderBodies (context, bodies, isHit) {
     context.restore();
 
     if (body.isSelected && !isHit) {
-      _renderSelection(context, body, vpt);
+      _renderController(context, body, vpt);
     }
-  })
+  });
 }
 
-function _renderShape (shape, isHit) {
+function _renderShape(shape, isHit) {
   let shapeRenderer;
 
   if (isHit) {
@@ -130,49 +138,43 @@ function _renderShape (shape, isHit) {
   shapeRenderer.render(shape);
 }
 
-function _renderSelection (context, body, vpt) {
-  // console.log(body.coords);
-  const coords = body.coords;
+function _renderController(context, body, vpt) {
+  const { coords, controller } = body;
+  const { dim } = controller;
 
-  const dim = {
-    left: body.transform.position.x + body.shape.dimensions.left,
-    top: body.transform.position.y + body.shape.dimensions.top,
-    width: body.shape.dimensions.width,
-    height: body.shape.dimensions.height
-  }
+  _renderControllerBounds(dim, context, vpt, controller);
 
-  _renderSelectionBounds(dim, context, vpt);
-
-  Object.keys(coords).forEach(key => {
+  Object.keys(coords).forEach((key) => {
     let handlerPoint = {
       x: coords[key].x,
-      y: coords[key].y
+      y: coords[key].y,
     };
     handlerPoint.y -= HANDLER_WIDTH / 2 / vpt[0];
     handlerPoint.x -= HANDLER_WIDTH / 2 / vpt[0];
 
-    _renderHandler(handlerPoint, context, vpt);
-  })
+    _renderControllerPoints(handlerPoint, context, vpt, controller);
+  });
 }
 
-function _renderSelectionBounds (dim, context, vpt) {
+function _renderControllerBounds(dim, context, vpt, opts) {
+  const { boundColor, boundStrokeWidth } = opts;
   context.save();
   context.transform(1, 0, 0, 1, 0, 0);
-  context.strokeStyle = '#e91e6382';
-  context.lineWidth = 2 / vpt[0];
+  context.strokeStyle = boundColor;
+  context.lineWidth = boundStrokeWidth / vpt[0];
   context.strokeRect(dim.left, dim.top, dim.width, dim.height);
   context.restore();
 }
 
-function _renderHandler (point, context, vpt) {
-  const width = HANDLER_WIDTH / vpt[0];
-  // console.log('_renderHandler', point);
+function _renderControllerPoints(point, context, vpt, opts) {
+  const { pointColor, pointStrokeWidth, pointFill } = opts;
+  const size = HANDLER_WIDTH / vpt[0];
   context.save();
   context.transform(1, 0, 0, 1, point.x, point.y);
-  context.strokeStyle = '#e91e6382';
-  context.lineWidth = 2 / vpt[0];
-  context.fillStyle = '#fff';
-  context.fillRect(0, 0, width, width);
-  context.strokeRect(0, 0, width, width);
+  context.strokeStyle = pointColor;
+  context.lineWidth = pointStrokeWidth / vpt[0];
+  context.fillStyle = pointFill;
+  context.fillRect(0, 0, size, size);
+  context.strokeRect(0, 0, size, size);
   context.restore();
 }

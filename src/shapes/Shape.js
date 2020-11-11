@@ -1,40 +1,40 @@
 import SAT from '../collision/SAT';
 
 class Shape {
-  constructor (opts) {
+  constructor(opts) {
     opts = opts || {};
     this.transform = {
       position: {
         x: 0,
-        y: 0
-      }
+        y: 0,
+      },
     };
     this.fill = opts.fill || '#83cbff';
     this.stroke = opts.stroke || 'grey';
     this.strokeWidth = opts.strokeWidth || 0;
   }
 
-  collidesWith (otherShape) {
+  collidesWith(otherShape) {
     return SAT.detectCollide(this, otherShape);
   }
 
-  getAxes () {
+  getAxes() {
     throw 'getAxes() not implemented';
   }
 
-  project () {
+  project() {
     throw 'project(axis) not implemented';
   }
 
-  move () {
+  move() {
     throw 'move(dx, dy) note implemented';
   }
 
-  transition () {
+  transition() {
     return this;
   }
 
-  translate (dx, dy) {
+  translate(dx, dy) {
     this.transform.position.x += dx;
     this.transform.position.y += dy;
     this.dimensions = this.calcDimensions();
@@ -42,4 +42,4 @@ class Shape {
   }
 }
 
-export default Shape
+export default Shape;

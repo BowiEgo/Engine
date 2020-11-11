@@ -4,22 +4,23 @@ import { min, max } from '../utils/array';
 import { getBoundsOfCurve, getBoundsOfArc } from '../utils/arc';
 
 const commandLengths = {
-  m: 2,
-  l: 2,
-  h: 1,
-  v: 1,
-  c: 6,
-  s: 4,
-  q: 4,
-  t: 2,
-  a: 7
-}, repeatedCommands = {
-  m: 'l',
-  M: 'L'
-};
+    m: 2,
+    l: 2,
+    h: 1,
+    v: 1,
+    c: 6,
+    s: 4,
+    q: 4,
+    t: 2,
+    a: 7,
+  },
+  repeatedCommands = {
+    m: 'l',
+    M: 'L',
+  };
 
 class Path extends Shape {
-  constructor (path, opts) {
+  constructor(path, opts) {
     super(opts);
     this.type = 'path';
     this.path = path.match(/[mzlhvcsqta][^mzlhvcsqta]*/gi);
@@ -31,14 +32,14 @@ class Path extends Shape {
     // console.log('new Path', this);
   }
 
-  static parsePath (path) {
+  static parsePath(path) {
     let result = [],
-        coords = [],
-        currentPath,
-        parsed,
-        re = /([-+]?((\d+\.\d+)|((\d+)|(\.\d+)))(?:e[-+]?\d+)?)/ig,
-        match,
-        coordsStr;
+      coords = [],
+      currentPath,
+      parsed,
+      re = /([-+]?((\d+\.\d+)|((\d+)|(\.\d+)))(?:e[-+]?\d+)?)/gi,
+      match,
+      coordsStr;
 
     for (let i = 0, coordsParsed, len = path.length; i < len; i++) {
       currentPath = path[i];
@@ -60,16 +61,21 @@ class Path extends Shape {
       }
 
       let command = coordsParsed[0],
-          commandLength = commandLengths[command.toLowerCase()],
-          repeatedCommand = repeatedCommands[command] || command;
+        commandLength = commandLengths[command.toLowerCase()],
+        repeatedCommand = repeatedCommands[command] || command;
 
       if (coordsParsed.length - 1 > commandLength) {
-        for (let k = 1, klen = coordsParsed.length; k < klen; k += commandLength) {
-          result.push([command].concat(coordsParsed.slice(k, k + commandLength)));
+        for (
+          let k = 1, klen = coordsParsed.length;
+          k < klen;
+          k += commandLength
+        ) {
+          result.push(
+            [command].concat(coordsParsed.slice(k, k + commandLength))
+          );
           command = repeatedCommand;
         }
-      }
-      else {
+      } else {
         result.push(coordsParsed);
       }
     }
@@ -77,32 +83,33 @@ class Path extends Shape {
     return result;
   }
 
-  update (path) {
+  update(path) {
     this.path = path.match(/[mzlhvcsqta][^mzlhvcsqta]*/gi);
     this.path = Path.parsePath(this.path);
     return this;
   }
 
-  calcDimensions () {
+  calcDimensions() {
     let aX = [],
-        aY = [],
-        current, // current instruction
-        previous = null,
-        subpathStartX = 0,
-        subpathStartY = 0,
-        x = 0, // current x
-        y = 0, // current y
-        controlX = 0, // current control point x
-        controlY = 0, // current control point y
-        tempX,
-        tempY,
-        bounds;
+      aY = [],
+      current, // current instruction
+      previous = null,
+      subpathStartX = 0,
+      subpathStartY = 0,
+      x = 0, // current x
+      y = 0, // current y
+      controlX = 0, // current control point x
+      controlY = 0, // current control point y
+      tempX,
+      tempY,
+      bounds;
 
     for (let i = 0, len = this.path.length; i < len; ++i) {
       current = this.path[i];
 
-      switch (current[0]) { // first letter
-
+      switch (
+        current[0] // first letter
+      ) {
         case 'l': // lineto, relative
           x += current[1];
           y += current[2];
@@ -156,7 +163,9 @@ class Path extends Shape {
           tempY = y + current[6];
           controlX = x + current[3];
           controlY = y + current[4];
-          bounds = getBoundsOfCurve(x, y,
+          bounds = getBoundsOfCurve(
+            x,
+            y,
             x + current[1], // x1
             y + current[2], // y1
             controlX, // x2
@@ -171,7 +180,9 @@ class Path extends Shape {
         case 'C': // bezierCurveTo, absolute
           controlX = current[3];
           controlY = current[4];
-          bounds = getBoundsOfCurve(x, y,
+          bounds = getBoundsOfCurve(
+            x,
+            y,
             current[1],
             current[2],
             controlX,
@@ -184,7 +195,6 @@ class Path extends Shape {
           break;
 
         case 's': // shorthand cubic bezierCurveTo, relative
-
           // transform to absolute x,y
           tempX = x + current[3];
           tempY = y + current[4];
@@ -194,14 +204,15 @@ class Path extends Shape {
             // the control point is coincident with the current point
             controlX = x;
             controlY = y;
-          }
-          else {
+          } else {
             // calculate reflection of previous control points
             controlX = 2 * x - controlX;
             controlY = 2 * y - controlY;
           }
 
-          bounds = getBoundsOfCurve(x, y,
+          bounds = getBoundsOfCurve(
+            x,
+            y,
             controlX,
             controlY,
             x + current[1],
@@ -227,13 +238,14 @@ class Path extends Shape {
             // the control point is coincident with the current point
             controlX = x;
             controlY = y;
-          }
-          else {
+          } else {
             // calculate reflection of previous control points
             controlX = 2 * x - controlX;
             controlY = 2 * y - controlY;
           }
-          bounds = getBoundsOfCurve(x, y,
+          bounds = getBoundsOfCurve(
+            x,
+            y,
             controlX,
             controlY,
             current[1],
@@ -257,7 +269,9 @@ class Path extends Shape {
           tempY = y + current[4];
           controlX = x + current[1];
           controlY = y + current[2];
-          bounds = getBoundsOfCurve(x, y,
+          bounds = getBoundsOfCurve(
+            x,
+            y,
             controlX,
             controlY,
             controlX,
@@ -272,7 +286,9 @@ class Path extends Shape {
         case 'Q': // quadraticCurveTo, absolute
           controlX = current[1];
           controlY = current[2];
-          bounds = getBoundsOfCurve(x, y,
+          bounds = getBoundsOfCurve(
+            x,
+            y,
             controlX,
             controlY,
             controlX,
@@ -293,14 +309,15 @@ class Path extends Shape {
             // assume the control point is coincident with the current point
             controlX = x;
             controlY = y;
-          }
-          else {
+          } else {
             // calculate reflection of previous control point
             controlX = 2 * x - controlX;
             controlY = 2 * y - controlY;
           }
 
-          bounds = getBoundsOfCurve(x, y,
+          bounds = getBoundsOfCurve(
+            x,
+            y,
             controlX,
             controlY,
             controlX,
@@ -322,13 +339,14 @@ class Path extends Shape {
             // assume the control point is coincident with the current point
             controlX = x;
             controlY = y;
-          }
-          else {
+          } else {
             // calculate reflection of previous control point
             controlX = 2 * x - controlX;
             controlY = 2 * y - controlY;
           }
-          bounds = getBoundsOfCurve(x, y,
+          bounds = getBoundsOfCurve(
+            x,
+            y,
             controlX,
             controlY,
             controlX,
@@ -342,7 +360,9 @@ class Path extends Shape {
 
         case 'a':
           // TODO: optimize this
-          bounds = getBoundsOfArc(x, y,
+          bounds = getBoundsOfArc(
+            x,
+            y,
             current[1],
             current[2],
             current[3],
@@ -357,7 +377,9 @@ class Path extends Shape {
 
         case 'A':
           // TODO: optimize this
-          bounds = getBoundsOfArc(x, y,
+          bounds = getBoundsOfArc(
+            x,
+            y,
             current[1],
             current[2],
             current[3],
@@ -386,19 +408,19 @@ class Path extends Shape {
     }
 
     let minX = min(aX) || 0,
-        minY = min(aY) || 0,
-        maxX = max(aX) || 0,
-        maxY = max(aY) || 0,
-        deltaX = maxX - minX,
-        deltaY = maxY - minY;
+      minY = min(aY) || 0,
+      maxX = max(aX) || 0,
+      maxY = max(aY) || 0,
+      deltaX = maxX - minX,
+      deltaY = maxY - minY;
 
     return new Dimensions(
       minX - this.strokeWidth / 2,
       minY - this.strokeWidth / 2,
       deltaX + this.strokeWidth,
       deltaY + this.strokeWidth
-    )
+    );
   }
 }
 
-export default Path
+export default Path;

@@ -1,5 +1,5 @@
 export default class Camera {
-  constructor (app) {
+  constructor(app) {
     this.app = app;
 
     this.position = { x: 0, y: 0 };
@@ -10,11 +10,11 @@ export default class Camera {
     this.bindMouseEvents();
   }
 
-  static create (app) {
+  static create(app) {
     app._camera = new Camera(app);
   }
 
-  recover () {
+  recover() {
     let { renderer } = this.app;
     renderer.clear(this.scale);
     renderer.context.translate(-this.position.x, -this.position.y);
@@ -24,21 +24,17 @@ export default class Camera {
     this.position = { x: 0, y: 0 };
   }
 
-  lookAt () {
+  lookAt() {}
 
-  }
+  follow() {}
 
-  follow () {
-
-  }
-
-  bindMouseEvents () {
+  bindMouseEvents() {
     const app = this.app;
 
     let isDragging = false;
     let lastMousePosition = { x: 0, y: 0 };
 
-    app.mouse.on('mousemove', mouse => {
+    app.mouse.on('mousemove', (mouse) => {
       if (isDragging) {
         this.offset = subPos(mouse.position, lastMousePosition);
         this.position = addPos(this.position, this.offset);
@@ -51,39 +47,39 @@ export default class Camera {
         app.trigger.fire('drag', this.offset);
       }
     });
-  
+
     app.mouse.on('mouseout', () => {
       isDragging = false;
     });
-  
-    app.mouse.on('mousedown', mouse => {
+
+    app.mouse.on('mousedown', (mouse) => {
       isDragging = true;
       lastMousePosition.x = mouse.mousedownPosition.x;
       lastMousePosition.y = mouse.mousedownPosition.y;
     });
-  
+
     app.mouse.on('mouseup', () => {
       this.offset = { x: 0, y: 0 };
       isDragging = false;
     });
-  
-    app.mouse.on('mousewheel', mouse => {
-      this.scale *= (1 + mouse.wheelDelta * 0.03);
+
+    app.mouse.on('mousewheel', (mouse) => {
+      this.scale *= 1 + mouse.wheelDelta * 0.03;
       app.renderer._canvas.zoomToPoint(mouse.position, this.scale);
     });
   }
 }
 
-function addPos (posA, posB) {
+function addPos(posA, posB) {
   return {
     x: posA.x + posB.x,
-    y: posA.y + posB.y 
-  }
+    y: posA.y + posB.y,
+  };
 }
 
-function subPos (posA, posB) {
+function subPos(posA, posB) {
   return {
     x: posA.x - posB.x,
-    y: posA.y - posB.y 
-  }
+    y: posA.y - posB.y,
+  };
 }

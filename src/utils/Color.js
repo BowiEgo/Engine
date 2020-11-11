@@ -3,7 +3,7 @@
  * @param {number} hex - Number in hex (e.g., `0xffffff`)
  * @return {string} The string color (e.g., `"#ffffff"`).
  */
-export function hex2string (hex) {
+export function hex2string(hex) {
   hex = hex.toString(16);
   hex = '000000'.substr(0, 6 - hex.length) + hex;
 
@@ -17,12 +17,12 @@ export function hex2string (hex) {
  * @param  {number[]} [out=[]] If supplied, this array will be used rather than returning a new one
  * @return {number[]} An array representing the [R, G, B] of the color where all values are floats.
  */
-export function hex2rgb (hex, out) {
+export function hex2rgb(hex, out) {
   out = out || [];
 
-  out[0] = ((hex >> 16) & 0xFF) / 255;
-  out[1] = ((hex >> 8) & 0xFF) / 255;
-  out[2] = (hex & 0xFF) / 255;
+  out[0] = ((hex >> 16) & 0xff) / 255;
+  out[1] = ((hex >> 8) & 0xff) / 255;
+  out[2] = (hex & 0xff) / 255;
 
   return out;
 }
@@ -33,7 +33,7 @@ export function hex2rgb (hex, out) {
  * @param {string} The string color (e.g., `"#ffffff"`)
  * @return {number} Number in hexadecimal.
  */
-export function string2hex (string) {
+export function string2hex(string) {
   if (typeof string === 'string' && string[0] === '#') {
     string = string.substr(1);
   }

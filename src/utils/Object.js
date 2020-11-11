@@ -1,4 +1,4 @@
-export function getValue (object, key) {
+export function getValue(object, key) {
   let keysArray = key.split('.');
   let value = object;
 
@@ -9,6 +9,12 @@ export function getValue (object, key) {
       return;
     }
   }
-  
+
   return value;
+}
+
+export function applyProps(object, baseProps, props) {
+  Object.keys(baseProps).forEach((key) => {
+    object[key] = props[key] || baseProps[key];
+  });
 }

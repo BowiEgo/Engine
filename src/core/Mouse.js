@@ -1,5 +1,5 @@
 export default class Mouse {
-  constructor (app) {
+  constructor(app) {
     this.app = app;
     this.element = app.view;
     this.pixelRatio = app.renderer.pixelRatio;
@@ -17,7 +17,7 @@ export default class Mouse {
       mouseout: null,
       mousedown: null,
       mouseup: null,
-      mousewheel: null
+      mousewheel: null,
     };
 
     this.eventHooks = {
@@ -25,38 +25,46 @@ export default class Mouse {
       mouseout: null,
       mousedown: null,
       mouseup: null,
-      mousewheel: null
-    }
+      mousewheel: null,
+    };
 
     Mouse.setElement(this, this.element);
   }
 
-  static create (app) {
+  static create(app) {
     app._mouse = new Mouse(app);
   }
 
-  static setElement (mouse, element) {
+  static setElement(mouse, element) {
     element.addEventListener('mousemove', mouse.mousemove.bind(mouse));
     element.addEventListener('mouseout', mouse.mouseout.bind(mouse));
     element.addEventListener('mousedown', mouse.mousedown.bind(mouse));
     element.addEventListener('mouseup', mouse.mouseup.bind(mouse));
-    
+
     element.addEventListener('mousewheel', mouse.mousewheel.bind(mouse));
     element.addEventListener('DOMMouseScroll', mouse.mousewheel.bind(mouse));
-  
+
     element.addEventListener('touchmove', mouse.mousemove.bind(mouse));
     element.addEventListener('touchstart', mouse.mousedown.bind(mouse));
     element.addEventListener('touchend', mouse.mouseup.bind(mouse));
   }
 
-  static _getRelativeMousePosition (event, element, pixelRatio) {
+  static _getRelativeMousePosition(event, element, pixelRatio) {
     let elementBounds = element.getBoundingClientRect(),
-        rootNode = (document.documentElement || document.body.parentNode || document.body),
-        scrollX = (window.pageXOffset !== undefined) ? window.pageXOffset : rootNode.scrollLeft,
-        scrollY = (window.pageYOffset !== undefined) ? window.pageYOffset : rootNode.scrollTop,
-        touches = event.changedTouches,
-        x, y;
-    
+      rootNode =
+        document.documentElement || document.body.parentNode || document.body,
+      scrollX =
+        window.pageXOffset !== undefined
+          ? window.pageXOffset
+          : rootNode.scrollLeft,
+      scrollY =
+        window.pageYOffset !== undefined
+          ? window.pageYOffset
+          : rootNode.scrollTop,
+      touches = event.changedTouches,
+      x,
+      y;
+
     if (touches) {
       x = touches[0].pageX - elementBounds.left - scrollX;
       y = touches[0].pageY - elementBounds.top - scrollY;
@@ -65,15 +73,25 @@ export default class Mouse {
       y = event.pageY - elementBounds.top - scrollY;
     }
 
-    return { 
-      x: x / (element.clientWidth / (element.width || element.clientWidth) * pixelRatio),
-      y: y / (element.clientHeight / (element.height || element.clientHeight) * pixelRatio)
+    return {
+      x:
+        x /
+        ((element.clientWidth / (element.width || element.clientWidth)) *
+          pixelRatio),
+      y:
+        y /
+        ((element.clientHeight / (element.height || element.clientHeight)) *
+          pixelRatio),
     };
   }
 
-  mousemove (event) {
-    let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
-        touches = event.changedTouches;
+  mousemove(event) {
+    let position = Mouse._getRelativeMousePosition(
+        event,
+        this.element,
+        this.pixelRatio
+      ),
+      touches = event.changedTouches;
 
     if (touches) {
       this.button = 0;
@@ -89,17 +107,21 @@ export default class Mouse {
     this.triggerHook('mousemove');
   }
 
-  mousedown (event) {
-    let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
-        touches = event.changedTouches;
-    
+  mousedown(event) {
+    let position = Mouse._getRelativeMousePosition(
+        event,
+        this.element,
+        this.pixelRatio
+      ),
+      touches = event.changedTouches;
+
     if (touches) {
       this.button = 0;
       event.preventDefault();
     } else {
       this.button = event.button;
     }
-    
+
     this.absolute.x = position.x;
     this.absolute.y = position.y;
     this.position.x = this.absolute.x * this.scale.x + this.offset.x;
@@ -107,18 +129,22 @@ export default class Mouse {
     this.mousedownPosition.x = this.position.x;
     this.mousedownPosition.y = this.position.y;
     this.sourceEvents.mousedown = event;
-    
+
     this.triggerHook('mousedown');
   }
 
-  mouseup (event) {
-    let position = Mouse._getRelativeMousePosition(event, this.element, this.pixelRatio),
-        touches = event.changedTouches;
-    
+  mouseup(event) {
+    let position = Mouse._getRelativeMousePosition(
+        event,
+        this.element,
+        this.pixelRatio
+      ),
+      touches = event.changedTouches;
+
     if (touches) {
       event.preventDefault();
     }
-    
+
     this.button = -1;
     this.absolute.x = position.x;
     this.absolute.y = position.y;
@@ -127,42 +153,45 @@ export default class Mouse {
     this.mouseupPosition.x = this.position.x;
     this.mouseupPosition.y = this.position.y;
     this.sourceEvents.mouseup = event;
-    
+
     this.triggerHook('mouseup');
   }
 
-  mouseout () {
+  mouseout() {
     this.triggerHook('mouseout');
   }
 
-  mousewheel (event) {
-    this.wheelDelta = Math.max(-1, Math.min(1, event.wheelDelta || -event.detail));
+  mousewheel(event) {
+    this.wheelDelta = Math.max(
+      -1,
+      Math.min(1, event.wheelDelta || -event.detail)
+    );
     event.preventDefault();
-    
+
     this.triggerHook('mousewheel');
   }
 
-  setOffset (offset) {
+  setOffset(offset) {
     this.offset.x = offset.x;
     this.offset.y = offset.y;
     this.position.x = this.absolute.x * this.scale.x + this.offset.x;
     this.position.y = this.absolute.y * this.scale.y + this.offset.y;
   }
 
-  setScale (scale) {
+  setScale(scale) {
     this.scale.x = scale.x;
     this.scale.y = scale.y;
     this.position.x = this.absolute.x * this.scale.x + this.offset.x;
     this.position.y = this.absolute.y * this.scale.y + this.offset.y;
   }
 
-  on (eventName, callback) {
+  on(eventName, callback) {
     this.eventHooks[eventName] = this.eventHooks[eventName] || [];
     this.eventHooks[eventName].push(callback);
   }
 
-  triggerHook (eventName) {
-    this.eventHooks[eventName].forEach(cb => {
+  triggerHook(eventName) {
+    this.eventHooks[eventName].forEach((cb) => {
       cb.call(null, this);
     });
   }

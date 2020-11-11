@@ -13,48 +13,49 @@ import postcss from 'rollup-plugin-postcss';
 // `npm run dev` -> `production` is false
 const production = !process.env.ROLLUP_WATCH;
 
-async function main () {
+async function main() {
   const results = [];
   let packages = [];
   const plugins = [
     eslint({
-      exclude: []
+      exclude: [],
     }),
     resolve({
       jsnext: true,
       main: true,
       browser: true,
       customResolveOptions: {
-        moduleDirectory: 'node_modules'
-      }
+        moduleDirectory: 'node_modules',
+      },
       // jail: '/src'
     }),
     commonjs({
       include: 'node_modules/**',
-      exclude: 'src/**'
+      exclude: 'src/**',
     }),
     babel({
-      exclude: 'node_modules/**' // only transpile our source code
+      exclude: 'node_modules/**', // only transpile our source code
     }),
     replace({
       ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
     }),
-    production && uglify(
-      {
-        compress: {
-          drop_console: true
+    production &&
+      uglify(
+        {
+          compress: {
+            drop_console: true,
+          },
         },
-      },
-      minify,
-    ),
-    filesize()
-  ]
+        minify
+      ),
+    filesize(),
+  ];
 
   let banner =
-  `${'/*!\n' + ' * '}${name}.js v${version}\n` +
-  ` * (c) 2018-${new Date().getFullYear()} ${author}\n` +
-  ` * Released under the MIT License.\n` +
-  ` */`;
+    `${'/*!\n' + ' * '}${name}.js v${version}\n` +
+    ` * (c) 2018-${new Date().getFullYear()} ${author}\n` +
+    ` * Released under the MIT License.\n` +
+    ` */`;
 
   results.push({
     input: 'src/main.js',
@@ -63,10 +64,10 @@ async function main () {
       format: 'umd',
       banner,
       sourcemap: true,
-      name: 'Engine'
+      name: 'Engine',
     },
-    plugins
-  })
+    plugins,
+  });
 
   // shapes: { name: 'Arc' },
   //  { name: 'Circle' },
@@ -78,7 +79,7 @@ async function main () {
   //  { name: 'Sprite' }
 
   packages = [
-    { name: 'hierarchy', path: 'modules/hierarchy/index.js', type: 'modules' },
+    { name: 'hierarchy', path: 'modules/hierarchy/index.js', type: 'module' },
     { name: 'Performance', path: 'plugins/Performance.js', type: 'plugin' },
     { name: 'Grid', path: 'plugins/Grid.js', type: 'plugin' },
     { name: 'Input', path: 'plugins/Input.js', type: 'plugin' },
@@ -86,25 +87,25 @@ async function main () {
   packages.forEach((pkg) => {
     let input = `src/packages/${pkg.path}`;
     let banner =
-    `${'/*!\n' + ' * '}${pkg.name}.js v${version}\n` +
-    ` * (c) 2018-${new Date().getFullYear()} ${author}\n` +
-    ` * Released under the MIT License.\n` +
-    ` */`;
+      `${'/*!\n' + ' * '}${pkg.name}.js v${version}\n` +
+      ` * (c) 2018-${new Date().getFullYear()} ${author}\n` +
+      ` * Released under the MIT License.\n` +
+      ` */`;
 
     results.push({
       input,
       output: {
-        file: `example/dist/${pkg.type}/${pkg.name}.js`,
+        file: `example/dist/${pkg.type}s/${pkg.name}.js`,
         format: 'umd',
         banner,
         sourcemap: true,
-        name: pkg.name
+        name: pkg.name,
       },
-      plugins
+      plugins,
     });
-  })
+  });
 
-  return results
+  return results;
 }
 
 export default main();

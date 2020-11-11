@@ -1,10 +1,10 @@
 import Dimensions from '../geometry/Dimensions';
 
 class Line {
-  constructor (opts) {
+  constructor(opts) {
     opts = opts || {};
     this.transform = {
-      position: {}
+      position: {},
     };
     this.close = !!opts.close;
     this.style = this.style || 'solid';
@@ -15,12 +15,11 @@ class Line {
     this.dimensions = this.calcDimensions();
   }
 
-  calcDimensions () {
+  calcDimensions() {
     return new Dimensions(0, 0, 100, 20);
   }
 
-  move (dx, dy) {
-  }
+  move(dx, dy) {}
 }
 
 export default Line;

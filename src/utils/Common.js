@@ -1,6 +1,5 @@
-export function extend (obj, deep) {
-  let argsStart,
-      deepClone;
+export function extend(obj, deep) {
+  let argsStart, deepClone;
 
   if (typeof deep === 'boolean') {
     argsStart = 2;
@@ -28,33 +27,31 @@ export function extend (obj, deep) {
       }
     }
   }
-  
+
   return obj;
 }
 
-export function clone (obj, deep) {
+export function clone(obj, deep) {
   return extend({}, deep, obj);
 }
 
-export function keys (obj) {
-  if (Object.keys)
-    return Object.keys(obj);
+export function keys(obj) {
+  if (Object.keys) return Object.keys(obj);
 
   // avoid hasOwnProperty for performance
   let keys = [];
-  for (let key in obj)
-    keys.push(key);
+  for (let key in obj) keys.push(key);
   return keys;
 }
 
-export function isArray (obj) {
+export function isArray(obj) {
   return Object.prototype.toString.call(obj) === '[object Array]';
 }
 
-export function isPlainObject (obj) {
+export function isPlainObject(obj) {
   return !!obj && obj.constructor === Object;
 }
 
-export function isFunction (obj) {
+export function isFunction(obj) {
   return typeof obj === 'function';
 }

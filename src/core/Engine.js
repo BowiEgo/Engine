@@ -1,7 +1,7 @@
 import Application from './Application';
 import Camera from './Camera';
 import Time from './Time';
-import Mouse from './Mouse';  
+import Mouse from './Mouse';
 import Scene from './Scene';
 import Hit from './Hit';
 import Trigger from './Trigger';
@@ -11,25 +11,35 @@ import Renderer from './Renderer';
 
 let _reqFrame, _cancelFrame, _frameTimeout;
 if (typeof window !== 'undefined') {
-  _reqFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame || function (callback) {
-    var self = this, start, finish;
+  _reqFrame =
+    window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    window.oRequestAnimationFrame ||
+    function (callback) {
+      var self = this,
+        start,
+        finish;
 
-    _frameTimeout = window.setTimeout(function () {
-      start = +new Date();
-      callback(start);
-      finish = +new Date();
-      self.timeout = 1000 / 60 - (finish - start);
-    }, self.timeout);
-  };
+      _frameTimeout = window.setTimeout(function () {
+        start = +new Date();
+        callback(start);
+        finish = +new Date();
+        self.timeout = 1000 / 60 - (finish - start);
+      }, self.timeout);
+    };
 
-  _cancelFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || function () {
-    window.clearTimeout(_frameTimeout);
-  };
+  _cancelFrame =
+    window.cancelAnimationFrame ||
+    window.mozCancelAnimationFrame ||
+    function () {
+      window.clearTimeout(_frameTimeout);
+    };
 }
 
-
 class Engine {
-  static create (el, opts) {
+  static create(el, opts) {
     let app = new Application(el, opts);
 
     Trigger.create(app);
@@ -43,7 +53,7 @@ class Engine {
     // install plugins
     let plugins = opts.plugins || [];
 
-    plugins.forEach(plugin => {
+    plugins.forEach((plugin) => {
       app.install(plugin);
     });
 
@@ -57,7 +67,7 @@ class Engine {
     return app;
   }
 
-  static reset (app) {
+  static reset(app) {
     _cancelFrame(app.frameReq);
     app.time.reset();
     app.frameReq = null;
@@ -66,14 +76,14 @@ class Engine {
     app.renderer.render(app.scene.bodies);
   }
 
-  static run (app) {
+  static run(app) {
     if (app.frameReq) {
       app.stop();
     }
 
     app.frameReq = _reqFrame((timeStamp) => tick.call(null, timeStamp));
-  
-    function tick (timeStamp) {
+
+    function tick(timeStamp) {
       app.trigger.fire('tick', timeStamp);
       app.time.update(timeStamp); // update Time
       app.scene.update();
@@ -87,4 +97,4 @@ class Engine {
 Engine.Body = Body;
 Engine.Shape = Shape;
 
-export default Engine
+export default Engine;

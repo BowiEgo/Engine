@@ -7,8 +7,8 @@ import { getValue } from './object';
  * @param {String} byProperty
  * @return {*}
  */
-export function max (array, byProperty) {
-  return find(array, byProperty, function(value1, value2) {
+export function max(array, byProperty) {
+  return find(array, byProperty, function (value1, value2) {
     return value1 >= value2;
   });
 }
@@ -20,8 +20,8 @@ export function max (array, byProperty) {
  * @param {String} byProperty
  * @return {*}
  */
-export function min (array, byProperty) {
-  return find(array, byProperty, function(value1, value2) {
+export function min(array, byProperty) {
+  return find(array, byProperty, function (value1, value2) {
     return value1 < value2;
   });
 }
@@ -32,15 +32,14 @@ export function find(array, byProperty, condition) {
   }
 
   let i = array.length - 1,
-      result = byProperty ? getValue(array[i], byProperty) : array[i];
+    result = byProperty ? getValue(array[i], byProperty) : array[i];
   if (byProperty) {
     while (i--) {
       if (condition(getValue(array[i], byProperty), result)) {
         result = getValue(array[i], byProperty);
       }
     }
-  }
-  else {
+  } else {
     while (i--) {
       if (condition(array[i], result)) {
         result = array[i];

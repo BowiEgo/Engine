@@ -2,9 +2,9 @@ import Shape from './Shape';
 import Dimensions from '../geometry/Dimensions';
 
 class Rectangle extends Shape {
-  constructor (opts) {
+  constructor(opts) {
     super(opts);
-    console.log('rect', opts)
+    console.log('rect', opts);
     this.type = 'rectangle';
     this.width = opts.width || 0;
     this.height = opts.height || 0;
@@ -13,18 +13,17 @@ class Rectangle extends Shape {
     this.dimensions = this.calcDimensions();
   }
 
-  getAxes () {
-  }
+  getAxes() {}
 
-  project (axis) {
+  project(axis) {
     // console.log(axis);
   }
 
-  addPoint (x, y) {
+  addPoint(x, y) {
     // console.log(x, y);
   }
 
-  calcDimensions () {
+  calcDimensions() {
     return new Dimensions(
       -this.strokeWidth / 2,
       -this.strokeWidth / 2,
@@ -33,7 +32,7 @@ class Rectangle extends Shape {
     );
   }
 
-  move (dx, dy) {
+  move(dx, dy) {
     console.log(dx, dy);
   }
 }

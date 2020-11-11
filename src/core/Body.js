@@ -1,8 +1,9 @@
 import { isArray, isFunction, clone } from '../utils/common';
 import { transformPoint } from '../utils/misc';
 import ShapesGroup from '../shapes/ShapesGroup';
+import Controller from './Controller';
 
-function getRandomColor () {
+function getRandomColor() {
   const r = Math.round(Math.random() * 255);
   const g = Math.round(Math.random() * 255);
   const b = Math.round(Math.random() * 255);
@@ -10,7 +11,7 @@ function getRandomColor () {
 }
 
 export default class Body {
-  constructor (opts) {
+  constructor(opts) {
     this.shape = opts.shape;
     if (isArray(this.shape)) {
       this.shape = new ShapesGroup(this.shape);
@@ -26,78 +27,77 @@ export default class Body {
       scaleY: opts.transform.scaleY,
       position: {
         x: opts.transform.position.x,
-        y: opts.transform.position.y
+        y: opts.transform.position.y,
       },
     };
 
     this.hitFill = getRandomColor();
     this.reset();
     this.calcCoords();
+    this.controller = new Controller(this);
   }
 
-  get shapes () {
+  get shapes() {
     return this.shape.shapes;
   }
 
-  get bound () {
+  get bound() {
     return null;
   }
 
-  translate (dx, dy) {
+  translate(dx, dy) {
     this.transform.position.x += dx;
     this.transform.position.y += dy;
 
     this.calcCoords();
   }
 
-  start () {
-  }
+  start() {}
 
-  update () {
-  }
+  update() {}
 
-  reset () {
+  reset() {
     this.transform = JSON.parse(JSON.stringify(this.transform0));
   }
 
-  calcCoords () {
+  calcCoords() {
     const posX = this.transform.position.x;
     const posY = this.transform.position.y;
     const dim = this.shape.dimensions;
 
     let tl = {
       x: posX + dim.left,
-      y: posY + dim.top
-    }
+      y: posY + dim.top,
+    };
 
     let tr = {
       x: tl.x + dim.width,
-      y: tl.y
-    }
+      y: tl.y,
+    };
 
     let bl = {
       x: tl.x,
-      y: tr.y + dim.height
-    }
+      y: tr.y + dim.height,
+    };
 
     let br = {
       x: tr.x,
-      y: bl.y
-    }
+      y: bl.y,
+    };
 
     let coords = {
       tl: tl,
       tr: tr,
       bl: bl,
-      br: br
-    }
+      br: br,
+    };
 
     this.coords = coords;
 
     return this.coords;
   }
 
-  containsPoint (point) {
+  containsPoint(point) {
     const _canvas = this.app.renderer._canvas;
     const pixelRatio = _canvas.pixelRatio;
     const coords = this.calcCoords();
@@ -110,13 +110,13 @@ export default class Body {
       tl: transformPoint(coords.tl, vpt),
       tr: transformPoint(coords.tr, vpt),
       bl: transformPoint(coords.bl, vpt),
-      br: transformPoint(coords.br, vpt)
-    }
+      br: transformPoint(coords.br, vpt),
+    };
 
     let lines = this._getImageLines(coordsTransformed),
-        xPoints = this._findCrossPoints(point, lines);
+      xPoints = this._findCrossPoints(point, lines);
 
-    return (xPoints !== 0 && xPoints % 2 === 1);
+    return xPoints !== 0 && xPoints % 2 === 1;
   }
 
   /**
@@ -124,44 +124,48 @@ export default class Body {
    * @private
    * @param {Object} oCoords Coordinates of the object corners
    */
-  _getImageLines (oCoords) {
+  _getImageLines(oCoords) {
     return {
       topline: {
         o: oCoords.tl,
-        d: oCoords.tr
+        d: oCoords.tr,
       },
       rightline: {
         o: oCoords.tr,
-        d: oCoords.br
+        d: oCoords.br,
       },
       bottomline: {
         o: oCoords.br,
-        d: oCoords.bl
+        d: oCoords.bl,
       },
       leftline: {
         o: oCoords.bl,
-        d: oCoords.tl
-      }
+        d: oCoords.tl,
+      },
     };
   }
 
-  _findCrossPoints (point, lines) {
-    let b1, b2, a1, a2, xi, // yi,
-        xcount = 0,
-        iLine;
+  _findCrossPoints(point, lines) {
+    let b1,
+      b2,
+      a1,
+      a2,
+      xi, // yi,
+      xcount = 0,
+      iLine;
 
     for (let lineKey in lines) {
       iLine = lines[lineKey];
       // optimisation 1: line below point. no cross
-      if ((iLine.o.y < point.y) && (iLine.d.y < point.y)) {
+      if (iLine.o.y < point.y && iLine.d.y < point.y) {
         continue;
       }
       // optimisation 2: line above point. no cross
-      if ((iLine.o.y >= point.y) && (iLine.d.y >= point.y)) {
+      if (iLine.o.y >= point.y && iLine.d.y >= point.y) {
         continue;
       }
       // optimisation 3: vertical line case
-      if ((iLine.o.x === iLine.d.x) && (iLine.o.x >= point.x)) {
+      if (iLine.o.x === iLine.d.x && iLine.o.x >= point.x) {
         xi = iLine.o.x;
         // yi = point.y;
       }

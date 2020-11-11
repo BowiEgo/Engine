@@ -3,7 +3,7 @@ import Engine from './Engine';
 let uid = 0;
 
 export default class Application {
-  constructor (el, opts) {
+  constructor(el, opts) {
     this.uid = uid++;
     this.opts = opts;
     this.el = el;
@@ -12,49 +12,49 @@ export default class Application {
     this.plugins = {};
   }
 
-  get trigger () {
+  get trigger() {
     return this._trigger;
   }
-  
-  get time () {
+
+  get time() {
     return this._time;
   }
 
-  get renderer () {
+  get renderer() {
     return this._renderer;
   }
 
-  get mouse () {
+  get mouse() {
     return this._mouse;
   }
 
-  get camera () {
+  get camera() {
     return this._camera;
   }
 
-  get scene () {
+  get scene() {
     return this._scene;
   }
 
-  get targetFinder () {
+  get targetFinder() {
     return this._targetFinder;
   }
 
-  install (plugin) {
+  install(plugin) {
     let p = plugin.create(this);
     this.plugins[p.plugin_name] = p;
     p.installed();
   }
 
-  destroy () {
+  destroy() {
     this.stop();
-    Object.keys(this.plugins).forEach(key => {
+    Object.keys(this.plugins).forEach((key) => {
       this.plugins[key].destroy();
-    })
+    });
     this.el.removeChild(this.view);
   }
 
-  start () {
+  start() {
     if (this.status === 'playing') {
       return;
     }
@@ -63,26 +63,26 @@ export default class Application {
     this.status = 'playing';
   }
 
-  restart () {
+  restart() {
     Engine.reset(this);
     this.start();
   }
 
-  pause () {
+  pause() {
     if (this.status === 'playing') {
       this.time.timeScale = 0;
       this.status = 'paused';
     }
   }
 
-  resume () {
+  resume() {
     if (this.status === 'paused') {
       this.Time.timeScale = 1;
       this.status = 'playing';
     }
   }
 
-  stop () {
+  stop() {
     Engine.reset(this);
     this.status = 'stop';
   }

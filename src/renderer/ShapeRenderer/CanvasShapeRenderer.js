@@ -2,13 +2,13 @@ import { TEXT_GRADIENT } from '../../shapes/Text/const';
 import { arcToSegments } from '../../utils/arc';
 
 export default class CanvasShapeRenderer {
-  constructor (context, pixelRatio, _canvas) {
+  constructor(context, pixelRatio, _canvas) {
     this.context = context;
     this.pixelRatio = pixelRatio;
     this._canvas = _canvas;
   }
 
-  render (shape) {
+  render(shape) {
     const { context, pixelRatio, _canvas } = this;
 
     if (shape.type === 'text') {
@@ -44,7 +44,7 @@ export default class CanvasShapeRenderer {
   }
 }
 
-function _setStrokeStyles (context, shape) {
+function _setStrokeStyles(context, shape) {
   if (shape.stroke) {
     context.lineWidth = shape.strokeWidth;
     context.lineCap = shape.strokeLineCap;
@@ -55,13 +55,13 @@ function _setStrokeStyles (context, shape) {
   }
 }
 
-function _setFillStyles (context, shape) {
+function _setFillStyles(context, shape) {
   if (shape.fill) {
     context.fillStyle = shape.fill;
   }
 }
 
-function _renderStroke (context, shape) {
+function _renderStroke(context, shape) {
   if (!shape.stroke || shape.strokeWidth === 0) {
     return;
   }
@@ -71,18 +71,20 @@ function _renderStroke (context, shape) {
   context.restore();
 }
 
-function _renderFill (context) {
+function _renderFill(context) {
   context.save();
   context.fill();
   context.restore();
 }
 
-function _setDropShadowStyles (context, shape, zoom) {
+function _setDropShadowStyles(context, shape, zoom) {
   if (shape.dropShadow) {
     context.shadowColor = shape.dropShadowColor;
     context.shadowBlur = shape.dropShadowBlur;
-    context.shadowOffsetX = Math.cos(shape.dropShadowAngle) * shape.dropShadowDistance * zoom;
-    context.shadowOffsetY = (Math.sin(shape.dropShadowAngle) * shape.dropShadowDistance) * zoom;
+    context.shadowOffsetX =
+      Math.cos(shape.dropShadowAngle) * shape.dropShadowDistance * zoom;
+    context.shadowOffsetY =
+      Math.sin(shape.dropShadowAngle) * shape.dropShadowDistance * zoom;
   } else {
     context.shadowColor = 'black';
     context.shadowBlur = 0;
@@ -93,7 +95,7 @@ function _setDropShadowStyles (context, shape, zoom) {
 
 function _pathPolygon(context, shape) {
   let points = shape.vertices,
-      point;
+    point;
   let len = points.length;
 
   if (!len || len === 0 || isNaN(points[len - 1].y)) {
@@ -119,27 +121,59 @@ function _pathRectangle(context, shape) {
   const shapePosition = transform.position;
 
   let rx = shape.rx ? Math.min(shape.rx, shape.width / 2) : 0,
-      ry = shape.ry ? Math.min(shape.ry, shape.height / 2) : 0,
-      w = shape.width,
-      h = shape.height,
-      isRounded = rx !== 0 || ry !== 0,
-      /* "magic number" for bezier approximations of arcs (http://itc.ktu.lt/itc354/Riskus354.pdf) */
-      k = 1 - 0.5522847498;
+    ry = shape.ry ? Math.min(shape.ry, shape.height / 2) : 0,
+    w = shape.width,
+    h = shape.height,
+    isRounded = rx !== 0 || ry !== 0,
+    /* "magic number" for bezier approximations of arcs (http://itc.ktu.lt/itc354/Riskus354.pdf) */
+    k = 1 - 0.5522847498;
 
   context.beginPath();
   context.moveTo(rx + shapePosition.x, shapePosition.y);
 
   context.lineTo(w - rx + shapePosition.x, shapePosition.y);
-  isRounded && context.bezierCurveTo(w - k * rx + shapePosition.x, shapePosition.y, w + shapePosition.x, k * ry + shapePosition.y, w + shapePosition.x, ry + shapePosition.y);
+  isRounded &&
+    context.bezierCurveTo(
+      w - k * rx + shapePosition.x,
+      shapePosition.y,
+      w + shapePosition.x,
+      k * ry + shapePosition.y,
+      w + shapePosition.x,
+      ry + shapePosition.y
+    );
 
   context.lineTo(w + shapePosition.x, h - ry + shapePosition.y);
-  isRounded && context.bezierCurveTo(w + shapePosition.x, h - k * ry + shapePosition.y, w - k * rx + shapePosition.x, h + shapePosition.y, w - rx + shapePosition.x, h + shapePosition.y);
+  isRounded &&
+    context.bezierCurveTo(
+      w + shapePosition.x,
+      h - k * ry + shapePosition.y,
+      w - k * rx + shapePosition.x,
+      h + shapePosition.y,
+      w - rx + shapePosition.x,
+      h + shapePosition.y
+    );
 
   context.lineTo(rx + shapePosition.x, h + shapePosition.y);
-  isRounded && context.bezierCurveTo(k * rx + shapePosition.x, h + shapePosition.y, shapePosition.x, h - k * ry + shapePosition.y, shapePosition.x, h - ry + shapePosition.y);
+  isRounded &&
+    context.bezierCurveTo(
+      k * rx + shapePosition.x,
+      h + shapePosition.y,
+      shapePosition.x,
+      h - k * ry + shapePosition.y,
+      shapePosition.x,
+      h - ry + shapePosition.y
+    );
 
   context.lineTo(shapePosition.x, ry + shapePosition.y);
-  isRounded && context.bezierCurveTo(shapePosition.x, k * ry + shapePosition.y, k * rx + shapePosition.x, shapePosition.y, rx + shapePosition.x, shapePosition.y);
+  isRounded &&
+    context.bezierCurveTo(
+      shapePosition.x,
+      k * ry + shapePosition.y,
+      k * rx + shapePosition.x,
+      shapePosition.y,
+      rx + shapePosition.x,
+      shapePosition.y
+    );
 
   context.closePath();
 }
@@ -153,15 +187,15 @@ function _pathCircle(context, shape) {
 function _execPathCommands(context, shape) {
   const { path } = shape;
   let current,
-      previous,
-      subpathStartX = 0,
-      subpathStartY = 0,
-      x = 0,
-      y = 0,
-      controlX = 0,
-      controlY = 0,
-      tempX,
-      tempY
+    previous,
+    subpathStartX = 0,
+    subpathStartY = 0,
+    x = 0,
+    y = 0,
+    controlX = 0,
+    controlY = 0,
+    tempX,
+    tempY;
 
   context.beginPath();
 
@@ -221,7 +255,7 @@ function _execPathCommands(context, shape) {
           controlY, // y2
           tempX,
           tempY
-        )
+        );
         x = tempX;
         y = tempY;
         break;
@@ -230,14 +264,7 @@ function _execPathCommands(context, shape) {
         y = current[6];
         controlX = current[3];
         controlY = current[4];
-        context.bezierCurveTo(
-          current[1],
-          current[2],
-          controlX,
-          controlY,
-          x,
-          y
-        );
+        context.bezierCurveTo(current[1], current[2], controlX, controlY, x, y);
         break;
       case 's': // shorthand cubic bezierCurveTo, relative
         // transform to absolute x,y
@@ -248,8 +275,7 @@ function _execPathCommands(context, shape) {
           // the control point is coincident with the current point
           controlX = x;
           controlY = y;
-        }
-        else {
+        } else {
           // calculate reflection of previous control points
           controlX = 2 * x - controlX;
           controlY = 2 * y - controlY;
@@ -280,8 +306,7 @@ function _execPathCommands(context, shape) {
           // the control point is coincident with the current point
           controlX = x;
           controlY = y;
-        }
-        else {
+        } else {
           // calculate reflection of previous control points
           controlX = 2 * x - controlX;
           controlY = 2 * y - controlY;
@@ -312,12 +337,7 @@ function _execPathCommands(context, shape) {
         controlX = x + current[1];
         controlY = y + current[2];
 
-        context.quadraticCurveTo(
-          controlX,
-          controlY,
-          tempX,
-          tempY
-        );
+        context.quadraticCurveTo(controlX, controlY, tempX, tempY);
         x = tempX;
         y = tempY;
         break;
@@ -325,12 +345,7 @@ function _execPathCommands(context, shape) {
         tempX = current[3];
         tempY = current[4];
 
-        context.quadraticCurveTo(
-          current[1],
-          current[2],
-          tempX,
-          tempY
-        );
+        context.quadraticCurveTo(current[1], current[2], tempX, tempY);
         x = tempX;
         y = tempY;
         controlX = current[1];
@@ -346,19 +361,13 @@ function _execPathCommands(context, shape) {
           // assume the control point is coincident with the current point
           controlX = x;
           controlY = y;
-        }
-        else {
+        } else {
           // calculate reflection of previous control point
           controlX = 2 * x - controlX;
           controlY = 2 * y - controlY;
         }
 
-        context.quadraticCurveTo(
-          controlX,
-          controlY,
-          tempX,
-          tempY
-        );
+        context.quadraticCurveTo(controlX, controlY, tempX, tempY);
         x = tempX;
         y = tempY;
         break;
@@ -371,18 +380,12 @@ function _execPathCommands(context, shape) {
           // assume the control point is coincident with the current point
           controlX = x;
           controlY = y;
-        }
-        else {
+        } else {
           // calculate reflection of previous control point
           controlX = 2 * x - controlX;
           controlY = 2 * y - controlY;
         }
-        context.quadraticCurveTo(
-          controlX,
-          controlY,
-          tempX,
-          tempY
-        );
+        context.quadraticCurveTo(controlX, controlY, tempX, tempY);
         x = tempX;
         y = tempY;
         break;
@@ -394,7 +397,7 @@ function _execPathCommands(context, shape) {
           current[4],
           current[5],
           current[6] + x,
-          current[7] + y
+          current[7] + y,
         ]);
         x += current[6];
         y += current[7];
@@ -407,7 +410,7 @@ function _execPathCommands(context, shape) {
           current[4],
           current[5],
           current[6],
-          current[7]
+          current[7],
         ]);
         x = current[6];
         y = current[7];
@@ -423,16 +426,16 @@ function _execPathCommands(context, shape) {
   }
 }
 
-function _drawArc (context, fx, fy, coords) {
+function _drawArc(context, fx, fy, coords) {
   var rx = coords[0],
-      ry = coords[1],
-      rot = coords[2],
-      large = coords[3],
-      sweep = coords[4],
-      tx = coords[5],
-      ty = coords[6],
-      segs = [[], [], [], []],
-      segsNorm = arcToSegments(tx - fx, ty - fy, rx, ry, large, sweep, rot);
+    ry = coords[1],
+    rot = coords[2],
+    large = coords[3],
+    sweep = coords[4],
+    tx = coords[5],
+    ty = coords[6],
+    segs = [[], [], [], []],
+    segsNorm = arcToSegments(tx - fx, ty - fy, rx, ry, large, sweep, rot);
 
   for (var i = 0, len = segsNorm.length; i < len; i++) {
     segs[i][0] = segsNorm[i][0] + fx;
@@ -445,7 +448,7 @@ function _drawArc (context, fx, fy, coords) {
   }
 }
 
-function _drawText (context, shape, pixelRatio, _canvas) {
+function _drawText(context, shape, pixelRatio, _canvas) {
   context.beginPath();
 
   shape.updateText();
@@ -475,13 +478,16 @@ function _drawText (context, shape, pixelRatio, _canvas) {
   if (style.dropShadow) {
     context.shadowColor = style.dropShadowColor;
     context.shadowBlur = style.dropShadowBlur;
-    context.shadowOffsetX = Math.cos(style.dropShadowAngle) * style.dropShadowDistance * _canvas.zoom;
-    context.shadowOffsetY = (Math.sin(style.dropShadowAngle) * style.dropShadowDistance) * _canvas.zoom;
+    context.shadowOffsetX =
+      Math.cos(style.dropShadowAngle) * style.dropShadowDistance * _canvas.zoom;
+    context.shadowOffsetY =
+      Math.sin(style.dropShadowAngle) * style.dropShadowDistance * _canvas.zoom;
   }
 
   for (let i = 0; i < lines.length; i++) {
     linePositionX = style.strokeThickness / 2;
-    linePositionY = ((style.strokeThickness / 2) + (i * lineHeight)) + fontProperties.ascent;
+    linePositionY =
+      style.strokeThickness / 2 + i * lineHeight + fontProperties.ascent;
 
     if (style.align === 'right') {
       linePositionX += maxLineWidth - lineWidths[i];
@@ -514,7 +520,7 @@ function _drawText (context, shape, pixelRatio, _canvas) {
   context.closePath();
 }
 
-function _generateFillStyle (style, lines, width, height) {
+function _generateFillStyle(style, lines, width, height) {
   if (!Array.isArray(style.fill)) {
     return style.fill;
   } else if (style.fill.length === 1) {
@@ -551,7 +557,12 @@ function _generateFillStyle (style, lines, width, height) {
 
   if (style.fillGradientType === TEXT_GRADIENT.LINEAR_VERTICAL) {
     // start the gradient at the top center of the canvas, and end at the bottom middle of the canvas
-    gradient = this.context.createLinearGradient(width / 2, 0, width / 2, height);
+    gradient = this.context.createLinearGradient(
+      width / 2,
+      0,
+      width / 2,
+      height
+    );
 
     // we need to repeat the gradient so that each individual line of text has the same vertical gradient effect
     // ['#FF0000', '#00FF00', '#0000FF'] over 2 lines would create stops at 0.125, 0.25, 0.375, 0.625, 0.75, 0.875
@@ -561,7 +572,7 @@ function _generateFillStyle (style, lines, width, height) {
       currentIteration += 1;
       for (let j = 0; j < fill.length; j++) {
         if (typeof fillGradientStops[j] === 'number') {
-          stop = (fillGradientStops[j] / lines.length) + (i / lines.length);
+          stop = fillGradientStops[j] / lines.length + i / lines.length;
         } else {
           stop = currentIteration / totalIterations;
         }
@@ -571,7 +582,12 @@ function _generateFillStyle (style, lines, width, height) {
     }
   } else {
     // start the gradient at the center left of the canvas, and end at the center right of the canvas
-    gradient = this.context.createLinearGradient(0, height / 2, width, height / 2);
+    gradient = this.context.createLinearGradient(
+      0,
+      height / 2,
+      width,
+      height / 2
+    );
 
     // can just evenly space out the gradients in this case, as multiple lines makes no difference
     // to an even left to right gradient
@@ -592,7 +608,7 @@ function _generateFillStyle (style, lines, width, height) {
   return gradient;
 }
 
-function _drawLetterSpacing (context, text, style, x, y, isStroke = false) {
+function _drawLetterSpacing(context, text, style, x, y, isStroke = false) {
   // letterSpacing of 0 means normal
   const letterSpacing = style.letterSpacing;
 

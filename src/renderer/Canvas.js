@@ -3,13 +3,13 @@ import { transformPoint, invertTransform } from '../utils/misc';
 const iMatrix = [1, 0, 0, 1, 0, 0];
 
 export default class Canvas {
-  constructor (opts) {
+  constructor(opts) {
     const { width = 300, height = 300, bgColor = 'aliceblue' } = opts;
 
     this.canvas = _createCanvas();
     this.context = this.canvas.getContext('2d');
     this.viewportTransform = iMatrix;
-    
+
     this.pixelRatio = this.canvas.getPixelRatio();
     this.canvas.setAttribute('data-pixel-ratio', this.pixelRatio);
     this.context.scale(this.pixelRatio, this.pixelRatio);
@@ -21,40 +21,44 @@ export default class Canvas {
     this.canvas.style.backgroundColor = bgColor;
   }
 
-  get width () {
+  get width() {
     return this.canvas.width;
   }
 
-  get height () {
+  get height() {
     return this.canvas.height;
   }
 
-  get zoom () {
+  get zoom() {
     return this.viewportTransform[0];
   }
 
-  get offset () {
+  get offset() {
     return {
       x: this.viewportTransform[4],
-      y: this.viewportTransform[5]
-    }
+      y: this.viewportTransform[5],
+    };
   }
 
-  setViewportTransform (vpt) {
+  setViewportTransform(vpt) {
     this.viewportTransform = vpt;
   }
 
-  resetTransform () {
+  resetTransform() {
     this.setViewportTransform(iMatrix);
   }
 
-  zoomToPoint (point, value) {
+  zoomToPoint(point, value) {
     let relativePoint = {
       x: point.x * this.pixelRatio,
-      y: point.y * this.pixelRatio
-    }
-    let before = relativePoint, vpt = this.viewportTransform.slice(0);
-    relativePoint = transformPoint(relativePoint, invertTransform(this.viewportTransform));
+      y: point.y * this.pixelRatio,
+    };
+    let before = relativePoint,
+      vpt = this.viewportTransform.slice(0);
+    relativePoint = transformPoint(
+      relativePoint,
+      invertTransform(this.viewportTransform)
+    );
     vpt[0] = value;
     vpt[3] = value;
     let after = transformPoint(relativePoint, vpt);
@@ -64,7 +68,7 @@ export default class Canvas {
     this.setViewportTransform(vpt);
   }
 
-  translate (offset) {
+  translate(offset) {
     // console.log('translate', offset);
     let vpt = this.viewportTransform.slice(0);
 
@@ -74,12 +78,12 @@ export default class Canvas {
     this.setViewportTransform(vpt);
   }
 
-  clear () {
+  clear() {
     this.context.clearRect(0, 0, this.width, this.height);
   }
 }
 
-function _createCanvas () {
+function _createCanvas() {
   let canvas = document.createElement('canvas');
   canvas.getPixelRatio = _getPixelRatio.bind(null, canvas);
   return canvas;
@@ -88,13 +92,16 @@ function _createCanvas () {
 /**
  * Gets the pixel ratio of the canvas.
  */
-function _getPixelRatio (canvas) {
+function _getPixelRatio(canvas) {
   let context = canvas.getContext('2d'),
-      devicePixelRatio = window.devicePixelRatio || 1,
-      backingStorePixelRatio = context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio ||
+    devicePixelRatio = window.devicePixelRatio || 1,
+    backingStorePixelRatio =
+      context.webkitBackingStorePixelRatio ||
+      context.mozBackingStorePixelRatio ||
       context.msBackingStorePixelRatio ||
       context.oBackingStorePixelRatio ||
-      context.backingStorePixelRatio || 1;
+      context.backingStorePixelRatio ||
+      1;
 
   return devicePixelRatio / backingStorePixelRatio;
 }

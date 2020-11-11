@@ -1,27 +1,27 @@
 export default class Scene {
-  constructor (app) {
+  constructor(app) {
     this.app = app;
     this.bodies = [];
   }
 
-  static create (app) {
+  static create(app) {
     app._scene = new Scene(app);
   }
 
-  addBody (body) {
+  addBody(body) {
     body.app = this.app;
     this.bodies.push(body);
     this.app.renderer.render([body]);
 
-    this.app.trigger.on('drag', offset => {
-      if(this.app.hitTarget === body) {
+    this.app.trigger.on('drag', (offset) => {
+      if (this.app.hitTarget === body) {
         const vpt = this.app.renderer._canvas.viewportTransform;
         body.translate(offset.x / vpt[0], offset.y / vpt[0]);
       }
-    })
+    });
   }
 
-  selectBody (body) {
+  selectBody(body) {
     if (this.selectedBody) {
       this.selectedBody.isSelected = false;
     }
@@ -31,17 +31,17 @@ export default class Scene {
     }
   }
 
-  reset () {
-    this.bodies.forEach(body => {
+  reset() {
+    this.bodies.forEach((body) => {
       body.reset();
-    })
+    });
   }
 
-  update () {
+  update() {
     this.bodies.forEach((body) => {
       if (this.app.status === 'playing') {
         body.updateCb.call(body);
       }
-    })
+    });
   }
 }
