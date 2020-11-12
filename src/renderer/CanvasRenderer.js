@@ -2,8 +2,6 @@ import Canvas from './Canvas';
 import { CanvasShapeRenderer, CanvasHitShapeRenderer } from './ShapeRenderer';
 import ShapesGroup from '../shapes/ShapesGroup';
 
-const HANDLER_WIDTH = 8;
-
 export default class CanvasRenderer {
   constructor(app) {
     this.app = app;
@@ -139,20 +137,20 @@ function _renderShape(shape, isHit) {
 }
 
 function _renderController(context, body, vpt) {
-  const { coords, controller } = body;
-  const { dim } = controller;
+  const { coords, controllers } = body;
+  // const { dim, size } = controller;
+  // _renderControllerBounds(dim, context, vpt, controller);
 
-  _renderControllerBounds(dim, context, vpt, controller);
-
-  Object.keys(coords).forEach((key) => {
+  controllers.forEach((controller) => {
     let handlerPoint = {
-      x: coords[key].x,
-      y: coords[key].y,
+      x: controller.pos.x,
+      y: controller.pos.y,
     };
-    handlerPoint.y -= HANDLER_WIDTH / 2 / vpt[0];
-    handlerPoint.x -= HANDLER_WIDTH / 2 / vpt[0];
 
-    _renderControllerPoints(handlerPoint, context, vpt, controller);
+    handlerPoint.y -= controller.style.size / 2 / vpt[0];
+    handlerPoint.x -= controller.style.size / 2 / vpt[0];
+
+    _renderControllerPoints(handlerPoint, context, vpt, controller.style);
   });
 }
 
@@ -167,14 +165,14 @@ function _renderControllerBounds(dim, context, vpt, opts) {
 }
 
 function _renderControllerPoints(point, context, vpt, opts) {
-  const { pointColor, pointStrokeWidth, pointFill } = opts;
-  const size = HANDLER_WIDTH / vpt[0];
+  const { color, strokeWidth, fill, size } = opts;
+  const sizeTransformed = size / vpt[0];
   context.save();
   context.transform(1, 0, 0, 1, point.x, point.y);
-  context.strokeStyle = pointColor;
-  context.lineWidth = pointStrokeWidth / vpt[0];
-  context.fillStyle = pointFill;
-  context.fillRect(0, 0, size, size);
-  context.strokeRect(0, 0, size, size);
+  context.strokeStyle = color;
+  context.lineWidth = strokeWidth / vpt[0];
+  context.fillStyle = fill;
+  context.fillRect(0, 0, sizeTransformed, sizeTransformed);
+  context.strokeRect(0, 0, sizeTransformed, sizeTransformed);
   context.restore();
 }

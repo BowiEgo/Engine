@@ -22,6 +22,7 @@ export default class Scene {
   }
 
   selectBody(body) {
+    console.log(body, this.bodies);
     if (this.selectedBody) {
       this.selectedBody.isSelected = false;
     }
