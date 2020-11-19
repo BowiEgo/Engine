@@ -56,6 +56,13 @@ export default class Body {
     this.calcCoords();
   }
 
+  scale(scaleX, scaleY) {
+    this.transform.scaleX = scaleX;
+    this.transform.scaleY = scaleY;
+
+    this.calcCoords();
+  }
+
   start() {}
 
   update() {}
@@ -99,5 +106,19 @@ export default class Body {
     this.coords = coords;
 
     return this.coords;
+  }
+
+  findController(point) {
+    const { controllers } = this;
+
+    for (let i = 0, len = controllers.length; i < len; i++) {
+      console.log('findController', point, this.controllers[i].coords);
+      if (this.app._hit.containsPoint(point, this.controllers[i].coords)) {
+        console.log(i);
+        return controllers[i];
+      }
+    }
+
+    return;
   }
 }

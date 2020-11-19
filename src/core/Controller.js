@@ -24,8 +24,8 @@ export default class Controller {
     const dim = {
       left: body.transform.position.x + body.shape.dimensions.left,
       top: body.transform.position.y + body.shape.dimensions.top,
-      width: body.shape.dimensions.width,
-      height: body.shape.dimensions.height,
+      width: this.style.size,
+      height: this.style.size,
     };
 
     return dim;
@@ -35,25 +35,26 @@ export default class Controller {
     return this.body.coords[this.type];
   }
 
-  get coord() {
+  get coords() {
     const pos = this.body.coords[this.type];
+    const size = this.style.size;
 
     return {
       tl: {
-        x: pos.x - this.size / 2,
-        y: pos.y - this.size / 2,
+        x: pos.x - size / 2,
+        y: pos.y - size / 2,
       },
       tr: {
-        x: pos.x + this.size / 2,
-        y: pos.y - this.size / 2,
+        x: pos.x + size / 2,
+        y: pos.y - size / 2,
       },
       bl: {
-        x: pos.x - this.size / 2,
-        y: pos.y + this.size / 2,
+        x: pos.x - size / 2,
+        y: pos.y + size / 2,
       },
       br: {
-        x: pos.x + this.size / 2,
-        y: pos.y + this.size / 2,
+        x: pos.x + size / 2,
+        y: pos.y + size / 2,
       },
     };
   }

@@ -1,7 +1,9 @@
 import { clone } from '../utils/common';
 import { transformPoint } from '../utils/misc';
+import { subPos, addPos } from './utils';
 import Controller from './Controller';
-import Body from './Body';
+
+// import Body from './Body';
 
 export default class Hit {
   constructor(app) {
@@ -10,8 +12,8 @@ export default class Hit {
     this.bodies = this.app.scene.bodies;
     // this._hitCanvas = this.app.renderer._hitCanvas;
     this.hitContext = this.app.renderer.hitContext;
+    this.controller = null;
 
-    console.log(this);
     Hit.bindMouseEvents(this);
     // Hit.createHitCanvas(this)
   }
@@ -21,19 +23,45 @@ export default class Hit {
   }
 
   static bindMouseEvents(hit) {
+    let lastMousePosition = { x: 0, y: 0 },
+      offset = { x: 0, y: 0 },
+      position = { x: 0, y: 0 },
+      scaleX = 1,
+      scaleY = 1;
+
     hit.app.mouse.on('mousedown', (mouse) => {
       let target = hit.findTarget(mouse.position);
-      console.log('target', target);
-      if (target instanceof Body) {
-        hit.app.hitTarget = target;
-      } else if (target instanceof Controller) {
-        hit.app.activeController = target;
-      }
+      console.log('target', target, hit, hit.controller);
+      hit.app.hitTarget = target;
+      hit.isDraging = true;
+      // pseudocode------------------------------------
+      // let corner = target.findCorner(mouse.position)
+      // console.log('corner', corner)
     });
 
     hit.app.mouse.on('mouseup', (mouse) => {
-      if (hit.app.activeController) {
-        hit.app.activeController = null;
+      console.log('mouseup', hit.controller);
+      hit.isDraging = false;
+      hit.controller = null;
+    });
+
+    hit.app.mouse.on('mousemove', (mouse) => {
+      // console.log('mousemove', hit.controller);
+      const target = hit.app.scene.selectedBody;
+      offset = subPos(mouse.position, lastMousePosition);
+      position = addPos(position, offset);
+      lastMousePosition.x = mouse.position.x;
+      lastMousePosition.y = mouse.position.y;
+
+      if (hit.controller) {
+        const width = target.coords.tr.x - target.coords.tl.x;
+        const height = target.coords.br.y - target.coords.tr.y;
+        scaleX = (width + (mouse.position.x - hit.controller.pos.x)) / width;
+        scaleY = (height + (mouse.position.x - hit.controller.pos.x)) / height;
+        target.scale(scaleX, scaleY);
+      } else if (target && hit.isDraging) {
+        const vpt = hit.app.renderer._canvas.viewportTransform;
+        target.translate(offset.x / vpt[0], offset.y / vpt[0]);
       }
     });
   }
@@ -55,8 +83,11 @@ export default class Hit {
   renderHitShape(shape) {}
 
   findTarget(point) {
+    console.log('findTarget', point);
     const hasHitCanvas = false,
       pixelRatio = this.app.renderer.pixelRatio;
+
+    const selectedBody = this.app.scene.selectedBody;
     let pixel;
 
     if (hasHitCanvas) {
@@ -66,6 +97,15 @@ export default class Hit {
         1,
         1
       ).data;
+    }
+
+    if (selectedBody) {
+      this.controller = selectedBody.findController(point);
+      console.log(111111111, this.controller);
+      if (this.controller) {
+        this.app.scene.selectBody(selectedBody);
+        return selectedBody;
+      }
     }
 
     for (let i = 0, len = this.bodies.length; i < len; i++) {
@@ -79,24 +119,17 @@ export default class Hit {
         }
       }
       if (body.shape.type === 'text') {
-        console.log(body);
+        // console.log(body);
       }
 
       if (this.containsPoint(point, body.coords)) {
+        console.log('2222222222', this.app.scene.selectedBody, this.controller);
         this.app.scene.selectBody(body);
         return body;
       }
     }
 
-    // if (this.app.scene.selectedBody) {
-    //   const controller = this.app.scene.selectedBody.controller;
-
-    //   // controller.coords.forEach(key => {
-    //   //   if (this.containsPoint(point, )) {
-
-    //   //   }
-    //   // })
-    // }
+    console.log('controller', this.controller);
 
     this.app.scene.selectBody(null);
 

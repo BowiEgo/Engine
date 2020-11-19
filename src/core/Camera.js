@@ -1,3 +1,5 @@
+import { subPos, addPos } from './utils';
+
 export default class Camera {
   constructor(app) {
     this.app = app;
@@ -68,18 +70,4 @@ export default class Camera {
       app.renderer._canvas.zoomToPoint(mouse.position, this.scale);
     });
   }
-}
-
-function addPos(posA, posB) {
-  return {
-    x: posA.x + posB.x,
-    y: posA.y + posB.y,
-  };
-}
-
-function subPos(posA, posB) {
-  return {
-    x: posA.x - posB.x,
-    y: posA.y - posB.y,
-  };
 }

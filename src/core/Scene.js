@@ -13,12 +13,12 @@ export default class Scene {
     this.bodies.push(body);
     this.app.renderer.render([body]);
 
-    this.app.trigger.on('drag', (offset) => {
-      if (this.app.hitTarget === body) {
-        const vpt = this.app.renderer._canvas.viewportTransform;
-        body.translate(offset.x / vpt[0], offset.y / vpt[0]);
-      }
-    });
+    // this.app.trigger.on('drag', (offset) => {
+    //   if (this.app.hitTarget === body) {
+    //     const vpt = this.app.renderer._canvas.viewportTransform;
+    //     body.translate(offset.x / vpt[0], offset.y / vpt[0]);
+    //   }
+    // });
   }
 
   selectBody(body) {
