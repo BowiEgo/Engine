@@ -93,11 +93,13 @@ function _renderBodies(context, bodies, isHit) {
 
   bodies.forEach((body) => {
     const transform = body.transform;
-    const { scaleX = 1, skewX = 0, skewY = 0, scaleY = 1 } = transform;
+    const { scaleX = 1, skewX = 0, skewY = 0, scaleY = 1, origin } = transform;
     const { x: posX, y: posY } = transform.position;
 
     context.save();
+    context.translate(origin.x, origin.y);
     context.transform(scaleX, skewX, skewY, scaleY, posX, posY);
+    context.translate(-origin.x, -origin.y);
 
     if (body.shape instanceof ShapesGroup) {
       body.shape.shapes.forEach((shape) => {

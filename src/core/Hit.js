@@ -13,6 +13,8 @@ export default class Hit {
     // this._hitCanvas = this.app.renderer._hitCanvas;
     this.hitContext = this.app.renderer.hitContext;
     this.controller = null;
+    this.offset = { x: 0, y: 0 };
+    this.position = { x: 0, y: 0 };
 
     Hit.bindMouseEvents(this);
     // Hit.createHitCanvas(this)
@@ -25,42 +27,44 @@ export default class Hit {
   static bindMouseEvents(hit) {
     let lastMousePosition = { x: 0, y: 0 },
       offset = { x: 0, y: 0 },
-      position = { x: 0, y: 0 },
-      scaleX = 1,
-      scaleY = 1;
+      position = { x: 0, y: 0 };
 
     hit.app.mouse.on('mousedown', (mouse) => {
       let target = hit.findTarget(mouse.position);
-      console.log('target', target, hit, hit.controller);
+      target && target.beforeScale();
       hit.app.hitTarget = target;
       hit.isDraging = true;
-      // pseudocode------------------------------------
-      // let corner = target.findCorner(mouse.position)
-      // console.log('corner', corner)
     });
 
     hit.app.mouse.on('mouseup', (mouse) => {
-      console.log('mouseup', hit.controller);
       hit.isDraging = false;
-      hit.controller = null;
+      if (hit.controller) {
+        // hit.controller.body.applyScale();
+        hit.controller.body.resetTransformOrigin();
+        hit.controller = null;
+      }
     });
 
     hit.app.mouse.on('mousemove', (mouse) => {
-      // console.log('mousemove', hit.controller);
       const target = hit.app.scene.selectedBody;
+
       offset = subPos(mouse.position, lastMousePosition);
       position = addPos(position, offset);
       lastMousePosition.x = mouse.position.x;
       lastMousePosition.y = mouse.position.y;
 
+      if (!target) return;
+
+      const dim = target.dimensions;
+      const dim0 = target.dimensions0;
+      const coords = target.coords;
+      const vpt = hit.app.renderer._canvas.viewportTransform;
+
       if (hit.controller) {
-        const width = target.coords.tr.x - target.coords.tl.x;
-        const height = target.coords.br.y - target.coords.tr.y;
-        scaleX = (width + (mouse.position.x - hit.controller.pos.x)) / width;
-        scaleY = (height + (mouse.position.x - hit.controller.pos.x)) / height;
-        target.scale(scaleX, scaleY);
+        let scaleX = (mouse.position.x - coords.tl.x) / dim0.width;
+        let scaleY = (mouse.position.y - coords.tl.y) / dim0.height;
+        target.scale(scaleX, scaleY, hit.controller);
       } else if (target && hit.isDraging) {
-        const vpt = hit.app.renderer._canvas.viewportTransform;
         target.translate(offset.x / vpt[0], offset.y / vpt[0]);
       }
     });
@@ -101,7 +105,6 @@ export default class Hit {
 
     if (selectedBody) {
       this.controller = selectedBody.findController(point);
-      console.log(111111111, this.controller);
       if (this.controller) {
         this.app.scene.selectBody(selectedBody);
         return selectedBody;
@@ -123,13 +126,10 @@ export default class Hit {
       }
 
       if (this.containsPoint(point, body.coords)) {
-        console.log('2222222222', this.app.scene.selectedBody, this.controller);
         this.app.scene.selectBody(body);
         return body;
       }
     }
-
-    console.log('controller', this.controller);
 
     this.app.scene.selectBody(null);
 
